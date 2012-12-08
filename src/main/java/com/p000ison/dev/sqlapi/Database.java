@@ -1,12 +1,10 @@
 package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
+import com.p000ison.dev.sqlapi.exception.QueryException;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 /**
@@ -82,7 +80,7 @@ public abstract class Database {
 
     protected abstract TableBuilder createTableBuilder(Class<? extends TableObject> table);
 
-    public final Database registerTable(Class<? extends TableObject> table) throws SQLException
+    public final Database registerTable(Class<? extends TableObject> table)
     {
         TableBuilder builder = createTableBuilder(table);
 
@@ -90,43 +88,67 @@ public abstract class Database {
 
         String tableQuery = builder.createTable().getQuery();
         System.out.println(tableQuery);
-        getConnection().prepareStatement(tableQuery).execute();
+
+        String modifyQuery = builder.createModifyQuery().getQuery();
+        System.out.println(modifyQuery);
+
+        executeQuery(tableQuery);
+        executeQuery(modifyQuery);
         return this;
     }
 
-    public boolean existsDatabaseTable(String table) throws SQLException
+    public boolean existsDatabaseTable(String table)
     {
-        ResultSet set = getConnection().getMetaData().getTables(null, null, table, null);
-        return set.next();
+        ResultSet set = null;
+        try {
+            set = getMetadata().getTables(null, null, table, null);
+            return set.next();
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
     }
 
 
-    public final Database registerTable(TableObject table) throws SQLException
+    public final Database registerTable(TableObject table)
     {
         return registerTable(table.getClass());
     }
 
-    public final Set<String> getDatabaseColumns(Class<? extends TableObject> table) throws SQLException
+    public final List<String> getDatabaseColumns(Class<? extends TableObject> table)
     {
         return getDatabaseColumns(getTableName(table));
     }
 
-    public final Set<String> getDatabaseColumns(TableObject table) throws SQLException
+    public final List<String> getDatabaseColumns(TableObject table)
     {
         return getDatabaseColumns(getTableName(table.getClass()));
     }
 
-    protected final Set<String> getDatabaseColumns(String table) throws SQLException
+    protected final List<String> getDatabaseColumns(String table)
     {
-        Set<String> columns = new HashSet<String>();
+        List<String> columns = new ArrayList<String>();
 
-        ResultSet columnResult = this.getConnection().getMetaData().getColumns(null, null, table, null);
+        try {
+            ResultSet columnResult = getMetadata().getColumns(null, null, table, null);
 
-        while (columnResult.next()) {
-            columns.add(columnResult.getString("COLUMN_NAME"));
+
+            while (columnResult.next()) {
+                columns.add(columnResult.getString("COLUMN_NAME"));
+            }
+        } catch (SQLException e) {
+            throw new QueryException(e);
         }
 
         return columns;
+    }
+
+    private DatabaseMetaData getMetadata()
+    {
+        try {
+            return getConnection().getMetaData();
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
     }
 
     public final Set<String> getDatabaseTables() throws SQLException
@@ -142,7 +164,15 @@ public abstract class Database {
         return columns;
     }
 
-    public final Connection getConnection() throws SQLException
+    void executeQuery(String query) {
+        try {
+            getConnection().createStatement().executeUpdate(query);
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
+    }
+
+    public final Connection getConnection()
     {
         return connection;
     }

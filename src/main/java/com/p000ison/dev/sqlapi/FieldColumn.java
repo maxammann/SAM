@@ -91,7 +91,8 @@ public class FieldColumn implements Column {
     public String toString()
     {
         return "FieldColumn{" +
-                "field=" + field +
+                "name=" + getColumnName() +
+                ", field=" + (field == null ? null : field.getName()) +
                 '}';
     }
 

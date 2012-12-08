@@ -14,16 +14,35 @@ import java.util.*;
  */
 public abstract class TableBuilder {
 
+    /**
+     * A temporary query which is used to create a table or modify a table for example
+     */
     protected StringBuilder query;
+    /**
+     * The class which represents the table
+     */
     private Class<? extends TableObject> object;
+    /**
+     * The expected columns
+     */
     private List<Column> buildingColumns;
     /**
      * Whether we have already found a primary key
      */
     protected boolean primaryColumn = false;
+    /**
+     * The columns which are already in the database
+     */
+    private List<String> databaseColumns;
+
+    private Database database;
+
+
+    private String tableName;
 
     public TableBuilder(Class<? extends TableObject> object, Database database)
     {
+        this.database = database;
         query = new StringBuilder();
         buildingColumns = new ArrayList<Column>();
         this.object = object;
@@ -36,30 +55,23 @@ public abstract class TableBuilder {
         this(object.getClass(), database);
     }
 
-    private static boolean containsColumn(Map<DatabaseColumn, Class<?>> map, String column)
-    {
-        for (DatabaseColumn cColumn : map.keySet()) {
-            if (cColumn.databaseName().hashCode() == column.hashCode() && cColumn.databaseName().endsWith(column)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void init()
     {
-        setupBuildingColumns();
-    }
-
-    public TableBuilder createTable()
-    {
-        String tableName = Database.getTableName(object);
+        tableName = Database.getTableName(object);
 
         if (tableName == null) {
             throw new TableBuildingException("The name of the table is not given! Add the @DatabaseTable annotation!");
         }
 
-        query.append("CREATE TABLE IF NOT EXISTS ").append(Database.getTableName(object)).append('(');
+        setupBuildingColumns();
+        databaseColumns = database.getDatabaseColumns(tableName);
+
+    }
+
+    public TableBuilder createTable()
+    {
+        clearQuery();
+        query.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append('(');
 
         for (Column column : buildingColumns) {
             System.out.println(column.getColumnName());
@@ -74,18 +86,17 @@ public abstract class TableBuilder {
 
     public TableBuilder createModifyQuery()
     {
-        String tableName = Database.getTableName(object);
-
-        if (tableName == null) {
-            throw new TableBuildingException("The name of the table is not given! Add the @DatabaseTable annotation!");
-        }
-
-
-//        query.append("ALTER TABLE ").append(Database.getTableName(object));
+        clearQuery();
+//        query.append("ALTER TABLE ").append(tableName);
 
         buildModifyColumns();
 
         return this;
+    }
+
+    private void clearQuery()
+    {
+        query.setLength(0);
     }
 
     public Column getColumn(String dbColumn)
@@ -202,77 +213,69 @@ public abstract class TableBuilder {
         }
 
         query.deleteCharAt(query.length() - 1);
+        primaryColumn = false;
     }
 
     private void buildModifyColumns()
     {
-//        if (buildingColumns.isEmpty()) {
-//
-//            throw new TableBuildingException("The table must have at least one column!");
-//        }
-//
-//        Set<String> databaseColumns;
-//
-//        try {
-//            databaseColumns = database.getDatabaseColumns(object);
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//            return;
-//        }
-//
-//        Set<Map.Entry<DatabaseColumn, Class<?>>> toAdd = new HashSet<Map.Entry<DatabaseColumn, Class<?>>>();
-//
-//
-//        for (Map.Entry<DatabaseColumn, Class<?>> entry : buildingColumns.entrySet()) {
-//            if (!databaseColumns.contains(entry.getKey().databaseName())) {
-//                //missing in database
-//                toAdd.add(entry);
-//            }
-//        }
-//
-//        if (!toAdd.isEmpty()) {
-//            query.append("ALTER TABLE ").append(Database.getTableName(object)).append(" ADD (");
-//
-//            for (Map.Entry<DatabaseColumn, Class<?>> entry : toAdd) {
-//                buildColumn(entry.getKey(), entry.getValue());
-//                query.append(',');
-//            }
-//
-//            query.deleteCharAt(query.length() - 1);
-//            query.append(')');
-//        }
-//
-//
-//        if (database.isDropOldColumns()) {
-//            List<String> toDrop = new ArrayList<String>();
-//
-//            for (String column : databaseColumns) {
-//                if (!containsColumn(buildingColumns, column)) {
-//                    toDrop.add(column);
-//                }
-//            }
-//
-//            System.out.println(toDrop);
-//
-//            if (!toDrop.isEmpty()) {
-//                if (toAdd.isEmpty()) {
-//                    query.append("ALTER TABLE ").append(Database.getTableName(object)).append(" DROP COLUMN ");
-//                } else {
-//                    query.append(", ");
-//                }
-//
-//                int end = toDrop.size() - 1;
-//                for (int i = 0; i < toDrop.size(); i++) {
-//
-//                    query.append(toDrop.get(i));
-//                    if (i != end) {
-//                        query.append(",DROP COLUMN ");
-//                    }
-//                }
-//            }
-//        }
-//
-//        query.append(';');
+        if (buildingColumns.isEmpty()) {
+
+            throw new TableBuildingException("The table must have at least one column!");
+        }
+
+        Set<Column> toAdd = new HashSet<Column>();
+
+
+        for (Column column : buildingColumns) {
+            if (!databaseColumns.contains(column.getColumnName())) {
+                //missing in database
+                toAdd.add(column);
+            }
+        }
+
+        System.out.println(toAdd);
+
+        if (!toAdd.isEmpty() && isSupportAddColumns()) {
+            query.append("ALTER TABLE ").append(Database.getTableName(object)).append(" ADD COLUMN (");
+
+            for (Column column : toAdd) {
+                buildColumn(column);
+                query.append(',');
+            }
+
+            query.deleteCharAt(query.length() - 1);
+            query.append(')');
+        }
+
+
+        if (database.isDropOldColumns() && isSupportRemoveColumns()) {
+            List<String> toDrop = new ArrayList<String>();
+
+            for (String column : databaseColumns) {
+                if (!existsColumn(column)) {
+                    toDrop.add(column);
+                }
+            }
+
+            System.out.println(toDrop);
+
+            if (!toDrop.isEmpty()) {
+                if (toAdd.isEmpty()) {
+                    query.append("ALTER TABLE ").append(Database.getTableName(object));
+                } else {
+                    query.append(',');
+                }
+
+                for (String column : toDrop) {
+                    query.append(" DROP COLUMN ").append(column);
+                    query.append(',');
+                }
+
+                query.deleteCharAt(query.length() - 1);
+            }
+        }
+
+        query.append(';');
     }
 
     public String getQuery()
