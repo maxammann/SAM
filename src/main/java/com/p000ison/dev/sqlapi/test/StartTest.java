@@ -23,6 +23,7 @@ public class StartTest {
             Database db = new MySQLDatabase(new MySQLConfiguration("root", "m1nt", "localhost", PORT, "test"));
             db.setDropOldColumns(true);
             db.registerTable(person);
+            db.getConnection().prepareStatement("SELECT * FROM d").executeQuery();
             db.close();
 
         } catch (Exception e) {

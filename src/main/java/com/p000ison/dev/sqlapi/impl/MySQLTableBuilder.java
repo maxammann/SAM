@@ -15,6 +15,11 @@ public class MySQLTableBuilder extends TableBuilder {
         super(object, database);
     }
 
+    public MySQLTableBuilder(Class<? extends TableObject> object, Database database)
+    {
+        super(object, database);
+    }
+
     @Override
     protected void buildColumn(Column column)
     {

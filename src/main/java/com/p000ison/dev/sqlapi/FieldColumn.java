@@ -94,4 +94,23 @@ public class FieldColumn implements Column {
                 "field=" + field +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FieldColumn that = (FieldColumn) o;
+
+        if (field != null ? !field.equals(that.field) : that.field != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return field != null ? field.hashCode() : 0;
+    }
 }

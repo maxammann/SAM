@@ -17,7 +17,6 @@ public abstract class Database {
     protected DataSource dataSource;
     protected Connection connection;
     protected DatabaseConfiguration configuration;
-
     private boolean dropOldColumns = false;
 
     protected Database(DatabaseConfiguration configuration) throws SQLException
@@ -27,41 +26,48 @@ public abstract class Database {
         connection = dataSource.getConnection();
     }
 
-    protected abstract void init();
-
-    public abstract void close() throws SQLException;
-
-    protected abstract TableBuilder createTableBuilder(TableObject table);
-
-    public <T extends TableObject> T registerTable(T table) throws SQLException
-    {
-        System.out.println(createTableBuilder(table).createTable().getQuery());
-        getConnection().prepareStatement(createTableBuilder(table).createTable().getQuery()).execute();
-//        String query = createTableBuilder(table).createModifyQuery().getQuery();
-//        System.out.println(query);
-//        getConnection().prepareStatement(query).execute();
-
-
-        return table;
-    }
-
     public static String getTableName(Class<? extends TableObject> clazz)
     {
         DatabaseTable annotation = clazz.getAnnotation(DatabaseTable.class);
         return annotation == null ? null : annotation.name();
     }
 
-    public Set<String> getDatabaseColumns(Class<? extends TableObject> table) throws SQLException
+    protected abstract void init();
+
+    public abstract void close() throws SQLException;
+
+    protected final TableBuilder createTableBuilder(TableObject table)
+    {
+        return createTableBuilder(table.getClass());
+    }
+
+    protected abstract TableBuilder createTableBuilder(Class<? extends TableObject> table);
+
+    public final Database registerTable(Class<? extends TableObject> table) throws SQLException
+    {
+        TableBuilder builder = createTableBuilder(table);
+        String tableQuery = builder.createTable().getQuery();
+        System.out.println(tableQuery);
+        getConnection().prepareStatement(tableQuery).execute();
+        return this;
+    }
+
+    public final Database registerTable(TableObject table) throws SQLException
+    {
+        return registerTable(table.getClass());
+    }
+
+    public final Set<String> getDatabaseColumns(Class<? extends TableObject> table) throws SQLException
     {
         return getDatabaseColumns(getTableName(table));
     }
 
-    public Set<String> getDatabaseColumns(TableObject table) throws SQLException
+    public final Set<String> getDatabaseColumns(TableObject table) throws SQLException
     {
         return getDatabaseColumns(getTableName(table.getClass()));
     }
 
-    protected Set<String> getDatabaseColumns(String table) throws SQLException
+    protected final Set<String> getDatabaseColumns(String table) throws SQLException
     {
         Set<String> columns = new HashSet<String>();
 
@@ -74,7 +80,20 @@ public abstract class Database {
         return columns;
     }
 
-    public Connection getConnection() throws SQLException
+    public final Set<String> getDatabaseTables() throws SQLException
+    {
+        Set<String> columns = new HashSet<String>();
+
+        ResultSet columnResult = this.getConnection().getMetaData().getTables(null, null, null, null);
+
+        while (columnResult.next()) {
+            columns.add(columnResult.getString("TABLE_NAME"));
+        }
+
+        return columns;
+    }
+
+    public final Connection getConnection() throws SQLException
     {
         return connection;
     }
@@ -84,12 +103,12 @@ public abstract class Database {
         return configuration;
     }
 
-    public boolean isDropOldColumns()
+    public final boolean isDropOldColumns()
     {
         return dropOldColumns;
     }
 
-    public void setDropOldColumns(boolean dropOldColumns)
+    public final void setDropOldColumns(boolean dropOldColumns)
     {
         this.dropOldColumns = dropOldColumns;
     }

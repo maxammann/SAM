@@ -54,7 +54,7 @@ class MethodColumn implements Column {
         }
 
         if (method.getParameterTypes().length != 1) {
-            throw new TableBuildingException("A getter method must have 1 parameter!: %s", method.getName());
+            throw new TableBuildingException("A getter method must have 1 parameter!: \"%s\"", method.getName());
         }
     }
 
@@ -65,6 +65,9 @@ class MethodColumn implements Column {
 
     void setGetter(Method getter)
     {
+        if (this.getter != null) {
+            throw new TableBuildingException("Duplicate column \"%s\"!", getColumnName());
+        }
         this.getter = getter;
     }
 
@@ -75,6 +78,9 @@ class MethodColumn implements Column {
 
     void setSetter(Method setter)
     {
+        if (this.setter != null) {
+            throw new TableBuildingException("Duplicate column \"%s\"!", getColumnName());
+        }
         this.setter = setter;
     }
 

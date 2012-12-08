@@ -22,13 +22,18 @@ public abstract class TableBuilder {
      */
     private boolean primaryColumn = false;
 
-    public TableBuilder(TableObject object, Database database)
+    public TableBuilder(Class<? extends TableObject> object, Database database)
     {
         query = new StringBuilder();
         buildingColumns = new ArrayList<Column>();
-        this.object = object.getClass();
+        this.object = object;
 
         init();
+    }
+
+    public TableBuilder(TableObject object, Database database)
+    {
+        this(object.getClass(), database);
     }
 
     private static boolean containsColumn(Map<DatabaseColumn, Class<?>> map, String column)
@@ -83,20 +88,25 @@ public abstract class TableBuilder {
         return this;
     }
 
-    public Column getColumn(String databaseName)
+    public Column getColumn(String dbColumn)
     {
         for (Column column : buildingColumns) {
-            if (column.getColumnName().equals(databaseName)) {
+            if (column.getColumnName().equals(dbColumn)) {
                 return column;
             }
         }
         return null;
     }
 
-    public MethodColumn getMethodColumn(String databaseName)
+    public boolean existsColumn(String dbColumn)
+    {
+        return getColumn(dbColumn) != null;
+    }
+
+    public MethodColumn getMethodColumn(String dbColumn)
     {
         for (Column column : buildingColumns) {
-            if ((column instanceof MethodColumn) && column.getColumnName().equals(databaseName)) {
+            if ((column instanceof MethodColumn) && column.getColumnName().equals(dbColumn)) {
                 return (MethodColumn) column;
             }
         }
@@ -158,7 +168,11 @@ public abstract class TableBuilder {
         for (Field field : object.getDeclaredFields()) {
             DatabaseColumn column;
             if ((column = field.getAnnotation(DatabaseColumn.class)) != null) {
-                buildingColumns.add(new FieldColumn(field, column));
+                if (existsColumn(column.databaseName())) {
+                    throw new TableBuildingException("Duplicate column \"%s\"!", column.databaseName());
+                }
+                FieldColumn fieldColumn = new FieldColumn(field, column);
+                buildingColumns.add(fieldColumn);
             }
         }
 

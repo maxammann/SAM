@@ -39,7 +39,7 @@ public class MySQLDatabase extends Database {
     }
 
     @Override
-    protected TableBuilder createTableBuilder(TableObject table)
+    protected TableBuilder createTableBuilder(Class<? extends TableObject> table)
     {
         return new MySQLTableBuilder(table, this);
     }
