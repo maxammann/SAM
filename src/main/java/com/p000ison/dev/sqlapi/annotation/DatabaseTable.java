@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 
 /**
  * Represents a table in a database
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

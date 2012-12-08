@@ -7,9 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Represents a Database
@@ -21,6 +19,7 @@ public abstract class Database {
     protected DatabaseConfiguration configuration;
     private boolean dropOldColumns = false;
     private TreeMap<Integer, PreparedStatement> preparedStatements = new TreeMap<Integer, PreparedStatement>();
+    private Map<Class<? extends TableObject>, List<Column>> columns = new HashMap<Class<? extends TableObject>, List<Column>>();
 
     /**
      * Creates a new database connection based on the configuration
@@ -86,6 +85,9 @@ public abstract class Database {
     public final Database registerTable(Class<? extends TableObject> table) throws SQLException
     {
         TableBuilder builder = createTableBuilder(table);
+
+        columns.put(table, builder.getColumns());
+
         String tableQuery = builder.createTable().getQuery();
         System.out.println(tableQuery);
         getConnection().prepareStatement(tableQuery).execute();
@@ -158,5 +160,10 @@ public abstract class Database {
     public final void setDropOldColumns(boolean dropOldColumns)
     {
         this.dropOldColumns = dropOldColumns;
+    }
+
+    public List<Column> getColumns(Class<? extends TableObject> clazz)
+    {
+        return columns.get(clazz);
     }
 }

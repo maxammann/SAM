@@ -1,12 +1,13 @@
-package com.p000ison.dev.sqlapi.impl;
+package com.p000ison.dev.sqlapi.MySQLimpl;
 
 import com.p000ison.dev.sqlapi.Column;
 import com.p000ison.dev.sqlapi.Database;
 import com.p000ison.dev.sqlapi.TableBuilder;
 import com.p000ison.dev.sqlapi.TableObject;
+import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
 /**
- * Represents a MySQLTableBuilder
+ * Represents a SQLiteTableBuilder
  */
 public class MySQLTableBuilder extends TableBuilder {
 
@@ -55,11 +56,33 @@ public class MySQLTableBuilder extends TableBuilder {
         }
 
         if (column.isPrimary()) {
+            if (primaryColumn) {
+                throw new TableBuildingException("Duplicate primary/autoincrementing column %s!", column.getColumnName());
+            }
+            primaryColumn = true;
             query.append(" PRIMARY KEY");
         }
 
         if (!column.getDefaultValue().isEmpty()) {
             query.append(" DEFAULT ").append(column.getDefaultValue());
         }
+    }
+
+    @Override
+    protected boolean isSupportAddColumns()
+    {
+        return true;
+    }
+
+    @Override
+    protected boolean isSupportRemoveColumns()
+    {
+        return true;
+    }
+
+    @Override
+    protected boolean isSupportModifyColumns()
+    {
+        return true;
     }
 }

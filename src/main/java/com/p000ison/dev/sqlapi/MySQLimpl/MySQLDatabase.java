@@ -1,4 +1,4 @@
-package com.p000ison.dev.sqlapi.impl;
+package com.p000ison.dev.sqlapi.MySQLimpl;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import com.p000ison.dev.sqlapi.Database;
@@ -9,7 +9,7 @@ import com.p000ison.dev.sqlapi.TableObject;
 import java.sql.SQLException;
 
 /**
- * Represents a MySQLDatabase
+ * Represents a SQLiteDatabase
  */
 public class MySQLDatabase extends Database {
 

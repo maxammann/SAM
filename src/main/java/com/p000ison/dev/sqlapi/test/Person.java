@@ -12,16 +12,16 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 @DatabaseTable(name = "asdf")
 public class Person implements TableObject {
 
-    @DatabaseColumn(position = 0, databaseName = "prim", primary = true, autoIncrement = true, unique = true)
+    @DatabaseColumn(position = 2, databaseName = "prim", primary = true, unique = true)
     private int test = 5;
 
-    @DatabaseColumn(position =  1, databaseName = "name")
-    private String name;
+    @DatabaseColumn(position = 1, databaseName = "id", primary = true, unique = true, autoIncrement = true)
+    private int id;
 
     private String formattedName;
 
 
-    @DatabaseColumnSetter(position =  2,databaseName = "fname")
+    @DatabaseColumnSetter(position = 2, databaseName = "fname")
     public void setFormattedName(String formattedName)
     {
         this.formattedName = formattedName.replace(' ', '!');
@@ -31,15 +31,5 @@ public class Person implements TableObject {
     public String getFormattedName()
     {
         return formattedName;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
     }
 }

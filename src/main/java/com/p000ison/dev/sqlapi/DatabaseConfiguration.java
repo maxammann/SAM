@@ -31,6 +31,11 @@ public abstract class DatabaseConfiguration {
         return (Integer) properties.get(key);
     }
 
+    public final Object getProperty(String key)
+    {
+        return properties.get(key);
+    }
+
     public final String getDriverName()
     {
         return driver;

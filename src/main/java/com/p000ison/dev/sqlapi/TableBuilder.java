@@ -20,7 +20,7 @@ public abstract class TableBuilder {
     /**
      * Whether we have already found a primary key
      */
-    private boolean primaryColumn = false;
+    protected boolean primaryColumn = false;
 
     public TableBuilder(Class<? extends TableObject> object, Database database)
     {
@@ -284,7 +284,18 @@ public abstract class TableBuilder {
         return query.toString();
     }
 
+    List<Column> getColumns()
+    {
+        return Collections.unmodifiableList(buildingColumns);
+    }
+
     protected abstract void buildColumn(Column column);
+
+    protected abstract boolean isSupportAddColumns();
+
+    protected abstract boolean isSupportRemoveColumns();
+
+    protected abstract boolean isSupportModifyColumns();
 }
 
 

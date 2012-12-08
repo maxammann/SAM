@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 
 /**
  * Represents a column in a database (use this for methods)
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

@@ -1,11 +1,11 @@
-package com.p000ison.dev.sqlapi.impl;
+package com.p000ison.dev.sqlapi.MySQLimpl;
 
 import com.p000ison.dev.sqlapi.DatabaseConfiguration;
 
 /**
- * Represents a MySQLConfiguration
+ * Represents a SQLiteConfiguration
  */
-public class MySQLConfiguration extends DatabaseConfiguration {
+public final class MySQLConfiguration extends DatabaseConfiguration {
 
     public MySQLConfiguration(String user, String password, String host, int port, String database)
     {
@@ -17,56 +17,56 @@ public class MySQLConfiguration extends DatabaseConfiguration {
         setDatabase(database);
     }
 
-    public final String getUser()
+    public String getUser()
     {
         return super.getStringProperty("user");
     }
 
-    public final String getDatabase()
+    public String getDatabase()
     {
         return super.getStringProperty("db");
     }
 
-    public final String getPassword()
+    public String getPassword()
     {
         return super.getStringProperty("pw");
     }
 
-    public final int getPort()
+    public int getPort()
     {
         return super.getIntegerProperty("port");
     }
 
-    public final String getHost()
+    public String getHost()
     {
         return super.getStringProperty("host");
     }
 
-    public final MySQLConfiguration setUser(String user)
+    public MySQLConfiguration setUser(String user)
     {
         super.setProperty("user", user);
         return this;
     }
 
-    public final MySQLConfiguration setPassword(String pw)
+    public MySQLConfiguration setPassword(String pw)
     {
         super.setProperty("pw", pw);
         return this;
     }
 
-    public final MySQLConfiguration setDatabase(String db)
+    public MySQLConfiguration setDatabase(String db)
     {
         super.setProperty("db", db);
         return this;
     }
 
-    public final MySQLConfiguration setPort(int port)
+    public MySQLConfiguration setPort(int port)
     {
         super.setProperty("port", port);
         return this;
     }
 
-    public final MySQLConfiguration setHost(String host)
+    public MySQLConfiguration setHost(String host)
     {
         super.setProperty("host", host);
         return this;
