@@ -2,6 +2,7 @@ package com.p000ison.dev.sqlapi.impl;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import com.p000ison.dev.sqlapi.Database;
+import com.p000ison.dev.sqlapi.DatabaseConfiguration;
 import com.p000ison.dev.sqlapi.TableBuilder;
 import com.p000ison.dev.sqlapi.TableObject;
 
@@ -18,7 +19,7 @@ public class MySQLDatabase extends Database {
     }
 
     @Override
-    protected void init()
+    protected void init(DatabaseConfiguration configuration)
     {
         dataSource = new MysqlDataSource();
 

@@ -4,10 +4,12 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Represents a Database
@@ -18,25 +20,63 @@ public abstract class Database {
     protected Connection connection;
     protected DatabaseConfiguration configuration;
     private boolean dropOldColumns = false;
+    private TreeMap<Integer, PreparedStatement> preparedStatements = new TreeMap<Integer, PreparedStatement>();
 
+    /**
+     * Creates a new database connection based on the configuration
+     *
+     * @param configuration The database configuration
+     * @throws SQLException
+     */
     protected Database(DatabaseConfiguration configuration) throws SQLException
     {
         this.configuration = configuration;
-        init();
+        init(configuration);
         connection = dataSource.getConnection();
     }
 
+    /**
+     * Gets the name of a table
+     *
+     * @param clazz The class of the {@link TableObject}.
+     * @return The name
+     */
     public static String getTableName(Class<? extends TableObject> clazz)
     {
         DatabaseTable annotation = clazz.getAnnotation(DatabaseTable.class);
         return annotation == null ? null : annotation.name();
     }
 
-    protected abstract void init();
+    public PreparedStatement createPreparedStatement(int id, String query) throws SQLException
+    {
+        PreparedStatement statement = getConnection().prepareStatement(query);
+        preparedStatements.put(id, statement);
+        return statement;
+    }
 
+    public int createPreparedStatement(String query) throws SQLException
+    {
+        PreparedStatement statement = getConnection().prepareStatement(query);
+        int statementId;
+        if (preparedStatements.isEmpty()) {
+            statementId = 0;
+        } else {
+            statementId = preparedStatements.lastKey() + 1;
+        }
+        preparedStatements.put(statementId, statement);
+        return statementId;
+    }
+
+    protected abstract void init(DatabaseConfiguration configuration);
+
+    /**
+     * Closes the connection to the database
+     *
+     * @throws SQLException
+     */
     public abstract void close() throws SQLException;
 
-    protected final TableBuilder createTableBuilder(TableObject table)
+    TableBuilder createTableBuilder(TableObject table)
     {
         return createTableBuilder(table.getClass());
     }
@@ -51,6 +91,13 @@ public abstract class Database {
         getConnection().prepareStatement(tableQuery).execute();
         return this;
     }
+
+    public boolean existsDatabaseTable(String table) throws SQLException
+    {
+        ResultSet set = getConnection().getMetaData().getTables(null, null, table, null);
+        return set.next();
+    }
+
 
     public final Database registerTable(TableObject table) throws SQLException
     {

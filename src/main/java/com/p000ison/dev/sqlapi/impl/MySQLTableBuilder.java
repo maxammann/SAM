@@ -43,19 +43,23 @@ public class MySQLTableBuilder extends TableBuilder {
         }
 
         if (column.isNotNull()) {
-            query.append(' ').append("NOT NULL");
+            query.append(" NOT NULL");
+        }
+
+        if (column.isUnique()) {
+            query.append(" UNIQUE KEY");
         }
 
         if (column.isAutoIncrementing()) {
-            query.append(' ').append("AUTO_INCREMENT");
+            query.append(" AUTO_INCREMENT");
         }
 
         if (column.isPrimary()) {
-            query.append(' ').append("PRIMARY KEY");
+            query.append(" PRIMARY KEY");
         }
 
         if (!column.getDefaultValue().isEmpty()) {
-            query.append(' ').append("DEFAULT").append(' ').append(column.getDefaultValue());
+            query.append(" DEFAULT ").append(column.getDefaultValue());
         }
     }
 }

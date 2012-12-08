@@ -12,7 +12,7 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 @DatabaseTable(name = "asdf")
 public class Person implements TableObject {
 
-    @DatabaseColumn(position = 0, databaseName = "prim", primary = true, autoIncrement = true)
+    @DatabaseColumn(position = 0, databaseName = "prim", primary = true, autoIncrement = true, unique = true)
     private int test = 5;
 
     @DatabaseColumn(position =  1, databaseName = "name")
