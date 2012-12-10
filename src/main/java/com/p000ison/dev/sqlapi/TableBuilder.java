@@ -37,8 +37,9 @@ public abstract class TableBuilder {
 
     private Database database;
 
-
     private String tableName;
+
+    private boolean existed;
 
     public TableBuilder(Class<? extends TableObject> object, Database database)
     {
@@ -59,6 +60,8 @@ public abstract class TableBuilder {
     {
         tableName = Database.getTableName(object);
 
+        existed = database.existsDatabaseTable(tableName);
+
         if (tableName == null) {
             throw new TableBuildingException("The name of the table is not given! Add the @DatabaseTable annotation!");
         }
@@ -71,11 +74,10 @@ public abstract class TableBuilder {
     public TableBuilder createTable()
     {
         clearQuery();
-        query.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append('(');
-
-        for (Column column : buildingColumns) {
-            System.out.println(column.getColumnName());
+        if (existed) {
+            return this;
         }
+        query.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append('(');
 
         buildColumns();
 
@@ -87,6 +89,9 @@ public abstract class TableBuilder {
     public TableBuilder createModifyQuery()
     {
         clearQuery();
+        if (!existed) {
+            return this;
+        }
 //        query.append("ALTER TABLE ").append(tableName);
 
         buildModifyColumns();
@@ -135,7 +140,7 @@ public abstract class TableBuilder {
 
             DatabaseColumnSetter setter = method.getAnnotation(DatabaseColumnSetter.class);
             if (setter != null) {
-                MethodColumn.validateSetterethod(method);
+                MethodColumn.validateSetterMethod(method);
                 columnName = setter.databaseName();
             } else {
                 DatabaseColumnGetter getter = method.getAnnotation(DatabaseColumnGetter.class);
@@ -168,7 +173,6 @@ public abstract class TableBuilder {
                 MethodColumn methodColumn = (MethodColumn) column;
 
                 if (methodColumn.isNull()) {
-                    System.out.println(column.getColumnName());
                     it.remove();
                 } else {
                     methodColumn.validate();
@@ -233,8 +237,6 @@ public abstract class TableBuilder {
             }
         }
 
-        System.out.println(toAdd);
-
         if (!toAdd.isEmpty() && isSupportAddColumns()) {
             query.append("ALTER TABLE ").append(Database.getTableName(object)).append(" ADD COLUMN (");
 
@@ -257,8 +259,6 @@ public abstract class TableBuilder {
                 }
             }
 
-            System.out.println(toDrop);
-
             if (!toDrop.isEmpty()) {
                 if (toAdd.isEmpty()) {
                     query.append("ALTER TABLE ").append(Database.getTableName(object));
@@ -276,6 +276,7 @@ public abstract class TableBuilder {
         }
 
         query.append(';');
+        clearQuery();
     }
 
     public String getQuery()

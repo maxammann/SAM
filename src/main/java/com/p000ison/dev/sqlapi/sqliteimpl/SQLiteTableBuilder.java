@@ -81,5 +81,4 @@ public final class SQLiteTableBuilder extends TableBuilder {
     {
         return false;
     }
-}          //
-//insert into asdf (asdf) values (1);CREATE TABLE IF NOT EXISTS asdf(asdf INTEGER, prim INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE);
+}

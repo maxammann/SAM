@@ -9,22 +9,22 @@ import java.lang.reflect.Method;
 /**
  * Represents a FieldColumn
  */
-class MethodColumn implements Column {
+final class MethodColumn implements Column {
 
     private Method getter, setter;
     private DatabaseColumnSetter annotation;
 
-    public MethodColumn()
+    MethodColumn()
     {
     }
 
-    public MethodColumn(Method setter, DatabaseColumnSetter annotation)
+    MethodColumn(Method setter, DatabaseColumnSetter annotation)
     {
         this.setter = setter;
         this.annotation = annotation;
     }
 
-    public MethodColumn(Method setter)
+    MethodColumn(Method setter)
     {
         this.setter = setter;
         this.annotation = setter.getAnnotation(DatabaseColumnSetter.class);
@@ -45,7 +45,7 @@ class MethodColumn implements Column {
         }
     }
 
-    static void validateSetterethod(Method method)
+    static void validateSetterMethod(Method method)
     {
         Class<?> type = method.getReturnType();
 

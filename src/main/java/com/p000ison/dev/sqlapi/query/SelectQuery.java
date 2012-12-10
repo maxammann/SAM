@@ -1,23 +1,24 @@
 package com.p000ison.dev.sqlapi.query;
 
+import com.p000ison.dev.sqlapi.Column;
 import com.p000ison.dev.sqlapi.TableObject;
 
 /**
  *
  */
-public interface SelectQuery<DO extends TableObject> {
+public interface SelectQuery {
 
-//    SelectQuery<DO> select(String... columns);
-//
-//    SelectQuery<DO> from(String table);
-//
-//    WhereQuery<DO> where(ValueComparator... values);
-//
-//    SelectQuery<DO> descending();
-//
-//    SelectQuery<DO> orderBy(String order);
-//
-//    SelectQuery<DO> groupBy(String group);
-//
-//    Set<DO> execute(DatabaseExecutor executor);
+    SelectQuery from(Class<? extends TableObject> object);
+
+    WhereQuery where();
+
+    SelectQuery descending();
+
+    SelectQuery orderBy(Column order);
+
+    SelectQuery orderBy(String order);
+
+    SelectQuery groupBy(Column group);
+
+    SelectQuery groupBy(String group);
 }

@@ -2,6 +2,7 @@ package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 import com.p000ison.dev.sqlapi.exception.QueryException;
+import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -15,9 +16,21 @@ public abstract class Database {
     protected DataSource dataSource;
     protected Connection connection;
     protected DatabaseConfiguration configuration;
+    /**
+     * Whether old columns should be dropped
+     *
+     */
     private boolean dropOldColumns = false;
+    /**
+     * Prepared statements
+     *
+     */
     private TreeMap<Integer, PreparedStatement> preparedStatements = new TreeMap<Integer, PreparedStatement>();
-    private Map<Class<? extends TableObject>, List<Column>> columns = new HashMap<Class<? extends TableObject>, List<Column>>();
+    /**
+     * A map of registered tables (classes) and a list of columns
+     *
+     */
+    private Map<Class<? extends TableObject>, List<Column>> registeredTables = new HashMap<Class<? extends TableObject>, List<Column>>();
 
     /**
      * Creates a new database connection based on the configuration
@@ -28,6 +41,12 @@ public abstract class Database {
     protected Database(DatabaseConfiguration configuration) throws SQLException
     {
         this.configuration = configuration;
+        String driver = configuration.getDriverName();
+        try {
+            Class.forName(driver);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load driver " + driver + "!");
+        }
         init(configuration);
         connection = dataSource.getConnection();
     }
@@ -73,7 +92,7 @@ public abstract class Database {
      */
     public abstract void close() throws SQLException;
 
-    TableBuilder createTableBuilder(TableObject table)
+    protected TableBuilder createTableBuilder(TableObject table)
     {
         return createTableBuilder(table.getClass());
     }
@@ -84,7 +103,7 @@ public abstract class Database {
     {
         TableBuilder builder = createTableBuilder(table);
 
-        columns.put(table, builder.getColumns());
+        registeredTables.put(table, builder.getColumns());
 
         String tableQuery = builder.createTable().getQuery();
         System.out.println(tableQuery);
@@ -92,14 +111,14 @@ public abstract class Database {
         String modifyQuery = builder.createModifyQuery().getQuery();
         System.out.println(modifyQuery);
 
-        executeQuery(tableQuery);
-        executeQuery(modifyQuery);
+        executeDirectQuery(tableQuery);
+        executeDirectQuery(modifyQuery);
         return this;
     }
 
     public boolean existsDatabaseTable(String table)
     {
-        ResultSet set = null;
+        ResultSet set;
         try {
             set = getMetadata().getTables(null, null, table, null);
             return set.next();
@@ -164,12 +183,33 @@ public abstract class Database {
         return columns;
     }
 
-    void executeQuery(String query) {
+    void executeDirectQuery(String query)
+    {
+        if (query == null) {
+            return;
+        }
         try {
             getConnection().createStatement().executeUpdate(query);
         } catch (SQLException e) {
             throw new QueryException(e);
         }
+    }
+
+    public Column getColumn(Class<? extends TableObject> table, String columnName) {
+        List<Column> columns = registeredTables.get(table);
+
+        if (columns == null) {
+            throw new TableBuildingException("The table %s is not registered!", table.getName());
+        }
+
+        for (Column column : columns) {
+            String name = column.getColumnName();
+            if (name.hashCode() == columnName.hashCode() && name.equals(columnName)) {
+                return column;
+            }
+        }
+
+        return null;
     }
 
     public final Connection getConnection()
@@ -194,6 +234,6 @@ public abstract class Database {
 
     public List<Column> getColumns(Class<? extends TableObject> clazz)
     {
-        return columns.get(clazz);
+        return registeredTables.get(clazz);
     }
 }

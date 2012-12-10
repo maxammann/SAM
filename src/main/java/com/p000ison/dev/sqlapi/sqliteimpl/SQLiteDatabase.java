@@ -11,7 +11,7 @@ import java.sql.SQLException;
 /**
  * Represents a SQLiteDatabase
  */
-public class SQLiteDatabase extends Database {
+public final class SQLiteDatabase extends Database {
 
     public SQLiteDatabase(SQLiteConfiguration configuration) throws SQLException
     {

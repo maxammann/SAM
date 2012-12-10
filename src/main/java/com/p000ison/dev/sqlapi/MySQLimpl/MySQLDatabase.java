@@ -11,7 +11,7 @@ import java.sql.SQLException;
 /**
  * Represents a SQLiteDatabase
  */
-public class MySQLDatabase extends Database {
+public final class MySQLDatabase extends Database {
 
     public MySQLDatabase(MySQLConfiguration configuration) throws SQLException
     {

@@ -8,18 +8,18 @@ import java.lang.reflect.Field;
 /**
  * Represents a FieldColumn
  */
-public class FieldColumn implements Column {
+final class FieldColumn implements Column {
 
     private Field field;
     private DatabaseColumn annotation;
 
-    public FieldColumn(Field field, DatabaseColumn annotation)
+    FieldColumn(Field field, DatabaseColumn annotation)
     {
         this.field = field;
         this.annotation = annotation;
     }
 
-    public FieldColumn(Field field)
+    FieldColumn(Field field)
     {
         this.field = field;
         this.annotation = field.getAnnotation(DatabaseColumn.class);
@@ -28,7 +28,7 @@ public class FieldColumn implements Column {
         }
     }
 
-    public Field getField()
+    Field getField()
     {
         return field;
     }

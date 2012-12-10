@@ -9,7 +9,7 @@ import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 /**
  * Represents a SQLiteTableBuilder
  */
-public class MySQLTableBuilder extends TableBuilder {
+public final class MySQLTableBuilder extends TableBuilder {
 
     public MySQLTableBuilder(TableObject object, Database database)
     {

@@ -23,6 +23,14 @@ public class StartTest {
             db.setDropOldColumns(true);
             db.registerTable(person);
 //            db.getConnection().prepareStatement("SELECT * FROM d").executeQuery();
+
+//            SelectQuery selectQuery = new TestQuery();
+//
+//            Column column = db.getColumn(person.getClass(), "id");
+//
+//            selectQuery.from(person.getClass()).descending().orderBy(column).where().equals(column, 5).or().equals(column, 1).select();
+
+
             db.close();
 
         } catch (Exception e) {
