@@ -13,13 +13,13 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 public class Person implements TableObject {
 
     @DatabaseColumn(position = 2, databaseName = "prim", primary = true, unique = true)
-    private int test = 5;
+    private int test = 2;
 
     @DatabaseColumn(position = 1, databaseName = "id", unique = true)
-    private int id;
+    private int id=5;
 
     @DatabaseColumn(position = 1, databaseName = "g")
-    private String formattedName;
+    private String formattedName="fuckasdf you";
 
 
     @DatabaseColumnSetter(position = 3, databaseName = "fname")

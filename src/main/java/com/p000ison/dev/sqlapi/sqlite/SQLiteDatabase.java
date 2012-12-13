@@ -1,4 +1,4 @@
-package com.p000ison.dev.sqlapi.sqliteimpl;
+package com.p000ison.dev.sqlapi.sqlite;
 
 import com.p000ison.dev.sqlapi.Database;
 import com.p000ison.dev.sqlapi.DatabaseConfiguration;
@@ -12,7 +12,7 @@ import java.sql.SQLException;
  * Represents a SQLiteDatabase
  */
 public final class SQLiteDatabase extends Database {
-
+    public Integer test = 5;
     public SQLiteDatabase(SQLiteConfiguration configuration) throws SQLException
     {
         super(configuration);

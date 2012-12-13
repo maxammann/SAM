@@ -2,7 +2,6 @@ package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 import com.p000ison.dev.sqlapi.exception.QueryException;
-import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -14,23 +13,20 @@ import java.util.*;
 public abstract class Database {
 
     protected DataSource dataSource;
-    protected Connection connection;
-    protected DatabaseConfiguration configuration;
+    private Connection connection;
+    private DatabaseConfiguration configuration;
     /**
      * Whether old columns should be dropped
-     *
      */
     private boolean dropOldColumns = false;
     /**
      * Prepared statements
-     *
      */
     private TreeMap<Integer, PreparedStatement> preparedStatements = new TreeMap<Integer, PreparedStatement>();
     /**
      * A map of registered tables (classes) and a list of columns
-     *
      */
-    private Map<Class<? extends TableObject>, List<Column>> registeredTables = new HashMap<Class<? extends TableObject>, List<Column>>();
+    private Map<RegisteredTable, Set<TableObject>> registeredTables = new HashMap<RegisteredTable, Set<TableObject>>();
 
     /**
      * Creates a new database connection based on the configuration
@@ -57,20 +53,13 @@ public abstract class Database {
      * @param clazz The class of the {@link TableObject}.
      * @return The name
      */
-    public static String getTableName(Class<? extends TableObject> clazz)
+    static String getTableName(Class<? extends TableObject> clazz)
     {
         DatabaseTable annotation = clazz.getAnnotation(DatabaseTable.class);
         return annotation == null ? null : annotation.name();
     }
 
-    public PreparedStatement createPreparedStatement(int id, String query) throws SQLException
-    {
-        PreparedStatement statement = getConnection().prepareStatement(query);
-        preparedStatements.put(id, statement);
-        return statement;
-    }
-
-    public int createPreparedStatement(String query) throws SQLException
+    private int createPreparedStatement(String query) throws SQLException
     {
         PreparedStatement statement = getConnection().prepareStatement(query);
         int statementId;
@@ -103,7 +92,7 @@ public abstract class Database {
     {
         TableBuilder builder = createTableBuilder(table);
 
-        registeredTables.put(table, builder.getColumns());
+        registeredTables.put(new RegisteredTable(builder.getTableName(), table, builder.getColumns()), null);
 
         String tableQuery = builder.createTable().getQuery();
         System.out.println(tableQuery);
@@ -116,34 +105,27 @@ public abstract class Database {
         return this;
     }
 
-    public boolean existsDatabaseTable(String table)
+    boolean existsDatabaseTable(String table)
     {
-        ResultSet set;
-        try {
-            set = getMetadata().getTables(null, null, table, null);
-            return set.next();
-        } catch (SQLException e) {
-            throw new QueryException(e);
-        }
+        return getDatabaseTables().contains(table);
     }
-
 
     public final Database registerTable(TableObject table)
     {
         return registerTable(table.getClass());
     }
 
-    public final List<String> getDatabaseColumns(Class<? extends TableObject> table)
+    private List<String> getDatabaseColumns(Class<? extends TableObject> table)
     {
         return getDatabaseColumns(getTableName(table));
     }
 
-    public final List<String> getDatabaseColumns(TableObject table)
+    private List<String> getDatabaseColumns(TableObject table)
     {
         return getDatabaseColumns(getTableName(table.getClass()));
     }
 
-    protected final List<String> getDatabaseColumns(String table)
+    List<String> getDatabaseColumns(String table)
     {
         List<String> columns = new ArrayList<String>();
 
@@ -170,20 +152,26 @@ public abstract class Database {
         }
     }
 
-    public final Set<String> getDatabaseTables() throws SQLException
+    public final Set<String> getDatabaseTables()
     {
         Set<String> columns = new HashSet<String>();
 
-        ResultSet columnResult = this.getConnection().getMetaData().getTables(null, null, null, null);
+        ResultSet columnResult = null;
+        try {
+            columnResult = this.getConnection().getMetaData().getTables(null, null, null, null);
 
-        while (columnResult.next()) {
-            columns.add(columnResult.getString("TABLE_NAME"));
+            while (columnResult.next()) {
+                columns.add(columnResult.getString("TABLE_NAME"));
+            }
+
+        } catch (SQLException e) {
+            throw new QueryException(e);
         }
 
         return columns;
     }
 
-    void executeDirectQuery(String query)
+    private void executeDirectQuery(String query)
     {
         if (query == null) {
             return;
@@ -195,24 +183,59 @@ public abstract class Database {
         }
     }
 
-    public Column getColumn(Class<? extends TableObject> table, String columnName) {
-        List<Column> columns = registeredTables.get(table);
-
-        if (columns == null) {
-            throw new TableBuildingException("The table %s is not registered!", table.getName());
-        }
-
-        for (Column column : columns) {
-            String name = column.getColumnName();
-            if (name.hashCode() == columnName.hashCode() && name.equals(columnName)) {
-                return column;
+    public RegisteredTable getRegisteredTable(Class<? extends TableObject> table)
+    {
+        for (RegisteredTable registeredTable : registeredTables.keySet()) {
+            if (registeredTable.isRegisteredClass(table)) {
+                return registeredTable;
             }
         }
 
         return null;
     }
 
-    public final Connection getConnection()
+    public void save(TableObject tableObject)
+    {
+        save(tableObject, new String[]{});
+    }
+
+    public void save(TableObject tableObject, String... columns)
+    {
+        RegisteredTable registration = getRegisteredTable(tableObject.getClass());
+
+
+        StringBuilder query = new StringBuilder("INSERT INTO ").append(registration.getName()).append(" (");
+        StringBuilder values = new StringBuilder(" VALUES (");
+
+        List<Column> registeredColumns = registration.getRegisteredColumns();
+        for (int i = 0; i < registeredColumns.size(); i++) {
+            Column column = registeredColumns.get(i);
+            Object value = column.getValue(tableObject);
+
+            if (value == null) {
+                continue;
+            } else if (value instanceof String) {
+                    value= DatabaseUtil.surround((String)value);
+            }
+
+            query.append(column.getColumnName());
+            values.append(value);
+
+            if (i != registeredColumns.size() - 1) {
+                query.append(',');
+                values.append(',');
+            }
+        }
+
+        query.append(')');
+        values.append(')');
+
+        query.append(values).append(';');
+        System.out.println(query);
+        executeDirectQuery(query.toString());
+    }
+
+    protected final Connection getConnection()
     {
         return connection;
     }
@@ -230,10 +253,5 @@ public abstract class Database {
     public final void setDropOldColumns(boolean dropOldColumns)
     {
         this.dropOldColumns = dropOldColumns;
-    }
-
-    public List<Column> getColumns(Class<? extends TableObject> clazz)
-    {
-        return registeredTables.get(clazz);
     }
 }

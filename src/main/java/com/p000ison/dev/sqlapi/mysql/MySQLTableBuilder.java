@@ -1,4 +1,4 @@
-package com.p000ison.dev.sqlapi.MySQLimpl;
+package com.p000ison.dev.sqlapi.mysql;
 
 import com.p000ison.dev.sqlapi.Column;
 import com.p000ison.dev.sqlapi.Database;

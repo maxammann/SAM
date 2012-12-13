@@ -293,6 +293,11 @@ public abstract class TableBuilder {
         return Collections.unmodifiableList(buildingColumns);
     }
 
+    public String getTableName()
+    {
+        return tableName;
+    }
+
     protected abstract void buildColumn(Column column);
 
     protected abstract boolean isSupportAddColumns();

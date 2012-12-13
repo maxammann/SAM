@@ -4,6 +4,7 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseColumnGetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnSetter;
 import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -29,7 +30,7 @@ final class MethodColumn implements Column {
         this.setter = setter;
         this.annotation = setter.getAnnotation(DatabaseColumnSetter.class);
         if (annotation == null) {
-            throw new TableBuildingException("The field %s is missing the DatabaseColumn annotation! Maybe this field is no column?");
+            throw new TableBuildingException("The field %s is missing the DatabaseColumn annotation! Maybe this method is no column?");
         }
     }
 
@@ -69,6 +70,7 @@ final class MethodColumn implements Column {
             throw new TableBuildingException("Duplicate column \"%s\"!", getColumnName());
         }
         this.getter = getter;
+        getter.setAccessible(true);
     }
 
     public Method getSetter()
@@ -82,6 +84,7 @@ final class MethodColumn implements Column {
             throw new TableBuildingException("Duplicate column \"%s\"!", getColumnName());
         }
         this.setter = setter;
+        setter.setAccessible(true);
     }
 
     void setAnnotation(DatabaseColumnSetter annotation)
@@ -181,6 +184,31 @@ final class MethodColumn implements Column {
     public boolean isPrimary()
     {
         return annotation.primary();
+    }
+
+    @Override
+    public void setValue(TableObject tableObject, Object object)
+    {
+        try {
+            setter.invoke(tableObject, object);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public Object getValue(TableObject tableObject)
+    {
+        try {
+            return getter.invoke(tableObject);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

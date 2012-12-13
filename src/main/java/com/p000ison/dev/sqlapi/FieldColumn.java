@@ -16,12 +16,14 @@ final class FieldColumn implements Column {
     FieldColumn(Field field, DatabaseColumn annotation)
     {
         this.field = field;
+        field.setAccessible(true);
         this.annotation = annotation;
     }
 
     FieldColumn(Field field)
     {
         this.field = field;
+        field.setAccessible(true);
         this.annotation = field.getAnnotation(DatabaseColumn.class);
         if (annotation == null) {
             throw new TableBuildingException("The field %s is missing the DatabaseColumn annotation! Maybe this field is no column?");
@@ -85,6 +87,27 @@ final class FieldColumn implements Column {
     public boolean isPrimary()
     {
         return annotation.primary();
+    }
+
+    @Override
+    public void setValue(TableObject tableObject, Object object)
+    {
+        try {
+            field.set(tableObject, object);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public Object getValue(TableObject tableObject)
+    {
+        try {
+            return field.get(tableObject);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

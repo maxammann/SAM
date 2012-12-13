@@ -1,4 +1,4 @@
-package com.p000ison.dev.sqlapi.sqliteimpl;
+package com.p000ison.dev.sqlapi.sqlite;
 
 import com.p000ison.dev.sqlapi.Column;
 import com.p000ison.dev.sqlapi.Database;

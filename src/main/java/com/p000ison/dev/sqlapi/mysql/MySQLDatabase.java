@@ -1,4 +1,4 @@
-package com.p000ison.dev.sqlapi.MySQLimpl;
+package com.p000ison.dev.sqlapi.mysql;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import com.p000ison.dev.sqlapi.Database;

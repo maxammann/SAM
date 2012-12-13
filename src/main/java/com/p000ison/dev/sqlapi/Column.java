@@ -67,4 +67,8 @@ public interface Column {
      * @return Whether this column is primary
      */
     boolean isPrimary();
+
+    void setValue(TableObject tableObject, Object object);
+
+    Object getValue(TableObject tableObject);
 }
