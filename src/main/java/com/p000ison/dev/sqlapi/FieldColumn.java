@@ -1,7 +1,6 @@
 package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumn;
-import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
 import java.lang.reflect.Field;
 
@@ -18,21 +17,6 @@ final class FieldColumn implements Column {
         this.field = field;
         field.setAccessible(true);
         this.annotation = annotation;
-    }
-
-    FieldColumn(Field field)
-    {
-        this.field = field;
-        field.setAccessible(true);
-        this.annotation = field.getAnnotation(DatabaseColumn.class);
-        if (annotation == null) {
-            throw new TableBuildingException("The field %s is missing the DatabaseColumn annotation! Maybe this field is no column?");
-        }
-    }
-
-    Field getField()
-    {
-        return field;
     }
 
     @Override

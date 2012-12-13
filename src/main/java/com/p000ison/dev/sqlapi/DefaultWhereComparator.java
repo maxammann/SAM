@@ -8,15 +8,15 @@ import com.p000ison.dev.sqlapi.query.WhereQuery;
 /**
  * Represents a DefaultWhereComparator
  */
-public class DefaultWhereComparator implements WhereComparator {
+class DefaultWhereComparator<T extends TableObject> implements WhereComparator<T> {
 
-    private DefaultSelectQuery query;
-    private boolean and;
+    private DefaultSelectQuery<T> query;
+    private boolean and, or;
     private String column;
     private Object expectedValue;
     private CompareOperator operator;
 
-    public DefaultWhereComparator(DefaultSelectQuery query, CompareOperator operator, String column, Object expectedValue)
+    DefaultWhereComparator(DefaultSelectQuery<T> query, CompareOperator operator, String column, Object expectedValue)
     {
         this.query = query;
         this.column = column;
@@ -27,7 +27,7 @@ public class DefaultWhereComparator implements WhereComparator {
     @Override
     public WhereQuery or()
     {
-        and = false;
+        or = true;
         return query.getWhereQuery();
     }
 
@@ -39,18 +39,36 @@ public class DefaultWhereComparator implements WhereComparator {
     }
 
     @Override
-    public SelectQuery select()
+    public SelectQuery<T> select()
     {
         return query;
     }
 
-    boolean isOr()
+    protected boolean isOr()
     {
-        return !and;
+        return or;
     }
 
-    boolean isAnd()
+    protected boolean isAnd()
     {
         return and;
+    }
+    protected boolean isFinished() {
+        return !or && !and;
+    }
+
+    protected String getColumn()
+    {
+        return column;
+    }
+
+    protected Object getExpectedValue()
+    {
+        return expectedValue;
+    }
+
+    protected CompareOperator getOperator()
+    {
+        return operator;
     }
 }

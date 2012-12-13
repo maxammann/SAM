@@ -6,26 +6,26 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseColumnGetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnSetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 
-/**
- * Represents a Person
- */
-@DatabaseTable(name = "asdf")
+@DatabaseTable(name = "tablename")
 public class Person implements TableObject {
 
-    @DatabaseColumn(position = 2, databaseName = "prim", primary = true, unique = true)
-    private int test = 2;
+    @DatabaseColumn(position = 2, databaseName = "name", primary = true, autoIncrement = true)
+    private String name = "b";
+
+    private String formattedName= "a";
 
     @DatabaseColumn(position = 1, databaseName = "id", unique = true)
-    private int id=5;
+    private int id;
 
-    @DatabaseColumn(position = 1, databaseName = "g")
-    private String formattedName="fuckasdf you";
 
+    public Person()
+    {
+    }
 
     @DatabaseColumnSetter(position = 3, databaseName = "fname")
     public void setFormattedName(String formattedName)
     {
-        this.formattedName = formattedName.replace(' ', '!');
+        this.formattedName = formattedName.replace(' ', '_');
     }
 
     @DatabaseColumnGetter(databaseName = "fname")

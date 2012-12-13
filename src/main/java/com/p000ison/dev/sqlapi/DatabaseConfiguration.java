@@ -7,7 +7,7 @@ import java.util.Map;
  * Represents a DatabaseConfiguration
  */
 public abstract class DatabaseConfiguration {
-    private Map<String, Object> properties;
+    private final Map<String, Object> properties;
     private final String driver;
 
     protected DatabaseConfiguration(String driver)

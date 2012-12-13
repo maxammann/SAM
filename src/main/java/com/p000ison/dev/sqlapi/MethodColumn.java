@@ -19,21 +19,6 @@ final class MethodColumn implements Column {
     {
     }
 
-    MethodColumn(Method setter, DatabaseColumnSetter annotation)
-    {
-        this.setter = setter;
-        this.annotation = annotation;
-    }
-
-    MethodColumn(Method setter)
-    {
-        this.setter = setter;
-        this.annotation = setter.getAnnotation(DatabaseColumnSetter.class);
-        if (annotation == null) {
-            throw new TableBuildingException("The field %s is missing the DatabaseColumn annotation! Maybe this method is no column?");
-        }
-    }
-
     static void validateGetterMethod(Method method)
     {
         Class<?> type = method.getReturnType();

@@ -1,6 +1,8 @@
 package com.p000ison.dev.sqlapi.test;
 
 import com.p000ison.dev.sqlapi.Database;
+import com.p000ison.dev.sqlapi.DefaultSelectQuery;
+import com.p000ison.dev.sqlapi.query.SelectQuery;
 import com.p000ison.dev.sqlapi.sqlite.SQLiteConfiguration;
 import com.p000ison.dev.sqlapi.sqlite.SQLiteDatabase;
 
@@ -14,6 +16,7 @@ public class StartTest {
 
     public static void main(String[] args)
     {
+
         long start = System.currentTimeMillis();
         try {
             Person person = new Person();
@@ -24,12 +27,34 @@ public class StartTest {
             db.registerTable(person);
 //            db.getConnection().prepareStatement("SELECT * FROM d").executeQuery();
 
-//            SelectQuery selectQuery = new TestQuery();
-//
-//            Column column = db.getColumn(person.getClass(), "id");
-//
-//            selectQuery.from(person.getClass()).descending().orderBy(column).where().equals(column, 5).or().equals(column, 1).select();
-            db.save(person);
+
+//            db.save(person);
+//            Column column = db.getRegisteredTable(Person.class).getColumn("id");
+// selectQuery.from(person.getClass()).descending().orderBy(column).where().equals(column, 5).or().equals(column, 1).select();
+//            System.out.println(selectQuery.from(Person.class).descending().getQuery());
+//            System.out.println(selectQuery.from(Person.class).descending().list().get(0).getFormattedName());
+
+
+            SelectQuery<Person> selectQuery = new DefaultSelectQuery<Person>(db);
+            selectQuery.from(Person.class).descending();
+            int i = db.prepareStatement(selectQuery);
+
+
+            long start1 = System.currentTimeMillis();
+            for (int j = 0; j < 1000; j++) {
+                db.executeStatement(i, db.getRegisteredTable(Person.class));
+            }
+            long finish1 = System.currentTimeMillis();
+            System.out.printf("Check 1 took %s!", finish1 - start1);
+
+            long start2 = System.currentTimeMillis();
+            for (int j = 0; j < 1000; j++) {
+                SelectQuery<Person> selectQuery1 = new DefaultSelectQuery<Person>(db);
+                selectQuery1.from(Person.class).descending().list();
+            }
+            long finish2 = System.currentTimeMillis();
+            System.out.printf("Check 2 took %s!", finish2 - start2);
+
             db.close();
 
         } catch (Exception e) {
@@ -39,60 +64,5 @@ public class StartTest {
 
         long finish = System.currentTimeMillis();
         System.out.printf("Check took %s!", finish - start);
-
-
-        String röm = "IIX";
-
-        int[] numbers = new int[röm.length()];
-
-        for (int i = 0; i < röm.length(); i++) {
-            char character = röm.charAt(i);
-            int diff;
-
-            switch (character) {
-                case 'I':
-                    diff = 1;
-                    break;
-                case 'V':
-                    diff = 5;
-                    break;
-                case 'X':
-                    diff = 10;
-                    break;
-                case 'L':
-                    diff = 50;
-                    break;
-                case 'C':
-                    diff = 100;
-                    break;
-                case 'M':
-                    diff = 1000;
-                    break;
-                case 'ↁ':
-                    diff = 5000;
-                    break;
-                case 'ↂ':
-                    diff = 10000;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Failed to parse character " + character + "!");
-            }
-
-            numbers[i] = diff;
-        }
-
-        int value = 0;
-
-        for (int i = 0; i < numbers.length; i++) {
-            if (i == 0) {
-                value += numbers[i];
-            } else if (numbers[i - 1] >= numbers[i]) {
-                value += numbers[i];
-            } else {
-                value += numbers[i] - 2 * numbers[i - 1];
-            }
-        }
-
-        System.out.println(value);
     }
 }

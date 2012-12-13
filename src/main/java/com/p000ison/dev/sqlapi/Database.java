@@ -2,6 +2,7 @@ package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 import com.p000ison.dev.sqlapi.exception.QueryException;
+import com.p000ison.dev.sqlapi.query.SelectQuery;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -26,7 +27,7 @@ public abstract class Database {
     /**
      * A map of registered tables (classes) and a list of columns
      */
-    private Map<RegisteredTable, Set<TableObject>> registeredTables = new HashMap<RegisteredTable, Set<TableObject>>();
+    private Set<RegisteredTable> registeredTables = new HashSet<RegisteredTable>();
 
     /**
      * Creates a new database connection based on the configuration
@@ -59,9 +60,14 @@ public abstract class Database {
         return annotation == null ? null : annotation.name();
     }
 
-    private int createPreparedStatement(String query) throws SQLException
+    private int prepareStatement(String query)
     {
-        PreparedStatement statement = getConnection().prepareStatement(query);
+        PreparedStatement statement = null;
+        try {
+            statement = getConnection().prepareStatement(query);
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
         int statementId;
         if (preparedStatements.isEmpty()) {
             statementId = 0;
@@ -70,6 +76,31 @@ public abstract class Database {
         }
         preparedStatements.put(statementId, statement);
         return statementId;
+    }
+
+    public int prepareStatement(SelectQuery query)
+    {
+        return prepareStatement(query.getQuery());
+    }
+
+    public <T> List<T> executeStatement(int id, RegisteredTable table) {
+        try {
+            ResultSet result = preparedStatements.get(id).executeQuery();
+
+            List<T> objects = new ArrayList<T>();
+
+            try {
+                while (result.next()) {
+                    T object = table.createNewInstance();
+                    objects.add(object);
+                }
+            } catch (SQLException e) {
+                throw new QueryException(e);
+            }
+            return objects;
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
     }
 
     protected abstract void init(DatabaseConfiguration configuration);
@@ -92,7 +123,7 @@ public abstract class Database {
     {
         TableBuilder builder = createTableBuilder(table);
 
-        registeredTables.put(new RegisteredTable(builder.getTableName(), table, builder.getColumns()), null);
+        registeredTables.add(new RegisteredTable(builder.getTableName(), table, builder.getColumns(), builder.getDefaultConstructor()));
 
         String tableQuery = builder.createTable().getQuery();
         System.out.println(tableQuery);
@@ -100,8 +131,8 @@ public abstract class Database {
         String modifyQuery = builder.createModifyQuery().getQuery();
         System.out.println(modifyQuery);
 
-        executeDirectQuery(tableQuery);
-        executeDirectQuery(modifyQuery);
+        executeDirectUpdate(tableQuery);
+        executeDirectUpdate(modifyQuery);
         return this;
     }
 
@@ -171,7 +202,7 @@ public abstract class Database {
         return columns;
     }
 
-    private void executeDirectQuery(String query)
+    void executeDirectUpdate(String query)
     {
         if (query == null) {
             return;
@@ -183,9 +214,21 @@ public abstract class Database {
         }
     }
 
+    ResultSet executeDirectQuery(String query)
+    {
+        if (query == null) {
+            return null;
+        }
+        try {
+            return getConnection().createStatement().executeQuery(query);
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
+    }
+
     public RegisteredTable getRegisteredTable(Class<? extends TableObject> table)
     {
-        for (RegisteredTable registeredTable : registeredTables.keySet()) {
+        for (RegisteredTable registeredTable : registeredTables) {
             if (registeredTable.isRegisteredClass(table)) {
                 return registeredTable;
             }
@@ -208,32 +251,34 @@ public abstract class Database {
         StringBuilder values = new StringBuilder(" VALUES (");
 
         List<Column> registeredColumns = registration.getRegisteredColumns();
-        for (int i = 0; i < registeredColumns.size(); i++) {
-            Column column = registeredColumns.get(i);
+
+        for (Column column : registeredColumns) {
             Object value = column.getValue(tableObject);
 
             if (value == null) {
                 continue;
-            } else if (value instanceof String) {
-                    value= DatabaseUtil.surround((String)value);
             }
+
+            value = DatabaseUtil.validateColumnValue(value, column);
 
             query.append(column.getColumnName());
             values.append(value);
-
-            if (i != registeredColumns.size() - 1) {
-                query.append(',');
-                values.append(',');
-            }
+            query.append(',');
+            values.append(',');
         }
+
+        query.deleteCharAt(query.length() - 1);
+        values.deleteCharAt(values.length() - 1);
 
         query.append(')');
         values.append(')');
 
         query.append(values).append(';');
         System.out.println(query);
-        executeDirectQuery(query.toString());
+        executeDirectUpdate(query.toString());
     }
+
+//    public abstract <T extends TableObject> SelectQuery<T> createQuery();
 
     protected final Connection getConnection()
     {

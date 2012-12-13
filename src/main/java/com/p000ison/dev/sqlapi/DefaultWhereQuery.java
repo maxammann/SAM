@@ -10,40 +10,45 @@ import java.util.List;
 /**
  * Represents a DefaultWhereQuery
  */
-public class DefaultWhereQuery implements WhereQuery {
+class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
 
     private List<DefaultWhereComparator> comparators;
-    private DefaultSelectQuery query;
+    private DefaultSelectQuery<T> query;
 
-    public DefaultWhereQuery(DefaultSelectQuery query)
+    DefaultWhereQuery(DefaultSelectQuery<T> query)
     {
         this.query = query;
         this.comparators = new ArrayList<DefaultWhereComparator>();
     }
 
     @Override
-    public WhereComparator equals(Column column, Object expected)
+    public WhereComparator<T> equals(Column column, Object expected)
     {
-        DefaultWhereComparator comparator = new DefaultWhereComparator(query, CompareOperator.EQUALS, column.getColumnName(), expected);
+        DefaultWhereComparator<T> comparator = new DefaultWhereComparator<T>(query, CompareOperator.EQUALS, column.getColumnName(), expected);
         comparators.add(comparator);
         return comparator;
     }
 
     @Override
-    public WhereComparator notEquals(Column column, Object expected)
+    public WhereComparator<T> notEquals(Column column, Object expected)
     {
         return null;
     }
 
     @Override
-    public WhereComparator lessThan(Column column, Object expected)
+    public WhereComparator<T> lessThan(Column column, Object expected)
     {
         return null;
     }
 
     @Override
-    public WhereComparator greaterThan(Column column, Object expected)
+    public WhereComparator<T> greaterThan(Column column, Object expected)
     {
         return null;
+    }
+
+    protected List<DefaultWhereComparator> getComparators()
+    {
+        return comparators;
     }
 }

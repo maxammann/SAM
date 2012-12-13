@@ -1,13 +1,15 @@
 package com.p000ison.dev.sqlapi.query;
 
+import com.p000ison.dev.sqlapi.TableObject;
+
 /**
  *
  */
-public interface WhereComparator {
+public interface WhereComparator<T extends TableObject> {
 
-    WhereQuery or();
+    WhereQuery<T> or();
 
-    WhereQuery and();
+    WhereQuery<T> and();
 
-    SelectQuery select();
+    SelectQuery<T> select();
 }

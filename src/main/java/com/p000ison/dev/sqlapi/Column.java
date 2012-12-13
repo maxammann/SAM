@@ -68,7 +68,19 @@ public interface Column {
      */
     boolean isPrimary();
 
+    /**
+     * Sets a value for the column in the {@link TableObject}.
+     *
+     * @param tableObject The table object to modify
+     * @param object      The object to set the column to
+     */
     void setValue(TableObject tableObject, Object object);
 
+    /**
+     * Gets the value for the column in the {@link TableObject}.
+     *
+     * @param tableObject The table object
+     * @return The value
+     */
     Object getValue(TableObject tableObject);
 }

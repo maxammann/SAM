@@ -5,6 +5,7 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseColumnGetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnSetter;
 import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -41,24 +42,28 @@ public abstract class TableBuilder {
 
     private boolean existed;
 
+    private Constructor<? extends TableObject> ctor;
+
     public TableBuilder(Class<? extends TableObject> object, Database database)
     {
+        this.object = object;
+
+        tableName = Database.getTableName(object);
+
+        if (!DatabaseUtil.validateTableName(tableName)) {
+            throw new TableBuildingException("The name of the table %s is not valid!", tableName);
+        }
+
+        try {
+            ctor = object.getDeclaredConstructor();
+            ctor.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            throw new TableBuildingException("No default constructor found in class %s!", object.getName());
+        }
+
         this.database = database;
         query = new StringBuilder();
         buildingColumns = new ArrayList<Column>();
-        this.object = object;
-
-        init();
-    }
-
-    public TableBuilder(TableObject object, Database database)
-    {
-        this(object.getClass(), database);
-    }
-
-    private void init()
-    {
-        tableName = Database.getTableName(object);
 
         existed = database.existsDatabaseTable(tableName);
 
@@ -66,10 +71,16 @@ public abstract class TableBuilder {
             throw new TableBuildingException("The name of the table is not given! Add the @DatabaseTable annotation!");
         }
 
-        setupBuildingColumns();
+        setupColumns();
         databaseColumns = database.getDatabaseColumns(tableName);
-
     }
+
+
+    public TableBuilder(TableObject object, Database database)
+    {
+        this(object.getClass(), database);
+    }
+
 
     public TableBuilder createTable()
     {
@@ -88,13 +99,12 @@ public abstract class TableBuilder {
 
     public TableBuilder createModifyQuery()
     {
-        clearQuery();
-        if (!existed) {
-            return this;
-        }
-//        query.append("ALTER TABLE ").append(tableName);
-
-        buildModifyColumns();
+//        clearQuery();
+//        if (!existed) {
+//            return this;
+//        }
+//
+//        buildModifyColumns();
 
         return this;
     }
@@ -104,7 +114,7 @@ public abstract class TableBuilder {
         query.setLength(0);
     }
 
-    public Column getColumn(String dbColumn)
+    private Column getColumn(String dbColumn)
     {
         for (Column column : buildingColumns) {
             if (column.getColumnName().equals(dbColumn)) {
@@ -114,12 +124,12 @@ public abstract class TableBuilder {
         return null;
     }
 
-    public boolean existsColumn(String dbColumn)
+    private boolean existsColumn(String dbColumn)
     {
         return getColumn(dbColumn) != null;
     }
 
-    public MethodColumn getMethodColumn(String dbColumn)
+    private MethodColumn getMethodColumn(String dbColumn)
     {
         for (Column column : buildingColumns) {
             if ((column instanceof MethodColumn) && column.getColumnName().equals(dbColumn)) {
@@ -129,7 +139,10 @@ public abstract class TableBuilder {
         return null;
     }
 
-    private void setupBuildingColumns()
+    /**
+     * Setups the columns of a table and produces a unmodifiable list
+     */
+    private void setupColumns()
     {
         buildingColumns.clear();
 
@@ -151,6 +164,10 @@ public abstract class TableBuilder {
                 MethodColumn.validateGetterMethod(method);
 
                 columnName = getter.databaseName();
+            }
+
+            if (!DatabaseUtil.validateColumnName(columnName)) {
+                throw new TableBuildingException("The name of the column %s is not valid!", columnName);
             }
 
             MethodColumn column = getMethodColumn(columnName);
@@ -203,6 +220,8 @@ public abstract class TableBuilder {
                 return p1 < p2 ? -1 : p1 > p2 ? 1 : 0;
             }
         });
+
+        buildingColumns = Collections.unmodifiableList(buildingColumns);
     }
 
     private void buildColumns()
@@ -223,7 +242,6 @@ public abstract class TableBuilder {
     private void buildModifyColumns()
     {
         if (buildingColumns.isEmpty()) {
-
             throw new TableBuildingException("The table must have at least one column!");
         }
 
@@ -236,6 +254,8 @@ public abstract class TableBuilder {
                 toAdd.add(column);
             }
         }
+
+        System.out.println(toAdd);
 
         if (!toAdd.isEmpty() && isSupportAddColumns()) {
             query.append("ALTER TABLE ").append(Database.getTableName(object)).append(" ADD COLUMN (");
@@ -276,7 +296,6 @@ public abstract class TableBuilder {
         }
 
         query.append(';');
-        clearQuery();
     }
 
     public String getQuery()
@@ -305,6 +324,11 @@ public abstract class TableBuilder {
     protected abstract boolean isSupportRemoveColumns();
 
     protected abstract boolean isSupportModifyColumns();
+
+     Constructor<? extends TableObject> getDefaultConstructor()
+    {
+        return ctor;
+    }
 }
 
 
