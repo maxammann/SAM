@@ -25,14 +25,14 @@ class DefaultWhereComparator<T extends TableObject> implements WhereComparator<T
     }
 
     @Override
-    public WhereQuery or()
+    public WhereQuery<T> or()
     {
         or = true;
         return query.getWhereQuery();
     }
 
     @Override
-    public WhereQuery and()
+    public WhereQuery<T> and()
     {
         and = true;
         return query.getWhereQuery();

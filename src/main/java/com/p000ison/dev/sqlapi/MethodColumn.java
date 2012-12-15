@@ -197,11 +197,19 @@ final class MethodColumn implements Column {
     }
 
     @Override
+    public boolean isSerializable()
+    {
+        return RegisteredTable.isSerializable(getType());
+    }
+
+    @Override
     public String toString()
     {
         return "MethodColumn{" +
-                "getter=" + getter +
-                ", setter=" + setter +
+                "column-name=" + getColumnName() +
+                ", getter=" + (getter == null ? "null" : getter.getName()) +
+                ", setter=" + (setter == null ? "null" : setter.getName()) +
                 '}';
     }
+
 }

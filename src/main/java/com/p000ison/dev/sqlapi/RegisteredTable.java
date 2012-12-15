@@ -1,5 +1,6 @@
 package com.p000ison.dev.sqlapi;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -70,5 +71,15 @@ public class RegisteredTable {
     Class<? extends TableObject> getRegisteredClass()
     {
         return registeredClass;
+    }
+
+    public static boolean isSerializable(Class<?> clazz) {
+        for (Class interfacee : clazz.getInterfaces()) {
+            if (interfacee == Serializable.class) {
+                         return true;
+            }
+        }
+
+        return false;
     }
 }

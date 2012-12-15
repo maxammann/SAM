@@ -98,7 +98,7 @@ final class FieldColumn implements Column {
     public String toString()
     {
         return "FieldColumn{" +
-                "name=" + getColumnName() +
+                "column-name=" + getColumnName() +
                 ", field=" + (field == null ? null : field.getName()) +
                 '}';
     }
@@ -114,6 +114,12 @@ final class FieldColumn implements Column {
         if (field != null ? !field.equals(that.field) : that.field != null) return false;
 
         return true;
+    }
+
+    @Override
+    public boolean isSerializable()
+    {
+        return RegisteredTable.isSerializable(getType());
     }
 
     @Override

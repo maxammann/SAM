@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface SelectQuery<T extends TableObject> {
 
-    SelectQuery<T> from(Class<? extends T> object);
+    SelectQuery<T> from(Class<T> object);
 
     WhereQuery<T> where();
 

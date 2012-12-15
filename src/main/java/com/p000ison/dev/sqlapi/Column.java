@@ -83,4 +83,7 @@ public interface Column {
      * @return The value
      */
     Object getValue(TableObject tableObject);
+
+
+    boolean isSerializable();
 }

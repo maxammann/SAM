@@ -1,9 +1,6 @@
 package com.p000ison.dev.sqlapi.sqlite;
 
-import com.p000ison.dev.sqlapi.Column;
-import com.p000ison.dev.sqlapi.Database;
-import com.p000ison.dev.sqlapi.TableBuilder;
-import com.p000ison.dev.sqlapi.TableObject;
+import com.p000ison.dev.sqlapi.*;
 import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
 /**
@@ -20,6 +17,7 @@ public final class SQLiteTableBuilder extends TableBuilder {
     {
         super(object, database);
     }
+
 
     @Override
     protected void buildColumn(Column column)
@@ -81,4 +79,60 @@ public final class SQLiteTableBuilder extends TableBuilder {
     {
         return false;
     }
+
+    @Override
+    protected String getTypeName(Class<?> type)
+    {
+        if (type == boolean.class || type == Boolean.class) {
+            return "BOOLEAN";
+        } else if (type == byte.class || type == Byte.class) {
+            return null;
+        } else if (type == short.class || type == Short.class) {
+            return null;
+        } else if (type == int.class || type == Integer.class) {
+            return null;
+        } else if (type == float.class || type == Float.class) {
+            return null;
+        } else if (type == double.class || type == Double.class) {
+            return null;
+        } else if (type == long.class || type == Long.class) {
+            return null;
+        } else if (type == char.class || type == Character.class) {
+            return null;
+        } else if (type == String.class) {
+            return null;
+        } else if (RegisteredTable.isSerializable(type)) {
+            return null;
+        }
+
+        return null;
+    }
+
+//    @Override
+//    protected String getTypeName(Class<?> type)
+//    {
+//        if (type == boolean.class || type == Boolean.class) {
+//            return null;
+//        } else if (type == byte.class || type == Byte.class) {
+//            return null;
+//        } else if (type == short.class || type == Short.class) {
+//            return null;
+//        } else if (type == int.class || type == Integer.class) {
+//            return null;
+//        } else if (type == float.class || type == Float.class) {
+//            return null;
+//        } else if (type == double.class || type == Double.class) {
+//            return null;
+//        } else if (type == long.class || type == Long.class) {
+//            return null;
+//        } else if (type == char.class || type == Character.class) {
+//            return null;
+//        } else if (type == String.class) {
+//            return null;
+//        } else if (RegisteredTable.isSerializable(type)) {
+//            return null;
+//        }
+//
+//        return null;
+//    }
 }

@@ -4,6 +4,8 @@ import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.SelectQuery;
 import com.p000ison.dev.sqlapi.query.WhereQuery;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -14,7 +16,7 @@ import java.util.List;
  */
 public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T> {
 
-    private Class<? extends TableObject> tableClass;
+    private RegisteredTable table;
     private boolean descending;
     private DefaultWhereQuery<T> whereQuery;
     private Database database;
@@ -25,9 +27,9 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     }
 
     @Override
-    public SelectQuery<T> from(Class<? extends T> object)
+    public SelectQuery<T> from(Class<T> object)
     {
-        this.tableClass = object;
+        table = database.getRegisteredTable(object);
         return this;
     }
 
@@ -68,7 +70,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         return this;
     }
 
-    protected DefaultWhereQuery getWhereQuery()
+    protected DefaultWhereQuery<T> getWhereQuery()
     {
         return whereQuery;
     }
@@ -77,14 +79,34 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     public List<T> list()
     {
         List<T> objects = new ArrayList<T>();
-        RegisteredTable table = database.getRegisteredTable(tableClass);
-
 
         ResultSet result = database.executeDirectQuery(getQuery());
-
+        List<Column> columns = table.getRegisteredColumns();
         try {
             while (result.next()) {
                 T object = table.createNewInstance();
+
+                for (int i = 0; i < columns.size(); i++) {
+                    Column column = columns.get(i);
+
+                    Object obj = null;
+
+                    if (column.isSerializable()) {
+                        try {
+                            ObjectInputStream inputStream = new ObjectInputStream(result.getBlob(i + 1).getBinaryStream());
+                            obj = inputStream.readObject();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        obj = result.getObject(i + 1);
+                    }
+
+                    column.setValue(object, obj);
+                }
+
                 objects.add(object);
             }
         } catch (SQLException e) {
@@ -97,8 +119,6 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     public String getQuery()
     {
         StringBuilder query = new StringBuilder("SELECT ");
-
-        RegisteredTable table = database.getRegisteredTable(tableClass);
         List<Column> columns = table.getRegisteredColumns();
 
         int end = columns.size() - 1;
@@ -113,7 +133,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         query.append(" FROM ").append(table.getName());
 
         if (descending) {
-            query.append(" DESC");
+            query.append(" ORDER BY DESC");
         }
 
         if (getWhereQuery() != null) {

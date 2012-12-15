@@ -45,6 +45,7 @@ public abstract class Database {
             throw new RuntimeException("Failed to load driver " + driver + "!");
         }
         init(configuration);
+
         connection = dataSource.getConnection();
     }
 
@@ -62,7 +63,7 @@ public abstract class Database {
 
     private int prepareStatement(String query)
     {
-        PreparedStatement statement = null;
+        PreparedStatement statement;
         try {
             statement = getConnection().prepareStatement(query);
         } catch (SQLException e) {
@@ -83,15 +84,21 @@ public abstract class Database {
         return prepareStatement(query.getQuery());
     }
 
-    public <T> List<T> executeStatement(int id, RegisteredTable table) {
+    public <T extends TableObject> List<T> executeStatement(int id, RegisteredTable table)
+    {
         try {
             ResultSet result = preparedStatements.get(id).executeQuery();
-
+            List<Column> columns = table.getRegisteredColumns();
             List<T> objects = new ArrayList<T>();
 
             try {
                 while (result.next()) {
                     T object = table.createNewInstance();
+                    for (int i = 0; i < columns.size(); i++) {
+                        Column column = columns.get(i);
+
+                        column.setValue(object, result.getObject(i + 1));
+                    }
                     objects.add(object);
                 }
             } catch (SQLException e) {
@@ -126,10 +133,10 @@ public abstract class Database {
         registeredTables.add(new RegisteredTable(builder.getTableName(), table, builder.getColumns(), builder.getDefaultConstructor()));
 
         String tableQuery = builder.createTable().getQuery();
-        System.out.println(tableQuery);
+        System.out.println("Create Query:" + tableQuery);
 
         String modifyQuery = builder.createModifyQuery().getQuery();
-        System.out.println(modifyQuery);
+        System.out.println("Modify Query:" + modifyQuery);
 
         executeDirectUpdate(tableQuery);
         executeDirectUpdate(modifyQuery);

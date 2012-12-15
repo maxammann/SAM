@@ -99,12 +99,12 @@ public abstract class TableBuilder {
 
     public TableBuilder createModifyQuery()
     {
-//        clearQuery();
-//        if (!existed) {
-//            return this;
-//        }
-//
-//        buildModifyColumns();
+        clearQuery();
+        if (!existed) {
+            return this;
+        }
+
+        buildModifyColumns();
 
         return this;
     }
@@ -246,7 +246,7 @@ public abstract class TableBuilder {
         }
 
         Set<Column> toAdd = new HashSet<Column>();
-
+        boolean complete = false;
 
         for (Column column : buildingColumns) {
             if (!databaseColumns.contains(column.getColumnName())) {
@@ -255,9 +255,8 @@ public abstract class TableBuilder {
             }
         }
 
-        System.out.println(toAdd);
-
         if (!toAdd.isEmpty() && isSupportAddColumns()) {
+            complete = true;
             query.append("ALTER TABLE ").append(Database.getTableName(object)).append(" ADD COLUMN (");
 
             for (Column column : toAdd) {
@@ -285,6 +284,7 @@ public abstract class TableBuilder {
                 } else {
                     query.append(',');
                 }
+                complete = true;
 
                 for (String column : toDrop) {
                     query.append(" DROP COLUMN ").append(column);
@@ -294,8 +294,9 @@ public abstract class TableBuilder {
                 query.deleteCharAt(query.length() - 1);
             }
         }
-
-        query.append(';');
+        if (complete) {
+            query.append(';');
+        }
     }
 
     public String getQuery()
@@ -325,7 +326,9 @@ public abstract class TableBuilder {
 
     protected abstract boolean isSupportModifyColumns();
 
-     Constructor<? extends TableObject> getDefaultConstructor()
+    protected abstract String getTypeName(Class<?> type);
+
+    Constructor<? extends TableObject> getDefaultConstructor()
     {
         return ctor;
     }

@@ -1,9 +1,6 @@
 package com.p000ison.dev.sqlapi.mysql;
 
-import com.p000ison.dev.sqlapi.Column;
-import com.p000ison.dev.sqlapi.Database;
-import com.p000ison.dev.sqlapi.TableBuilder;
-import com.p000ison.dev.sqlapi.TableObject;
+import com.p000ison.dev.sqlapi.*;
 import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
 /**
@@ -27,13 +24,39 @@ public final class MySQLTableBuilder extends TableBuilder {
         Class<?> type = column.getType();
         query.append(column.getColumnName()).append(' ');
 
-        if (type.equals(int.class)) {
-            query.append("INT");
-        } else if (type.equals(String.class)) {
-            query.append("TEXT");
+        boolean allowModifyLength = true;
+
+        if (type == boolean.class || type == Boolean.class) {
+            query.append("TINYINT(1)");
+            allowModifyLength = false;
+        } else if (type == byte.class || type == Byte.class) {
+            query.append("TINYINT");
+            allowModifyLength = false;
+        } else if (type == short.class || type == Short.class) {
+            query.append("SMALLINT");
+            allowModifyLength = false;
+        } else if (type == int.class || type == Integer.class) {
+            query.append("TINYINT");
+        } else if (type == float.class || type == Float.class) {
+            query.append("FLOAT");
+        } else if (type == double.class || type == Double.class) {
+            query.append("DOUBLE");
+        } else if (type == long.class || type == Long.class) {
+            query.append("LONG");
+        } else if (type == char.class || type == Character.class) {
+            query.append("CHAR");
+        } else if (type == String.class) {
+            if (column.getLength().length != 0) {
+                query.append("VARCHAR");
+            } else {
+                query.append("TEXT");
+            }
+        } else if (RegisteredTable.isSerializable(type)) {
+            query.append("BLOB");
+            allowModifyLength = false;
         }
 
-        if (column.getLength().length != 0) {
+        if (column.getLength().length != 0 && allowModifyLength) {
             query.append('(');
             for (int singleLength : column.getLength()) {
                 query.append(singleLength).append(',');
@@ -84,5 +107,33 @@ public final class MySQLTableBuilder extends TableBuilder {
     protected boolean isSupportModifyColumns()
     {
         return true;
+    }
+
+    @Override
+    protected String getTypeName(Class<?> type)
+    {
+        if (type == boolean.class || type == Boolean.class) {
+            return "BOOLEAN";
+        } else if (type == byte.class || type == Byte.class) {
+            return null;
+        } else if (type == short.class || type == Short.class) {
+            return null;
+        } else if (type == int.class || type == Integer.class) {
+            return null;
+        } else if (type == float.class || type == Float.class) {
+            return null;
+        } else if (type == double.class || type == Double.class) {
+            return null;
+        } else if (type == long.class || type == Long.class) {
+            return null;
+        } else if (type == char.class || type == Character.class) {
+            return null;
+        } else if (type == String.class) {
+            return null;
+        } else if (RegisteredTable.isSerializable(type)) {
+            return null;
+        }
+
+        return null;
     }
 }

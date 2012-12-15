@@ -6,16 +6,16 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseColumnGetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnSetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 
-@DatabaseTable(name = "tablename")
+@DatabaseTable(name = "tablenamea")
 public class Person implements TableObject {
-
-    @DatabaseColumn(position = 2, databaseName = "name", primary = true, autoIncrement = true)
-    private String name = "b";
 
     private String formattedName= "a";
 
-    @DatabaseColumn(position = 1, databaseName = "id", unique = true)
+    @DatabaseColumn(position = 1, databaseName = "id",primary = true, unique = true)
     private int id;
+
+    @DatabaseColumn(position = 2, databaseName = "name")
+    public String name = "b";
 
 
     public Person()
