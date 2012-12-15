@@ -26,12 +26,10 @@ public class StartTest {
 //            db.getConnection().prepareStatement("SELECT * FROM d").executeQuery();
 
             SelectQuery<Person> selectQuery = new DefaultSelectQuery<Person>(db);
-//            db.save(person);
+//           db.save(person);
 //            Column column = db.getRegisteredTable(Person.class).getColumn("id");
 // selectQuery.from(person.getClass()).descending().orderBy(column).where().equals(column, 5).or().equals(column, 1).select();
 //            System.out.println(selectQuery.from(Person.class).descending().getQuery());
-            System.out.println(selectQuery.from(Person.class).list().get(0).getFormattedName());
-
 
 //            SelectQuery<Person> selectQuery = new DefaultSelectQuery<Person>(db);
 //            selectQuery.from(Person.class).descending();

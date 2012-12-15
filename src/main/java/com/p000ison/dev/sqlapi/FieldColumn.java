@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 /**
  * Represents a FieldColumn
  */
-final class FieldColumn implements Column {
+final class FieldColumn extends Column {
 
     private Field field;
     private DatabaseColumn annotation;
@@ -111,15 +111,19 @@ final class FieldColumn implements Column {
 
         FieldColumn that = (FieldColumn) o;
 
-        if (field != null ? !field.equals(that.field) : that.field != null) return false;
-
-        return true;
+        return !(field != null ? !field.equals(that.field) : that.field != null);
     }
 
     @Override
     public boolean isSerializable()
     {
         return RegisteredTable.isSerializable(getType());
+    }
+
+    @Override
+    public boolean isID()
+    {
+        return annotation.id();
     }
 
     @Override

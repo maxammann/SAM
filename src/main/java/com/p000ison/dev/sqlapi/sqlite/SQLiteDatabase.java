@@ -4,29 +4,38 @@ import com.p000ison.dev.sqlapi.Database;
 import com.p000ison.dev.sqlapi.DatabaseConfiguration;
 import com.p000ison.dev.sqlapi.TableBuilder;
 import com.p000ison.dev.sqlapi.TableObject;
+import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import org.sqlite.SQLiteDataSource;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
  * Represents a SQLiteDatabase
  */
 public final class SQLiteDatabase extends Database {
-    public Integer test = 5;
+
+    private Connection connection;
+
     public SQLiteDatabase(SQLiteConfiguration configuration) throws SQLException
     {
         super(configuration);
     }
 
     @Override
-    protected void init(DatabaseConfiguration configuration)
+    protected void connect(DatabaseConfiguration configuration) throws DatabaseConnectionException
     {
-        dataSource = new SQLiteDataSource();
+        SQLiteDataSource dataSource = new SQLiteDataSource();
 
-        SQLiteDataSource sqliteSource = (SQLiteDataSource) dataSource;
         SQLiteConfiguration SQLiteConfiguration = (SQLiteConfiguration) configuration;
 
-        sqliteSource.setUrl("jdbc:sqlite:" + SQLiteConfiguration.getLocation().getAbsolutePath());
+        dataSource.setUrl("jdbc:sqlite:" + SQLiteConfiguration.getLocation().getAbsolutePath());
+
+        try {
+            this.connection = dataSource.getConnection();
+        } catch (SQLException e) {
+            throw new DatabaseConnectionException(e);
+        }
     }
 
     @Override
@@ -39,6 +48,12 @@ public final class SQLiteDatabase extends Database {
     protected TableBuilder createTableBuilder(Class<? extends TableObject> table)
     {
         return new SQLiteTableBuilder(table, this);
+    }
+
+    @Override
+    protected Connection getConnection()
+    {
+        return connection;
     }
 
     @Override

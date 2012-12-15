@@ -4,6 +4,7 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseColumn;
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnGetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnSetter;
 import com.p000ison.dev.sqlapi.exception.TableBuildingException;
+import com.p000ison.dev.sqlapi.util.DatabaseUtil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -222,6 +223,11 @@ public abstract class TableBuilder {
         });
 
         buildingColumns = Collections.unmodifiableList(buildingColumns);
+
+
+        for (Column column : buildingColumns) {
+            column.setDatabaseType(getDatabaseDataType(column.getType()));
+        }
     }
 
     private void buildColumns()
@@ -299,6 +305,21 @@ public abstract class TableBuilder {
         }
     }
 
+    protected abstract void buildColumn(Column column);
+
+    protected abstract boolean isSupportAddColumns();
+
+    protected abstract boolean isSupportRemoveColumns();
+
+    protected abstract boolean isSupportModifyColumns();
+
+    public abstract int getDatabaseDataType(Class<?> type);
+
+    Constructor<? extends TableObject> getDefaultConstructor()
+    {
+        return ctor;
+    }
+
     public String getQuery()
     {
         if (query.length() == 0) {
@@ -316,21 +337,6 @@ public abstract class TableBuilder {
     public String getTableName()
     {
         return tableName;
-    }
-
-    protected abstract void buildColumn(Column column);
-
-    protected abstract boolean isSupportAddColumns();
-
-    protected abstract boolean isSupportRemoveColumns();
-
-    protected abstract boolean isSupportModifyColumns();
-
-    protected abstract String getTypeName(Class<?> type);
-
-    Constructor<? extends TableObject> getDefaultConstructor()
-    {
-        return ctor;
     }
 }
 

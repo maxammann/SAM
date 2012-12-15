@@ -9,9 +9,9 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 @DatabaseTable(name = "tablenamea")
 public class Person implements TableObject {
 
-    private String formattedName= "a";
+    private String formattedName= "p";
 
-    @DatabaseColumn(position = 1, databaseName = "id",primary = true, unique = true)
+    @DatabaseColumn(position = 1, id = true, databaseName = "id",primary = true, unique = true)
     private int id;
 
     @DatabaseColumn(position = 2, databaseName = "name")

@@ -12,13 +12,13 @@ import java.util.List;
  */
 class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
 
-    private List<DefaultWhereComparator> comparators;
+    private List<DefaultWhereComparator<T>> comparators;
     private DefaultSelectQuery<T> query;
 
     DefaultWhereQuery(DefaultSelectQuery<T> query)
     {
         this.query = query;
-        this.comparators = new ArrayList<DefaultWhereComparator>();
+        this.comparators = new ArrayList<DefaultWhereComparator<T>>();
     }
 
     @Override
@@ -47,7 +47,7 @@ class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
         return null;
     }
 
-    protected List<DefaultWhereComparator> getComparators()
+    protected List<DefaultWhereComparator<T>> getComparators()
     {
         return comparators;
     }

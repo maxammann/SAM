@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 /**
  * Represents a FieldColumn
  */
-final class MethodColumn implements Column {
+final class MethodColumn extends Column {
 
     private Method getter, setter;
     private DatabaseColumnSetter annotation;
@@ -169,6 +169,12 @@ final class MethodColumn implements Column {
     public boolean isPrimary()
     {
         return annotation.primary();
+    }
+
+    @Override
+    public boolean isID()
+    {
+        return annotation.id();
     }
 
     @Override

@@ -24,7 +24,5 @@ public interface SelectQuery<T extends TableObject> {
 
     SelectQuery<T> groupBy(String group);
 
-    String getQuery();
-
     List<T> list();
 }

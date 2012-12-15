@@ -3,6 +3,8 @@ package com.p000ison.dev.sqlapi.mysql;
 import com.p000ison.dev.sqlapi.*;
 import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
+import java.sql.Types;
+
 /**
  * Represents a SQLiteTableBuilder
  */
@@ -36,7 +38,7 @@ public final class MySQLTableBuilder extends TableBuilder {
             query.append("SMALLINT");
             allowModifyLength = false;
         } else if (type == int.class || type == Integer.class) {
-            query.append("TINYINT");
+            query.append("INTEGER");
         } else if (type == float.class || type == Float.class) {
             query.append("FLOAT");
         } else if (type == double.class || type == Double.class) {
@@ -110,30 +112,30 @@ public final class MySQLTableBuilder extends TableBuilder {
     }
 
     @Override
-    protected String getTypeName(Class<?> type)
+    public int getDatabaseDataType(Class<?> type)
     {
         if (type == boolean.class || type == Boolean.class) {
-            return "BOOLEAN";
+            return Types.TINYINT;
         } else if (type == byte.class || type == Byte.class) {
-            return null;
+            return Types.TINYINT;
         } else if (type == short.class || type == Short.class) {
-            return null;
+            return Types.SMALLINT;
         } else if (type == int.class || type == Integer.class) {
-            return null;
+            return Types.INTEGER;
         } else if (type == float.class || type == Float.class) {
-            return null;
+            return Types.FLOAT;
         } else if (type == double.class || type == Double.class) {
-            return null;
+            return Types.DOUBLE;
         } else if (type == long.class || type == Long.class) {
-            return null;
+            return Types.INTEGER;
         } else if (type == char.class || type == Character.class) {
-            return null;
+            return Types.CHAR;
         } else if (type == String.class) {
-            return null;
+            return Types.VARCHAR;
         } else if (RegisteredTable.isSerializable(type)) {
-            return null;
+            return Types.BLOB;
         }
 
-        return null;
+        return -1;
     }
 }

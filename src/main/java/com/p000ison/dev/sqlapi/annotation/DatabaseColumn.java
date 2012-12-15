@@ -70,4 +70,5 @@ public @interface DatabaseColumn {
      */
     boolean primary() default false;
 
+    boolean id() default false;
 }

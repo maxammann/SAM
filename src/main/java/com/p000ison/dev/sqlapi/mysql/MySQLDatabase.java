@@ -5,7 +5,9 @@ import com.p000ison.dev.sqlapi.Database;
 import com.p000ison.dev.sqlapi.DatabaseConfiguration;
 import com.p000ison.dev.sqlapi.TableBuilder;
 import com.p000ison.dev.sqlapi.TableObject;
+import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
@@ -13,24 +15,30 @@ import java.sql.SQLException;
  */
 public final class MySQLDatabase extends Database {
 
+    private Connection connection;
+
     public MySQLDatabase(MySQLConfiguration configuration) throws SQLException
     {
         super(configuration);
     }
 
     @Override
-    protected void init(DatabaseConfiguration configuration)
+    protected void connect(DatabaseConfiguration configuration) throws DatabaseConnectionException
     {
-        dataSource = new MysqlDataSource();
-
-        MysqlDataSource mysqlSource = (MysqlDataSource) dataSource;
+        MysqlDataSource dataSource = new MysqlDataSource();
         MySQLConfiguration mysqlConfiguration = (MySQLConfiguration) configuration;
 
-        mysqlSource.setUser(mysqlConfiguration.getUser());
-        mysqlSource.setPassword(mysqlConfiguration.getPassword());
-        mysqlSource.setDatabaseName(mysqlConfiguration.getDatabase());
-        mysqlSource.setServerName(mysqlConfiguration.getHost());
-        mysqlSource.setPort(mysqlConfiguration.getPort());
+        dataSource.setUser(mysqlConfiguration.getUser());
+        dataSource.setPassword(mysqlConfiguration.getPassword());
+        dataSource.setDatabaseName(mysqlConfiguration.getDatabase());
+        dataSource.setServerName(mysqlConfiguration.getHost());
+        dataSource.setPort(mysqlConfiguration.getPort());
+
+        try {
+            this.connection = dataSource.getConnection();
+        } catch (SQLException e) {
+            throw new DatabaseConnectionException(e);
+        }
     }
 
     @Override
@@ -43,6 +51,12 @@ public final class MySQLDatabase extends Database {
     protected TableBuilder createTableBuilder(Class<? extends TableObject> table)
     {
         return new MySQLTableBuilder(table, this);
+    }
+
+    @Override
+    protected Connection getConnection()
+    {
+        return connection;
     }
 
     @Override

@@ -1,10 +1,12 @@
 package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
+import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
-import com.p000ison.dev.sqlapi.query.SelectQuery;
+import com.p000ison.dev.sqlapi.util.DatabaseUtil;
 
-import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.sql.*;
 import java.util.*;
 
@@ -13,8 +15,6 @@ import java.util.*;
  */
 public abstract class Database {
 
-    protected DataSource dataSource;
-    private Connection connection;
     private DatabaseConfiguration configuration;
     /**
      * Whether old columns should be dropped
@@ -44,9 +44,7 @@ public abstract class Database {
         } catch (Exception e) {
             throw new RuntimeException("Failed to load driver " + driver + "!");
         }
-        init(configuration);
-
-        connection = dataSource.getConnection();
+        connect(configuration);
     }
 
     /**
@@ -79,38 +77,8 @@ public abstract class Database {
         return statementId;
     }
 
-    public int prepareStatement(SelectQuery query)
-    {
-        return prepareStatement(query.getQuery());
-    }
 
-    public <T extends TableObject> List<T> executeStatement(int id, RegisteredTable table)
-    {
-        try {
-            ResultSet result = preparedStatements.get(id).executeQuery();
-            List<Column> columns = table.getRegisteredColumns();
-            List<T> objects = new ArrayList<T>();
-
-            try {
-                while (result.next()) {
-                    T object = table.createNewInstance();
-                    for (int i = 0; i < columns.size(); i++) {
-                        Column column = columns.get(i);
-
-                        column.setValue(object, result.getObject(i + 1));
-                    }
-                    objects.add(object);
-                }
-            } catch (SQLException e) {
-                throw new QueryException(e);
-            }
-            return objects;
-        } catch (SQLException e) {
-            throw new QueryException(e);
-        }
-    }
-
-    protected abstract void init(DatabaseConfiguration configuration);
+    protected abstract void connect(DatabaseConfiguration configuration) throws DatabaseConnectionException;
 
     /**
      * Closes the connection to the database
@@ -119,18 +87,14 @@ public abstract class Database {
      */
     public abstract void close() throws SQLException;
 
-    protected TableBuilder createTableBuilder(TableObject table)
-    {
-        return createTableBuilder(table.getClass());
-    }
-
     protected abstract TableBuilder createTableBuilder(Class<? extends TableObject> table);
 
     public final Database registerTable(Class<? extends TableObject> table)
     {
         TableBuilder builder = createTableBuilder(table);
-
-        registeredTables.add(new RegisteredTable(builder.getTableName(), table, builder.getColumns(), builder.getDefaultConstructor()));
+        RegisteredTable registeredTable = new RegisteredTable(builder.getTableName(), table, builder.getColumns(), builder.getDefaultConstructor());
+        registeredTable.prepareSaveStatement(this);
+        registeredTables.add(registeredTable);
 
         String tableQuery = builder.createTable().getQuery();
         System.out.println("Create Query:" + tableQuery);
@@ -194,7 +158,7 @@ public abstract class Database {
     {
         Set<String> columns = new HashSet<String>();
 
-        ResultSet columnResult = null;
+        ResultSet columnResult;
         try {
             columnResult = this.getConnection().getMetaData().getTables(null, null, null, null);
 
@@ -246,53 +210,70 @@ public abstract class Database {
 
     public void save(TableObject tableObject)
     {
-        save(tableObject, new String[]{});
+        RegisteredTable table = getRegisteredTable(tableObject.getClass());
+        if (table == null) {
+            throw new QueryException("The class %s is not registered!");
+        }
+        insert(table, tableObject);
     }
 
-    public void save(TableObject tableObject, String... columns)
+    private void insert(RegisteredTable registeredTable, TableObject object)
     {
-        RegisteredTable registration = getRegisteredTable(tableObject.getClass());
+        registerSaveStatement(registeredTable.getInsertStatement(), registeredTable, object);
+    }
 
+    private void update(RegisteredTable registeredTable, TableObject object)
+    {
+        registerSaveStatement(registeredTable.getUpdateStatement(), registeredTable, object);
+    }
 
-        StringBuilder query = new StringBuilder("INSERT INTO ").append(registration.getName()).append(" (");
-        StringBuilder values = new StringBuilder(" VALUES (");
+    private void registerSaveStatement(PreparedStatement statement, RegisteredTable registeredTable, TableObject object)
+    {
+        try {
+            List<Column> registeredColumns = registeredTable.getRegisteredColumns();
+            for (int i = 0; i < registeredColumns.size(); i++) {
+                Column column = registeredColumns.get(i);
+                Object value = column.getValue(object);
 
-        List<Column> registeredColumns = registration.getRegisteredColumns();
+                if (value != null) {
+                    if (DatabaseUtil.isSupported(column.getType())) {
+                        statement.setObject(i + 1, value, column.getDatabaseDataType());
+                    } else if (column.isSerializable()) {
+                        Blob blob = getConnection().createBlob();
 
-        for (Column column : registeredColumns) {
-            Object value = column.getValue(tableObject);
+                        try {
+                            ObjectOutputStream stream = new ObjectOutputStream(blob.setBinaryStream(1));
+                            stream.writeObject(value);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-            if (value == null) {
-                continue;
+                        statement.setBlob(i + 1, blob);
+                    }
+                } else {
+                    statement.setNull(i + 1, column.getDatabaseDataType());
+                }
             }
 
-            value = DatabaseUtil.validateColumnValue(value, column);
-
-            query.append(column.getColumnName());
-            values.append(value);
-            query.append(',');
-            values.append(',');
+            registeredTable.getInsertStatement().executeUpdate();
+        } catch (SQLException e) {
+            throw new QueryException(e);
         }
-
-        query.deleteCharAt(query.length() - 1);
-        values.deleteCharAt(values.length() - 1);
-
-        query.append(')');
-        values.append(')');
-
-        query.append(values).append(';');
-        System.out.println(query);
-        executeDirectUpdate(query.toString());
     }
 
-//    public abstract <T extends TableObject> SelectQuery<T> createQuery();
 
-    protected final Connection getConnection()
+    PreparedStatement prepare(String query)
     {
-        return connection;
+        try {
+            return getConnection().prepareStatement(query);
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
     }
 
-    public DatabaseConfiguration getConfiguration()
+    protected abstract Connection getConnection();
+
+    protected DatabaseConfiguration getConfiguration()
     {
         return configuration;
     }

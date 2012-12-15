@@ -3,9 +3,11 @@ package com.p000ison.dev.sqlapi;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.SelectQuery;
 import com.p000ison.dev.sqlapi.query.WhereQuery;
+import com.p000ison.dev.sqlapi.util.DatabaseUtil;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     private boolean descending;
     private DefaultWhereQuery<T> whereQuery;
     private Database database;
+    private PreparedStatement preparedStatement;
 
     public DefaultSelectQuery(Database database)
     {
@@ -78,11 +81,21 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     @Override
     public List<T> list()
     {
+        if (preparedStatement == null) {
+            prepareQuery();
+        }
         List<T> objects = new ArrayList<T>();
-
-        ResultSet result = database.executeDirectQuery(getQuery());
-        List<Column> columns = table.getRegisteredColumns();
         try {
+            if (whereQuery != null) {
+                List<DefaultWhereComparator<T>> comparators = whereQuery.getComparators();
+                for (int i = 0; i < comparators.size(); i++) {
+                    preparedStatement.setObject(i + 1, comparators.get(i).getExpectedValue());
+                }
+            }
+
+            ResultSet result = preparedStatement.executeQuery();
+            List<Column> columns = table.getRegisteredColumns();
+
             while (result.next()) {
                 T object = table.createNewInstance();
 
@@ -91,7 +104,9 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
 
                     Object obj = null;
 
-                    if (column.isSerializable()) {
+                    if (DatabaseUtil.isSupported(column.getType())) {
+                        obj = result.getObject(i + 1);
+                    } else if (column.isSerializable()) {
                         try {
                             ObjectInputStream inputStream = new ObjectInputStream(result.getBlob(i + 1).getBinaryStream());
                             obj = inputStream.readObject();
@@ -100,8 +115,6 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
                         } catch (ClassNotFoundException e) {
                             e.printStackTrace();
                         }
-                    } else {
-                        obj = result.getObject(i + 1);
                     }
 
                     column.setValue(object, obj);
@@ -115,8 +128,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         return objects;
     }
 
-    @Override
-    public String getQuery()
+    public void prepareQuery()
     {
         StringBuilder query = new StringBuilder("SELECT ");
         List<Column> columns = table.getRegisteredColumns();
@@ -138,11 +150,11 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
 
         if (getWhereQuery() != null) {
             query.append(" WHERE ");
-            List<DefaultWhereComparator> comparators = whereQuery.getComparators();
+            List<DefaultWhereComparator<T>> comparators = whereQuery.getComparators();
 
             if (!comparators.isEmpty()) {
                 for (DefaultWhereComparator comparator : comparators) {
-                    query.append(comparator.getColumn()).append(comparator.getOperator()).append(comparator.getExpectedValue());
+                    query.append(comparator.getColumn()).append(comparator.getOperator()).append('?');
 
                     if (comparator.isAnd()) {
                         query.append(" AND ");
@@ -158,6 +170,11 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
 
         query.append(';');
 
-        return query.toString();
+        preparedStatement = prepare(query.toString());
+    }
+
+    protected PreparedStatement prepare(String query)
+    {
+        return database.prepare(query);
     }
 }
