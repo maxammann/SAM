@@ -1,3 +1,22 @@
+/*
+ * This file is part of SQLDatabaseAPI (2012).
+ *
+ * SQLDatabaseAPI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SQLDatabaseAPI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Last modified: 18.12.12 18:21
+ */
+
 package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumn;
@@ -19,7 +38,7 @@ public abstract class TableBuilder {
     /**
      * A temporary query which is used to create a table or modify a table for example
      */
-    protected StringBuilder query;
+    private StringBuilder query = new StringBuilder();
     /**
      * The class which represents the table
      */
@@ -27,29 +46,33 @@ public abstract class TableBuilder {
     /**
      * The expected columns
      */
-    private List<Column> buildingColumns;
+    private List<Column> buildingColumns = new ArrayList<Column>();
     /**
      * Whether we have already found a primary key
      */
-    protected boolean primaryColumn = false;
-    /**
-     * The columns which are already in the database
-     */
-    private List<String> databaseColumns;
+    private boolean idColumn = false;
 
     private Database database;
 
     private String tableName;
 
     private boolean existed;
-
+    /**
+     * The constructor we use to build new instances (should have no parameters)
+     */
     private Constructor<? extends TableObject> ctor;
+
+    public static int UNSUPPORTED_TYPE = Integer.MAX_VALUE;
 
     public TableBuilder(Class<? extends TableObject> object, Database database)
     {
         this.object = object;
-
+        this.database = database;
         tableName = Database.getTableName(object);
+
+        if (tableName == null) {
+            throw new TableBuildingException("The name of the table is not given! Add the @DatabaseTable annotation!");
+        }
 
         if (!DatabaseUtil.validateTableName(tableName)) {
             throw new TableBuildingException("The name of the table %s is not valid!", tableName);
@@ -62,26 +85,15 @@ public abstract class TableBuilder {
             throw new TableBuildingException("No default constructor found in class %s!", object.getName());
         }
 
-        this.database = database;
-        query = new StringBuilder();
-        buildingColumns = new ArrayList<Column>();
-
         existed = database.existsDatabaseTable(tableName);
 
-        if (tableName == null) {
-            throw new TableBuildingException("The name of the table is not given! Add the @DatabaseTable annotation!");
-        }
-
         setupColumns();
-        databaseColumns = database.getDatabaseColumns(tableName);
     }
-
 
     public TableBuilder(TableObject object, Database database)
     {
         this(object.getClass(), database);
     }
-
 
     public TableBuilder createTable()
     {
@@ -149,6 +161,9 @@ public abstract class TableBuilder {
 
         Method[] methods = object.getDeclaredMethods();
 
+        //
+        // Math getters and setters together and validate the methods
+        //
         for (Method method : methods) {
             String columnName;
 
@@ -179,12 +194,14 @@ public abstract class TableBuilder {
 
             if (setter == null) {
                 column.setGetter(method);
+                column.setDatabaseType(getDatabaseDataType(column.getType()));
             } else {
                 column.setSetter(method);
                 column.setAnnotation(setter);
             }
         }
 
+        //Check if all MethodColumns are correct
         for (Iterator<Column> it = buildingColumns.iterator(); it.hasNext(); ) {
             Column column = it.next();
             if (column instanceof MethodColumn) {
@@ -198,13 +215,15 @@ public abstract class TableBuilder {
             }
         }
 
+        //Find all FieldColumns and add them
         for (Field field : object.getDeclaredFields()) {
             DatabaseColumn column;
             if ((column = field.getAnnotation(DatabaseColumn.class)) != null) {
                 if (existsColumn(column.databaseName())) {
                     throw new TableBuildingException("Duplicate column \"%s\"!", column.databaseName());
                 }
-                FieldColumn fieldColumn = new FieldColumn(field, column);
+                Column fieldColumn = new FieldColumn(field, column);
+                fieldColumn.setDatabaseType(getDatabaseDataType(fieldColumn.getType()));
                 buildingColumns.add(fieldColumn);
             }
         }
@@ -223,11 +242,6 @@ public abstract class TableBuilder {
         });
 
         buildingColumns = Collections.unmodifiableList(buildingColumns);
-
-
-        for (Column column : buildingColumns) {
-            column.setDatabaseType(getDatabaseDataType(column.getType()));
-        }
     }
 
     private void buildColumns()
@@ -242,7 +256,7 @@ public abstract class TableBuilder {
         }
 
         query.deleteCharAt(query.length() - 1);
-        primaryColumn = false;
+        idColumn = false;
     }
 
     private void buildModifyColumns()
@@ -250,6 +264,8 @@ public abstract class TableBuilder {
         if (buildingColumns.isEmpty()) {
             throw new TableBuildingException("The table must have at least one column!");
         }
+
+        List<String> databaseColumns = database.getDatabaseColumns(tableName);
 
         Set<Column> toAdd = new HashSet<Column>();
         boolean complete = false;
@@ -331,12 +347,17 @@ public abstract class TableBuilder {
 
     List<Column> getColumns()
     {
-        return Collections.unmodifiableList(buildingColumns);
+        return buildingColumns;
     }
 
     public String getTableName()
     {
         return tableName;
+    }
+
+    protected StringBuilder getBuilder()
+    {
+        return query;
     }
 }
 

@@ -1,4 +1,25 @@
+/*
+ * This file is part of SQLDatabaseAPI (2012).
+ *
+ * SQLDatabaseAPI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SQLDatabaseAPI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Last modified: 18.12.12 18:07
+ */
+
 package com.p000ison.dev.sqlapi;
+
+import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
 /**
  * Represents a Column
@@ -6,6 +27,9 @@ package com.p000ison.dev.sqlapi;
 public abstract class Column {
     private int databaseType;
 
+    protected Column()
+    {
+    }
 
     /**
      * Gets the class of the java object which represents this column
@@ -63,12 +87,12 @@ public abstract class Column {
      */
     public abstract boolean isUnique();
 
-    /**
-     * Whether this column is primary
-     *
-     * @return Whether this column is primary
-     */
-    public abstract boolean isPrimary();
+//    /**
+//     * Whether this column is primary
+//     *
+//     * @return Whether this column is primary
+//     */
+//    public abstract boolean isPrimary();
 
     /**
      * Sets a value for the column in the {@link TableObject}.
@@ -96,6 +120,16 @@ public abstract class Column {
 
     public abstract boolean isID();
 
+    /**
+     * Checks whether the type of this column is supported
+     *
+     * @return Whether this type of the column is supported
+     */
+    public final boolean isSupported()
+    {
+        return getDatabaseDataType() == TableBuilder.UNSUPPORTED_TYPE;
+    }
+
     public int getDatabaseDataType()
     {
         return databaseType;
@@ -103,6 +137,9 @@ public abstract class Column {
 
     void setDatabaseType(int databaseType)
     {
+        if (databaseType == TableBuilder.UNSUPPORTED_TYPE) {
+            throw new TableBuildingException("The type %s of the column %s is not supported!", getType(), getColumnName());
+        }
         this.databaseType = databaseType;
     }
 }

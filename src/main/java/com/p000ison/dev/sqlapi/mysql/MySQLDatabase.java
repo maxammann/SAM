@@ -1,3 +1,22 @@
+/*
+ * This file is part of SQLDatabaseAPI (2012).
+ *
+ * SQLDatabaseAPI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SQLDatabaseAPI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Last modified: 18.12.12 17:27
+ */
+
 package com.p000ison.dev.sqlapi.mysql;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
@@ -15,15 +34,13 @@ import java.sql.SQLException;
  */
 public final class MySQLDatabase extends Database {
 
-    private Connection connection;
-
-    public MySQLDatabase(MySQLConfiguration configuration) throws SQLException
+    public MySQLDatabase(MySQLConfiguration configuration) throws DatabaseConnectionException
     {
         super(configuration);
     }
 
     @Override
-    protected void connect(DatabaseConfiguration configuration) throws DatabaseConnectionException
+    protected Connection connect(DatabaseConfiguration configuration) throws DatabaseConnectionException
     {
         MysqlDataSource dataSource = new MysqlDataSource();
         MySQLConfiguration mysqlConfiguration = (MySQLConfiguration) configuration;
@@ -35,7 +52,7 @@ public final class MySQLDatabase extends Database {
         dataSource.setPort(mysqlConfiguration.getPort());
 
         try {
-            this.connection = dataSource.getConnection();
+            return dataSource.getConnection();
         } catch (SQLException e) {
             throw new DatabaseConnectionException(e);
         }
@@ -51,12 +68,6 @@ public final class MySQLDatabase extends Database {
     protected TableBuilder createTableBuilder(Class<? extends TableObject> table)
     {
         return new MySQLTableBuilder(table, this);
-    }
-
-    @Override
-    protected Connection getConnection()
-    {
-        return connection;
     }
 
     @Override

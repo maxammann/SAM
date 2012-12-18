@@ -1,7 +1,25 @@
+/*
+ * This file is part of SQLDatabaseAPI (2012).
+ *
+ * SQLDatabaseAPI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SQLDatabaseAPI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Last modified: 18.12.12 18:19
+ */
+
 package com.p000ison.dev.sqlapi.mysql;
 
 import com.p000ison.dev.sqlapi.*;
-import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
 import java.sql.Types;
 
@@ -24,6 +42,7 @@ public final class MySQLTableBuilder extends TableBuilder {
     protected void buildColumn(Column column)
     {
         Class<?> type = column.getType();
+        StringBuilder query = getBuilder();
         query.append(column.getColumnName()).append(' ');
 
         boolean allowModifyLength = true;
@@ -80,12 +99,15 @@ public final class MySQLTableBuilder extends TableBuilder {
             query.append(" AUTO_INCREMENT");
         }
 
-        if (column.isPrimary()) {
-            if (primaryColumn) {
-                throw new TableBuildingException("Duplicate primary/autoincrementing column %s!", column.getColumnName());
-            }
-            primaryColumn = true;
+        if (column.isID()) {
+//            if (idColumn) {
+//                throw new TableBuildingException("Duplicate primary/autoincrementing column %s!", column.getColumnName());
+//            }
+//            idColumn = true;
             query.append(" PRIMARY KEY");
+            if (!column.isAutoIncrementing()) {
+                query.append(" AUTO_INCREMENT");
+            }
         }
 
         if (!column.getDefaultValue().isEmpty()) {
@@ -136,6 +158,6 @@ public final class MySQLTableBuilder extends TableBuilder {
             return Types.BLOB;
         }
 
-        return -1;
+        return UNSUPPORTED_TYPE;
     }
 }

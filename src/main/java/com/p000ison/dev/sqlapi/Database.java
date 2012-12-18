@@ -1,3 +1,22 @@
+/*
+ * This file is part of SQLDatabaseAPI (2012).
+ *
+ * SQLDatabaseAPI is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SQLDatabaseAPI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Last modified: 18.12.12 18:29
+ */
+
 package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
@@ -8,22 +27,28 @@ import com.p000ison.dev.sqlapi.util.DatabaseUtil;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a Database
  */
 public abstract class Database {
 
+    /**
+     * The configuration object which holds all settings
+     */
     private DatabaseConfiguration configuration;
+    /**
+     * The connection to the database
+     */
+    private Connection connection;
     /**
      * Whether old columns should be dropped
      */
     private boolean dropOldColumns = false;
-    /**
-     * Prepared statements
-     */
-    private TreeMap<Integer, PreparedStatement> preparedStatements = new TreeMap<Integer, PreparedStatement>();
     /**
      * A map of registered tables (classes) and a list of columns
      */
@@ -33,9 +58,8 @@ public abstract class Database {
      * Creates a new database connection based on the configuration
      *
      * @param configuration The database configuration
-     * @throws SQLException
      */
-    protected Database(DatabaseConfiguration configuration) throws SQLException
+    protected Database(DatabaseConfiguration configuration) throws DatabaseConnectionException
     {
         this.configuration = configuration;
         String driver = configuration.getDriverName();
@@ -44,7 +68,10 @@ public abstract class Database {
         } catch (Exception e) {
             throw new RuntimeException("Failed to load driver " + driver + "!");
         }
-        connect(configuration);
+        long start = System.currentTimeMillis();
+        connection = connect(configuration);
+        long finish = System.currentTimeMillis();
+        System.out.printf("Check connection took %s!\n", finish - start);
     }
 
     /**
@@ -59,26 +86,25 @@ public abstract class Database {
         return annotation == null ? null : annotation.name();
     }
 
-    private int prepareStatement(String query)
-    {
-        PreparedStatement statement;
-        try {
-            statement = getConnection().prepareStatement(query);
-        } catch (SQLException e) {
-            throw new QueryException(e);
-        }
-        int statementId;
-        if (preparedStatements.isEmpty()) {
-            statementId = 0;
-        } else {
-            statementId = preparedStatements.lastKey() + 1;
-        }
-        preparedStatements.put(statementId, statement);
-        return statementId;
-    }
+//    private int prepareStatement(String query)
+//    {
+//        PreparedStatement statement;
+//        try {
+//            statement = getConnection().prepareStatement(query);
+//        } catch (SQLException e) {
+//            throw new QueryException(e);
+//        }
+//        int statementId;
+//        if (preparedStatements.isEmpty()) {
+//            statementId = 0;
+//        } else {
+//            statementId = preparedStatements.lastKey() + 1;
+//        }
+//        preparedStatements.put(statementId, statement);
+//        return statementId;
+//    }
 
-
-    protected abstract void connect(DatabaseConfiguration configuration) throws DatabaseConnectionException;
+    protected abstract Connection connect(DatabaseConfiguration configuration) throws DatabaseConnectionException;
 
     /**
      * Closes the connection to the database
@@ -91,8 +117,15 @@ public abstract class Database {
 
     public final Database registerTable(Class<? extends TableObject> table)
     {
+
+
+        long start = System.currentTimeMillis();
         TableBuilder builder = createTableBuilder(table);
+
+        long finish = System.currentTimeMillis();
+        System.out.printf("Check register took %s!\n", finish - start);
         RegisteredTable registeredTable = new RegisteredTable(builder.getTableName(), table, builder.getColumns(), builder.getDefaultConstructor());
+
         registeredTable.prepareSaveStatement(this);
         registeredTables.add(registeredTable);
 
@@ -117,15 +150,15 @@ public abstract class Database {
         return registerTable(table.getClass());
     }
 
-    private List<String> getDatabaseColumns(Class<? extends TableObject> table)
-    {
-        return getDatabaseColumns(getTableName(table));
-    }
-
-    private List<String> getDatabaseColumns(TableObject table)
-    {
-        return getDatabaseColumns(getTableName(table.getClass()));
-    }
+//    private List<String> getDatabaseColumns(Class<? extends TableObject> table)
+//    {
+//        return getDatabaseColumns(getTableName(table));
+//    }
+//
+//    private List<String> getDatabaseColumns(TableObject table)
+//    {
+//        return getDatabaseColumns(getTableName(table.getClass()));
+//    }
 
     List<String> getDatabaseColumns(String table)
     {
@@ -160,7 +193,7 @@ public abstract class Database {
 
         ResultSet columnResult;
         try {
-            columnResult = this.getConnection().getMetaData().getTables(null, null, null, null);
+            columnResult = this.getMetadata().getTables(null, null, null, null);
 
             while (columnResult.next()) {
                 columns.add(columnResult.getString("TABLE_NAME"));
@@ -171,30 +204,6 @@ public abstract class Database {
         }
 
         return columns;
-    }
-
-    void executeDirectUpdate(String query)
-    {
-        if (query == null) {
-            return;
-        }
-        try {
-            getConnection().createStatement().executeUpdate(query);
-        } catch (SQLException e) {
-            throw new QueryException(e);
-        }
-    }
-
-    ResultSet executeDirectQuery(String query)
-    {
-        if (query == null) {
-            return null;
-        }
-        try {
-            return getConnection().createStatement().executeQuery(query);
-        } catch (SQLException e) {
-            throw new QueryException(e);
-        }
     }
 
     public RegisteredTable getRegisteredTable(Class<? extends TableObject> table)
@@ -261,7 +270,6 @@ public abstract class Database {
         }
     }
 
-
     PreparedStatement prepare(String query)
     {
         try {
@@ -271,7 +279,10 @@ public abstract class Database {
         }
     }
 
-    protected abstract Connection getConnection();
+    protected final Connection getConnection()
+    {
+        return connection;
+    }
 
     protected DatabaseConfiguration getConfiguration()
     {
@@ -287,4 +298,28 @@ public abstract class Database {
     {
         this.dropOldColumns = dropOldColumns;
     }
+
+    void executeDirectUpdate(String query)
+    {
+        if (query == null) {
+            return;
+        }
+        try {
+            getConnection().createStatement().executeUpdate(query);
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
+    }
+//
+//    ResultSet executeDirectQuery(String query)
+//    {
+//        if (query == null) {
+//            return null;
+//        }
+//        try {
+//            return getConnection().createStatement().executeQuery(query);
+//        } catch (SQLException e) {
+//            throw new QueryException(e);
+//        }
+//    }
 }
