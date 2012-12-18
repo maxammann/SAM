@@ -45,9 +45,9 @@ public class RegisteredTable {
         this.constructor = constructor;
     }
 
-    public boolean isRegistered(Object obj)
+    public boolean isRegistered(TableObject obj)
     {
-        return obj.getClass().equals(registeredClass);
+        return isRegisteredClass(obj.getClass());
     }
 
     public Column getColumn(String columnName)

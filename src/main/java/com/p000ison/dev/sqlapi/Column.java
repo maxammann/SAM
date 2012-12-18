@@ -127,7 +127,7 @@ public abstract class Column {
      */
     public final boolean isSupported()
     {
-        return getDatabaseDataType() == TableBuilder.UNSUPPORTED_TYPE;
+        return getDatabaseDataType() != TableBuilder.UNSUPPORTED_TYPE;
     }
 
     public int getDatabaseDataType()

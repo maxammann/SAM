@@ -34,7 +34,7 @@ public class Person implements TableObject {
     private int id;
 
     @DatabaseColumn(position = 2, databaseName = "name")
-    public String name = "b";
+    public String name = "z";
 
 
     public Person()

@@ -23,7 +23,6 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseColumn;
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnGetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnSetter;
 import com.p000ison.dev.sqlapi.exception.TableBuildingException;
-import com.p000ison.dev.sqlapi.util.DatabaseUtil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -74,7 +73,7 @@ public abstract class TableBuilder {
             throw new TableBuildingException("The name of the table is not given! Add the @DatabaseTable annotation!");
         }
 
-        if (!DatabaseUtil.validateTableName(tableName)) {
+        if (!Database.validateTableName(tableName)) {
             throw new TableBuildingException("The name of the table %s is not valid!", tableName);
         }
 
@@ -182,7 +181,7 @@ public abstract class TableBuilder {
                 columnName = getter.databaseName();
             }
 
-            if (!DatabaseUtil.validateColumnName(columnName)) {
+            if (!Database.validateColumnName(columnName)) {
                 throw new TableBuildingException("The name of the column %s is not valid!", columnName);
             }
 

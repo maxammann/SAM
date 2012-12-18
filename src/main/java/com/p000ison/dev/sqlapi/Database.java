@@ -22,7 +22,6 @@ package com.p000ison.dev.sqlapi;
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
-import com.p000ison.dev.sqlapi.util.DatabaseUtil;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -84,6 +83,16 @@ public abstract class Database {
     {
         DatabaseTable annotation = clazz.getAnnotation(DatabaseTable.class);
         return annotation == null ? null : annotation.name();
+    }
+
+    public static boolean validateColumnName(String name)
+    {
+        return name.matches("^[a-zA-Z]+$");
+    }
+
+    public static boolean validateTableName(String name)
+    {
+        return validateColumnName(name);
     }
 
 //    private int prepareStatement(String query)
@@ -245,17 +254,12 @@ public abstract class Database {
                 Object value = column.getValue(object);
 
                 if (value != null) {
-                    if (DatabaseUtil.isSupported(column.getType())) {
+                    if (column.isSupported()) {
                         statement.setObject(i + 1, value, column.getDatabaseDataType());
                     } else if (column.isSerializable()) {
                         Blob blob = getConnection().createBlob();
-
-                        try {
-                            ObjectOutputStream stream = new ObjectOutputStream(blob.setBinaryStream(1));
-                            stream.writeObject(value);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        ObjectOutputStream stream = new ObjectOutputStream(blob.setBinaryStream(1));
+                        stream.writeObject(value);
 
                         statement.setBlob(i + 1, blob);
                     }
@@ -267,6 +271,8 @@ public abstract class Database {
             registeredTable.getInsertStatement().executeUpdate();
         } catch (SQLException e) {
             throw new QueryException(e);
+        } catch (IOException e) {
+
         }
     }
 

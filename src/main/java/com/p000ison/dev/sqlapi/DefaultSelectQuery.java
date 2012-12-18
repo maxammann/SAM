@@ -22,7 +22,6 @@ package com.p000ison.dev.sqlapi;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.SelectQuery;
 import com.p000ison.dev.sqlapi.query.WhereQuery;
-import com.p000ison.dev.sqlapi.util.DatabaseUtil;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -123,7 +122,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
 
                     Object obj = null;
 
-                    if (DatabaseUtil.isSupported(column.getType())) {
+                    if (column.isSupported()) {
                         obj = result.getObject(i + 1);
                     } else if (column.isSerializable()) {
                         try {
