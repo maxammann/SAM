@@ -19,8 +19,6 @@
 
 package com.p000ison.dev.sqlapi;
 
-import com.p000ison.dev.sqlapi.exception.TableBuildingException;
-
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -72,7 +70,7 @@ public class RegisteredTable {
     }
 
     @SuppressWarnings("unchecked")
-    <T> T createNewInstance()
+    public <T> T createNewInstance()
     {
         try {
             return (T) constructor.newInstance();
@@ -105,36 +103,36 @@ public class RegisteredTable {
 
     void prepareSaveStatement(Database database)
     {
-        StringBuilder query = new StringBuilder("UPDATE ").append(getName()).append(" SET ");
-        Column id = null;
-        for (Column column : getRegisteredColumns()) {
-            query.append(column.getColumnName()).append("=?,");
-            if (column.isID()) {
-                id = column;
-            }
-        }
-        if (id == null) {
-            throw new TableBuildingException("The table %s does not have an id!", getName());
-        }
-        query.append(" WHERE ").append(id.getColumnName()).append("=?");
-        query.deleteCharAt(query.length() - 1);
-        query.append(';');
-        updateStatement = database.prepare(query.toString());
-
-        query.setLength(0);
-        query.append("INSERT INTO ").append(getName()).append(" (");
-
-        for (Column column : getRegisteredColumns()) {
-            query.append(column.getColumnName()).append(',');
-        }
-        query.deleteCharAt(query.length() - 1);
-        query.append(") VALUES (");
-        for (int i = 0; i < getRegisteredColumns().size(); i++) {
-            query.append("?,");
-        }
-        query.deleteCharAt(query.length() - 1);
-        query.append(");");
-        insertStatement = database.prepare(query.toString());
+//        StringBuilder query = new StringBuilder("UPDATE ").append(getName()).append(" SET ");
+//        Column id = null;
+//        for (Column column : getRegisteredColumns()) {
+//            query.append(column.getColumnName()).append("=?,");
+//            if (column.isID()) {
+//                id = column;
+//            }
+//        }
+//        if (id == null) {
+//            throw new TableBuildingException("The table %s does not have an id!", getName());
+//        }
+//        query.append(" WHERE ").append(id.getColumnName()).append("=?");
+//        query.deleteCharAt(query.length() - 1);
+//        query.append(';');
+//        updateStatement = database.prepare(query.toString());
+//
+//        query.setLength(0);
+//        query.append("INSERT INTO ").append(getName()).append(" (");
+//
+//        for (Column column : getRegisteredColumns()) {
+//            query.append(column.getColumnName()).append(',');
+//        }
+//        query.deleteCharAt(query.length() - 1);
+//        query.append(") VALUES (");
+//        for (int i = 0; i < getRegisteredColumns().size(); i++) {
+//            query.append("?,");
+//        }
+//        query.deleteCharAt(query.length() - 1);
+//        query.append(");");
+//        insertStatement = database.prepare(query.toString());
     }
 
     public PreparedStatement getUpdateStatement()

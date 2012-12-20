@@ -14,36 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Last modified: 18.12.12 17:27
+ * Last modified: 20.12.12 17:39
  */
 
-package com.p000ison.dev.sqlapi.query;
+package com.p000ison.dev.sqlapi.jbdc;
 
-import com.p000ison.dev.sqlapi.Column;
+import com.p000ison.dev.sqlapi.DefaultSelectQuery;
 import com.p000ison.dev.sqlapi.PreparedQuery;
-import com.p000ison.dev.sqlapi.RegisteredTable;
 import com.p000ison.dev.sqlapi.TableObject;
 
 /**
- *
+ * Represents a JBDCSelectQuery
  */
-public interface SelectQuery<T extends TableObject> {
+public class JBDCSelectQuery<T extends TableObject> extends DefaultSelectQuery<T> {
 
-    SelectQuery<T> from(Class<T> object);
+    public JBDCSelectQuery(JBDCDatabase database)
+    {
+        super(database);
+    }
 
-    SelectQuery<T> from(RegisteredTable table);
-
-    WhereQuery<T> where();
-
-    SelectQuery<T> descending();
-
-    SelectQuery<T> orderBy(Column order);
-
-    SelectQuery<T> orderBy(String order);
-
-    SelectQuery<T> groupBy(Column group);
-
-    SelectQuery<T> groupBy(String group);
-
-    PreparedQuery<T> prepare();
+    @Override
+    protected PreparedQuery<T> getPreparedQuery()
+    {
+        return new JBDCPreparedQuery<T>((JBDCDatabase) getDatabase(), getQuery(), getTable());
+    }
 }

@@ -19,14 +19,16 @@
 
 package com.p000ison.dev.sqlapi.test;
 
-import com.p000ison.dev.sqlapi.Database;
-import com.p000ison.dev.sqlapi.DefaultSelectQuery;
+import com.p000ison.dev.sqlapi.jbdc.JBDCDatabase;
+import com.p000ison.dev.sqlapi.jbdc.JBDCSelectQuery;
 import com.p000ison.dev.sqlapi.mysql.MySQLConfiguration;
 import com.p000ison.dev.sqlapi.mysql.MySQLDatabase;
-import com.p000ison.dev.sqlapi.query.SelectQuery;
 
+import java.io.FileNotFoundException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a StartTest
@@ -34,7 +36,7 @@ import java.sql.SQLException;
 public class StartTest {
     private static final int PORT = 3306;
 
-    public static void main(String[] args)
+    public static void main(String[] args) throws FileNotFoundException
     {
         try {
             DriverManager.getConnection("jdbc:mysql://localhost/test?user=root&password=m1nt");
@@ -47,15 +49,14 @@ public class StartTest {
 
             Person person = new Person();
 
-            Database db = new MySQLDatabase(new MySQLConfiguration("root", "m1nt", "localhost", PORT, "test"));
+            JBDCDatabase db = new MySQLDatabase(new MySQLConfiguration("root", "m1nt", "localhost", PORT, "test"));
 //            Database db = new SQLiteDatabase(new SQLiteConfiguration(new File("/home/max/Arbeitsfläche/test.db")));
             db.setDropOldColumns(true);
             db.registerTable(person);
 //            db.getConnection().prepareStatement("SELECT * FROM d").executeQuery();
 
-            SelectQuery<Person> selectQuery = new DefaultSelectQuery<Person>(db);
-            selectQuery.from(Person.class);
-            System.out.println(selectQuery.list().get(0));
+            Set<Person> result = new JBDCSelectQuery<Person>(db).prepare().getResults(new HashSet<Person>());
+            System.out.println(result);
 
             db.close();
 

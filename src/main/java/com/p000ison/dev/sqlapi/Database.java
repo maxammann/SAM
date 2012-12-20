@@ -23,10 +23,6 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,10 +36,6 @@ public abstract class Database {
      * The configuration object which holds all settings
      */
     private DatabaseConfiguration configuration;
-    /**
-     * The connection to the database
-     */
-    private Connection connection;
     /**
      * Whether old columns should be dropped
      */
@@ -67,10 +59,6 @@ public abstract class Database {
         } catch (Exception e) {
             throw new RuntimeException("Failed to load driver " + driver + "!");
         }
-        long start = System.currentTimeMillis();
-        connection = connect(configuration);
-        long finish = System.currentTimeMillis();
-        System.out.printf("Check connection took %s!\n", finish - start);
     }
 
     /**
@@ -113,16 +101,20 @@ public abstract class Database {
 //        return statementId;
 //    }
 
-    protected abstract Connection connect(DatabaseConfiguration configuration) throws DatabaseConnectionException;
 
     /**
      * Closes the connection to the database
      *
-     * @throws SQLException
+     * @throws QueryException
      */
-    public abstract void close() throws SQLException;
+    public abstract void close() throws QueryException;
 
     protected abstract TableBuilder createTableBuilder(Class<? extends TableObject> table);
+
+    public final Database registerTable(TableObject table)
+    {
+        return registerTable(table.getClass());
+    }
 
     public final Database registerTable(Class<? extends TableObject> table)
     {
@@ -149,14 +141,11 @@ public abstract class Database {
         return this;
     }
 
+    public abstract boolean isConnected();
+
     boolean existsDatabaseTable(String table)
     {
         return getDatabaseTables().contains(table);
-    }
-
-    public final Database registerTable(TableObject table)
-    {
-        return registerTable(table.getClass());
     }
 
 //    private List<String> getDatabaseColumns(Class<? extends TableObject> table)
@@ -169,51 +158,9 @@ public abstract class Database {
 //        return getDatabaseColumns(getTableName(table.getClass()));
 //    }
 
-    List<String> getDatabaseColumns(String table)
-    {
-        List<String> columns = new ArrayList<String>();
+    public abstract List<String> getDatabaseColumns(String table);
 
-        try {
-            ResultSet columnResult = getMetadata().getColumns(null, null, table, null);
-
-
-            while (columnResult.next()) {
-                columns.add(columnResult.getString("COLUMN_NAME"));
-            }
-        } catch (SQLException e) {
-            throw new QueryException(e);
-        }
-
-        return columns;
-    }
-
-    private DatabaseMetaData getMetadata()
-    {
-        try {
-            return getConnection().getMetaData();
-        } catch (SQLException e) {
-            throw new QueryException(e);
-        }
-    }
-
-    public final Set<String> getDatabaseTables()
-    {
-        Set<String> columns = new HashSet<String>();
-
-        ResultSet columnResult;
-        try {
-            columnResult = this.getMetadata().getTables(null, null, null, null);
-
-            while (columnResult.next()) {
-                columns.add(columnResult.getString("TABLE_NAME"));
-            }
-
-        } catch (SQLException e) {
-            throw new QueryException(e);
-        }
-
-        return columns;
-    }
+    public abstract Set<String> getDatabaseTables();
 
     public RegisteredTable getRegisteredTable(Class<? extends TableObject> table)
     {
@@ -226,69 +173,56 @@ public abstract class Database {
         return null;
     }
 
-    public void save(TableObject tableObject)
-    {
-        RegisteredTable table = getRegisteredTable(tableObject.getClass());
-        if (table == null) {
-            throw new QueryException("The class %s is not registered!");
-        }
-        insert(table, tableObject);
-    }
+//    public void save(TableObject tableObject)
+//    {
+//        RegisteredTable table = getRegisteredTable(tableObject.getClass());
+//        if (table == null) {
+//            throw new QueryException("The class %s is not registered!");
+//        }
+//        insert(table, tableObject);
+//    }
 
-    private void insert(RegisteredTable registeredTable, TableObject object)
-    {
-        registerSaveStatement(registeredTable.getInsertStatement(), registeredTable, object);
-    }
+//    private void insert(RegisteredTable registeredTable, TableObject object)
+//    {
+//        registerSaveStatement(registeredTable.getInsertStatement(), registeredTable, object);
+//    }
+//
+//    private void update(RegisteredTable registeredTable, TableObject object)
+//    {
+//        registerSaveStatement(registeredTable.getUpdateStatement(), registeredTable, object);
+//    }
+//
+//    private void registerSaveStatement(PreparedStatement statement, RegisteredTable registeredTable, TableObject object)
+//    {
+//        try {
+//            List<Column> registeredColumns = registeredTable.getRegisteredColumns();
+//            for (int i = 0; i < registeredColumns.size(); i++) {
+//                Column column = registeredColumns.get(i);
+//                Object value = column.getValue(object);
+//
+//                if (value != null) {
+//                    if (column.isSupported()) {
+//                        statement.setObject(i + 1, value, column.getDatabaseDataType());
+//                    } else if (column.isSerializable()) {
+//                        Blob blob = getConnection().createBlob();
+//                        ObjectOutputStream stream = new ObjectOutputStream(blob.setBinaryStream(1));
+//                        stream.writeObject(value);
+//
+//                        statement.setBlob(i + 1, blob);
+//                    }
+//                } else {
+//                    statement.setNull(i + 1, column.getDatabaseDataType());
+//                }
+//            }
+//
+//            registeredTable.getInsertStatement().executeUpdate();
+//        } catch (SQLException e) {
+//            throw new QueryException(e);
+//        } catch (IOException e) {
+//
+//        }
+//    }
 
-    private void update(RegisteredTable registeredTable, TableObject object)
-    {
-        registerSaveStatement(registeredTable.getUpdateStatement(), registeredTable, object);
-    }
-
-    private void registerSaveStatement(PreparedStatement statement, RegisteredTable registeredTable, TableObject object)
-    {
-        try {
-            List<Column> registeredColumns = registeredTable.getRegisteredColumns();
-            for (int i = 0; i < registeredColumns.size(); i++) {
-                Column column = registeredColumns.get(i);
-                Object value = column.getValue(object);
-
-                if (value != null) {
-                    if (column.isSupported()) {
-                        statement.setObject(i + 1, value, column.getDatabaseDataType());
-                    } else if (column.isSerializable()) {
-                        Blob blob = getConnection().createBlob();
-                        ObjectOutputStream stream = new ObjectOutputStream(blob.setBinaryStream(1));
-                        stream.writeObject(value);
-
-                        statement.setBlob(i + 1, blob);
-                    }
-                } else {
-                    statement.setNull(i + 1, column.getDatabaseDataType());
-                }
-            }
-
-            registeredTable.getInsertStatement().executeUpdate();
-        } catch (SQLException e) {
-            throw new QueryException(e);
-        } catch (IOException e) {
-
-        }
-    }
-
-    PreparedStatement prepare(String query)
-    {
-        try {
-            return getConnection().prepareStatement(query);
-        } catch (SQLException e) {
-            throw new QueryException(e);
-        }
-    }
-
-    protected final Connection getConnection()
-    {
-        return connection;
-    }
 
     protected DatabaseConfiguration getConfiguration()
     {
@@ -305,17 +239,8 @@ public abstract class Database {
         this.dropOldColumns = dropOldColumns;
     }
 
-    void executeDirectUpdate(String query)
-    {
-        if (query == null) {
-            return;
-        }
-        try {
-            getConnection().createStatement().executeUpdate(query);
-        } catch (SQLException e) {
-            throw new QueryException(e);
-        }
-    }
+
+    protected abstract boolean executeDirectUpdate(String query);
 //
 //    ResultSet executeDirectQuery(String query)
 //    {
