@@ -14,33 +14,33 @@
  * You should have received a copy of the GNU General Public License
  * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Last modified: 18.12.12 17:27
+ * Last modified: 21.12.12 00:07
  */
 
-package com.p000ison.dev.sqlapi.query;
-
-import com.p000ison.dev.sqlapi.Column;
-import com.p000ison.dev.sqlapi.RegisteredTable;
-import com.p000ison.dev.sqlapi.TableObject;
+package com.p000ison.dev.sqlapi;
 
 /**
- *
+ * Represents a DefaultOrderEntry
  */
-public interface SelectQuery<T extends TableObject> {
+public class DefaultOrderEntry {
 
-    SelectQuery<T> from(Class<T> object);
+    private final String order;
+    private final boolean desc;
 
-    SelectQuery<T> from(RegisteredTable table);
+    DefaultOrderEntry(String order, boolean desc)
+    {
+        this.order = order;
+        this.desc = desc;
+    }
 
-    WhereQuery<T> where();
 
-    SelectQuery<T> orderBy(Column order);
+    protected String getOrder()
+    {
+        return order;
+    }
 
-    SelectQuery<T> orderByDescending(Column order);
-
-    SelectQuery<T> orderBy(String order);
-
-    SelectQuery<T> orderByDescending(String order);
-
-    PreparedSelectQuery<T> prepare();
+    protected boolean isDescending()
+    {
+        return desc;
+    }
 }

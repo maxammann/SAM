@@ -58,7 +58,7 @@ public class StartTest {
 
 //            System.out.println(person.id);
 
-            PreparedSelectQuery<Person> result = new JBDCSelectQuery<Person>(db).from(Person.class).prepare();
+            PreparedSelectQuery<Person> result = new JBDCSelectQuery<Person>(db).from(Person.class).orderBy("id").prepare();
             System.out.println(result.getResults());
             db.close();
 

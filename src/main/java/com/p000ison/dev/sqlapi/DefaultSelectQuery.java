@@ -23,6 +23,7 @@ import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 import com.p000ison.dev.sqlapi.query.SelectQuery;
 import com.p000ison.dev.sqlapi.query.WhereQuery;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,9 +32,9 @@ import java.util.List;
 public abstract class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T> {
 
     private RegisteredTable table;
-    private boolean descending;
     private DefaultWhereQuery<T> whereQuery;
     private Database database;
+    private List<DefaultOrderEntry> orderBy = new ArrayList<DefaultOrderEntry>();
 
     public DefaultSelectQuery(Database database)
     {
@@ -61,33 +62,28 @@ public abstract class DefaultSelectQuery<T extends TableObject> implements Selec
     }
 
     @Override
-    public SelectQuery<T> descending()
+    public SelectQuery<T> orderBy(Column order)
     {
-        this.descending = true;
-        return this;
+        return orderBy(order.getColumnName());
     }
 
     @Override
-    public SelectQuery<T> orderBy(Column order)
+    public SelectQuery<T> orderByDescending(Column order)
     {
+        return orderByDescending(order.getColumnName());
+    }
+
+    @Override
+    public SelectQuery<T> orderByDescending(String order)
+    {
+        orderBy.add(new DefaultOrderEntry(order, true));
         return this;
     }
 
     @Override
     public SelectQuery<T> orderBy(String order)
     {
-        return this;
-    }
-
-    @Override
-    public SelectQuery<T> groupBy(Column group)
-    {
-        return this;
-    }
-
-    @Override
-    public SelectQuery<T> groupBy(String group)
-    {
+        orderBy.add(new DefaultOrderEntry(order, false));
         return this;
     }
 
@@ -128,10 +124,6 @@ public abstract class DefaultSelectQuery<T extends TableObject> implements Selec
 
         query.append(" FROM ").append(table.getName());
 
-        if (descending) {
-            query.append(" ORDER BY DESC");
-        }
-
         if (getWhereQuery() != null) {
             query.append(" WHERE ");
             List<DefaultWhereComparator<T>> comparators = whereQuery.getComparators();
@@ -150,6 +142,23 @@ public abstract class DefaultSelectQuery<T extends TableObject> implements Selec
 
                 }
             }
+        }
+
+        if (!orderBy.isEmpty()) {
+            query.append(" ORDER BY ");
+            for (DefaultOrderEntry entry : orderBy) {
+                if (entry.getOrder() != null) {
+                    query.append(entry.getOrder());
+                    if (!entry.isDescending()) {
+                        query.append(',');
+                    }
+                }
+                if (entry.isDescending()) {
+                    query.append(" DESC,");
+                }
+            }
+
+            query.deleteCharAt(query.length() - 1);
         }
 
         query.append(';');

@@ -31,7 +31,7 @@ public class Person implements TableObject {
     public String formattedName = "p";
 
     @DatabaseColumn(position = 1, databaseName = "id", id = true)
-    public int id = -1;
+    public int id = 0;
 
     @DatabaseColumn(position = 2, databaseName = "name")
     public String name = "gsdfgc";
@@ -39,6 +39,16 @@ public class Person implements TableObject {
 
     public Person()
     {
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Person{" +
+                "formattedName='" + formattedName + '\'' +
+                ", id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 
     @DatabaseColumnSetter(position = 3, databaseName = "fname")
@@ -52,4 +62,6 @@ public class Person implements TableObject {
     {
         return formattedName;
     }
+
+
 }

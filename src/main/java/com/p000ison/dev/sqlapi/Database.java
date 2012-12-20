@@ -180,28 +180,29 @@ public abstract class Database {
         if (table == null) {
             throw new QueryException("The class %s is not registered!");
         }
-        if (existsEntry(table, tableObject)) {
-            update(table, tableObject);
+
+        Column idColumn = table.getIDColumn();
+
+        if (((Number) idColumn.getValue(tableObject)).longValue() <= 0 || !existsEntry(table, tableObject)) {
+            insert(table, tableObject, idColumn);
         } else {
-            insert(table, tableObject);
+            update(table, tableObject, idColumn);
         }
     }
 
-    private void insert(RegisteredTable registeredTable, TableObject object)
+    private void insert(RegisteredTable registeredTable, TableObject object, Column idColumn)
     {
         PreparedQuery insert = registeredTable.getInsertStatement();
         setColumnValues(insert, registeredTable, object);
-        Column idColumn = registeredTable.getIDColumn();
+
         idColumn.setValue(object, getLastEntryId(registeredTable));
         insert.update();
     }
 
-    private void update(RegisteredTable registeredTable, TableObject object)
+    private void update(RegisteredTable registeredTable, TableObject object, Column idColumn)
     {
-        System.out.println("update");
         PreparedQuery update = registeredTable.getUpdateStatement();
         int i = setColumnValues(update, registeredTable, object);
-        Column idColumn = registeredTable.getIDColumn();
         update.set(idColumn, i, idColumn.getValue(object));
         update.update();
     }
