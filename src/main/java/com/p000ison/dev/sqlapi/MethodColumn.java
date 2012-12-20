@@ -38,31 +38,6 @@ final class MethodColumn extends Column {
     {
     }
 
-    static void validateGetterMethod(Method method)
-    {
-        Class<?> type = method.getReturnType();
-        if (type.equals(void.class)) {
-            throw new TableBuildingException("The return type of a getter method can not be \"void\": %s", method.getName());
-        }
-
-        if (method.getParameterTypes().length != 0) {
-            throw new TableBuildingException("A getter method can not have any parameters!: %s", method.getName());
-        }
-    }
-
-    static void validateSetterMethod(Method method)
-    {
-        Class<?> type = method.getReturnType();
-
-        if (!type.equals(void.class)) {
-            throw new TableBuildingException("The return type of a getter method must be \"void\": %s", method.getName());
-        }
-
-        if (method.getParameterTypes().length != 1) {
-            throw new TableBuildingException("A getter method must have 1 parameter!: \"%s\"", method.getName());
-        }
-    }
-
     public Method getGetter()
     {
         return getter;
@@ -73,8 +48,18 @@ final class MethodColumn extends Column {
         if (this.getter != null) {
             throw new TableBuildingException("Duplicate column \"%s\"!", getColumnName());
         }
+
+        Class<?> type = getter.getReturnType();
+
+        if (type.equals(void.class)) {
+            throw new TableBuildingException("The return type of a getter method can not be \"void\": %s", getter.getName());
+        }
+
+        if (getter.getParameterTypes().length != 0) {
+            throw new TableBuildingException("A getter method can not have any parameters!: %s", getter.getName());
+        }
         this.getter = getter;
-        getter.setAccessible(true);
+        this.getter.setAccessible(true);
     }
 
     public Method getSetter()
@@ -87,6 +72,17 @@ final class MethodColumn extends Column {
         if (this.setter != null) {
             throw new TableBuildingException("Duplicate column \"%s\"!", getColumnName());
         }
+
+        Class<?> type = setter.getReturnType();
+
+        if (!type.equals(void.class)) {
+            throw new TableBuildingException("The return type of a getter method must be \"void\": %s", setter.getName());
+        }
+
+        if (setter.getParameterTypes().length != 1) {
+            throw new TableBuildingException("A getter method must have 1 parameter!: \"%s\"", setter.getName());
+        }
+
         this.setter = setter;
         setter.setAccessible(true);
     }
@@ -109,10 +105,7 @@ final class MethodColumn extends Column {
 
         MethodColumn that = (MethodColumn) o;
 
-        if (getter != null ? !getter.equals(that.getter) : that.getter != null) return false;
-        if (setter != null ? !setter.equals(that.setter) : that.setter != null) return false;
-
-        return true;
+        return (setter != null && setter.equals(that.setter)) || (getter != null && getter.equals(that.getter));
     }
 
     @Override
@@ -147,7 +140,7 @@ final class MethodColumn extends Column {
         return annotation.position();
     }
 
-    void validate()
+    public void validate()
     {
         if (!getType().equals(getSetter().getParameterTypes()[0])) {
             throw new TableBuildingException("The parameter of the setter method and the return type of the getter method do not equal: %s != %s", getSetter().getName(), getGetter().getName());

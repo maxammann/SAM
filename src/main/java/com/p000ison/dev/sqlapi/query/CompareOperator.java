@@ -23,7 +23,7 @@ package com.p000ison.dev.sqlapi.query;
  * Represents a CompareOperator
  */
 public enum CompareOperator {
-    EQUALS("="), GREATER_THAN(">"), LESS_THAN("<");
+    EQUALS("="), GREATER_THAN(">"), LESS_THAN("<"), NOT_EQUAL("!=");
 
     private String sign;
 

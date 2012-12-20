@@ -19,6 +19,7 @@
 
 package com.p000ison.dev.sqlapi;
 
+import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 import com.p000ison.dev.sqlapi.query.SelectQuery;
 import com.p000ison.dev.sqlapi.query.WhereQuery;
 
@@ -42,7 +43,7 @@ public abstract class DefaultSelectQuery<T extends TableObject> implements Selec
     @Override
     public SelectQuery<T> from(Class<T> object)
     {
-        table = database.getRegisteredTable(object);
+        this.table = database.getRegisteredTable(object);
         return this;
     }
 
@@ -95,12 +96,12 @@ public abstract class DefaultSelectQuery<T extends TableObject> implements Selec
         return whereQuery;
     }
 
-    protected abstract PreparedQuery<T> getPreparedQuery();
+    protected abstract PreparedSelectQuery<T> getPreparedQuery();
 
     @Override
-    public final PreparedQuery<T> prepare()
+    public final PreparedSelectQuery<T> prepare()
     {
-        PreparedQuery<T> preparedQuery = getPreparedQuery();
+        PreparedSelectQuery<T> preparedQuery = getPreparedQuery();
         if (whereQuery != null) {
             List<DefaultWhereComparator<T>> comparators = whereQuery.getComparators();
             for (int i = 0; i < comparators.size(); i++) {

@@ -21,10 +21,10 @@ package com.p000ison.dev.sqlapi.mysql;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import com.p000ison.dev.sqlapi.DatabaseConfiguration;
-import com.p000ison.dev.sqlapi.jbdc.JBDCDatabase;
 import com.p000ison.dev.sqlapi.TableBuilder;
 import com.p000ison.dev.sqlapi.TableObject;
 import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
+import com.p000ison.dev.sqlapi.jbdc.JBDCDatabase;
 
 import java.sql.Connection;
 import java.sql.SQLException;

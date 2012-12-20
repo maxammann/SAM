@@ -14,35 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Last modified: 18.12.12 17:27
+ * Last modified: 20.12.12 19:54
  */
 
 package com.p000ison.dev.sqlapi.query;
 
-import com.p000ison.dev.sqlapi.Column;
-import com.p000ison.dev.sqlapi.RegisteredTable;
 import com.p000ison.dev.sqlapi.TableObject;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
- *
+ * Represents a PreparedQuery
  */
-public interface SelectQuery<T extends TableObject> {
+public interface PreparedSelectQuery<T extends TableObject> extends PreparedQuery {
 
-    SelectQuery<T> from(Class<T> object);
+    <C extends Collection<T>> C getResults(C collection);
 
-    SelectQuery<T> from(RegisteredTable table);
-
-    WhereQuery<T> where();
-
-    SelectQuery<T> descending();
-
-    SelectQuery<T> orderBy(Column order);
-
-    SelectQuery<T> orderBy(String order);
-
-    SelectQuery<T> groupBy(Column group);
-
-    SelectQuery<T> groupBy(String group);
-
-    PreparedSelectQuery<T> prepare();
+    List<T> getResults();
 }

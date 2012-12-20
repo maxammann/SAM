@@ -28,13 +28,13 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 @DatabaseTable(name = "tablenamea")
 public class Person implements TableObject {
 
-    private String formattedName = "p";
+    public String formattedName = "p";
 
     @DatabaseColumn(position = 1, databaseName = "id", id = true)
-    private int id;
+    public int id = -1;
 
     @DatabaseColumn(position = 2, databaseName = "name")
-    public String name = "z";
+    public String name = "gsdfgc";
 
 
     public Person()

@@ -19,10 +19,12 @@
 
 package com.p000ison.dev.sqlapi;
 
+import com.p000ison.dev.sqlapi.exception.TableBuildingException;
+import com.p000ison.dev.sqlapi.query.PreparedQuery;
+
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.PreparedStatement;
 import java.util.List;
 
 /**
@@ -33,7 +35,7 @@ public class RegisteredTable {
     private Class<? extends TableObject> registeredClass;
     private List<Column> registeredColumns;
     private Constructor<? extends TableObject> constructor;
-    private PreparedStatement updateStatement, insertStatement;
+    private PreparedQuery updateStatement, insertStatement;
 
     RegisteredTable(String name, Class<? extends TableObject> registeredClass, List<Column> registeredColumns, Constructor<? extends TableObject> constructor)
     {
@@ -53,6 +55,16 @@ public class RegisteredTable {
         for (Column column : registeredColumns) {
             String name = column.getColumnName();
             if (name.hashCode() == columnName.hashCode() && name.equals(columnName)) {
+                return column;
+            }
+        }
+        return null;
+    }
+
+    public Column getIDColumn()
+    {
+        for (Column column : registeredColumns) {
+            if (column.isID()) {
                 return column;
             }
         }
@@ -100,47 +112,48 @@ public class RegisteredTable {
         return false;
     }
 
-
     void prepareSaveStatement(Database database)
     {
-//        StringBuilder query = new StringBuilder("UPDATE ").append(getName()).append(" SET ");
-//        Column id = null;
-//        for (Column column : getRegisteredColumns()) {
-//            query.append(column.getColumnName()).append("=?,");
-//            if (column.isID()) {
-//                id = column;
-//            }
-//        }
-//        if (id == null) {
-//            throw new TableBuildingException("The table %s does not have an id!", getName());
-//        }
-//        query.append(" WHERE ").append(id.getColumnName()).append("=?");
-//        query.deleteCharAt(query.length() - 1);
-//        query.append(';');
-//        updateStatement = database.prepare(query.toString());
-//
-//        query.setLength(0);
-//        query.append("INSERT INTO ").append(getName()).append(" (");
-//
-//        for (Column column : getRegisteredColumns()) {
-//            query.append(column.getColumnName()).append(',');
-//        }
-//        query.deleteCharAt(query.length() - 1);
-//        query.append(") VALUES (");
-//        for (int i = 0; i < getRegisteredColumns().size(); i++) {
-//            query.append("?,");
-//        }
-//        query.deleteCharAt(query.length() - 1);
-//        query.append(");");
-//        insertStatement = database.prepare(query.toString());
+        StringBuilder query = new StringBuilder("UPDATE ").append(getName()).append(" SET ");
+        Column id = null;
+        for (Column column : getRegisteredColumns()) {
+            query.append(column.getColumnName()).append("=?,");
+            if (column.isID()) {
+                id = column;
+            }
+        }
+
+        if (id == null) {
+            throw new TableBuildingException("The table %s does not have an id!", getName());
+        }
+
+        query.deleteCharAt(query.length() - 1);
+        query.append(" WHERE ").append(id.getColumnName()).append("=?");
+        query.append(';');
+        updateStatement = database.createPreparedStatement(query.toString());
+
+        query.setLength(0);
+        query.append("INSERT INTO ").append(getName()).append(" (");
+
+        for (Column column : getRegisteredColumns()) {
+            query.append(column.getColumnName()).append(',');
+        }
+        query.deleteCharAt(query.length() - 1);
+        query.append(") VALUES (");
+        for (int i = 0; i < getRegisteredColumns().size(); i++) {
+            query.append("?,");
+        }
+        query.deleteCharAt(query.length() - 1);
+        query.append(");");
+        insertStatement = database.createPreparedStatement(query.toString());
     }
 
-    public PreparedStatement getUpdateStatement()
+    public PreparedQuery getUpdateStatement()
     {
         return updateStatement;
     }
 
-    public PreparedStatement getInsertStatement()
+    public PreparedQuery getInsertStatement()
     {
         return insertStatement;
     }

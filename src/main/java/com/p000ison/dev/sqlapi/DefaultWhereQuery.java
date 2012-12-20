@@ -43,27 +43,32 @@ class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
     @Override
     public WhereComparator<T> equals(Column column, Object expected)
     {
-        DefaultWhereComparator<T> comparator = new DefaultWhereComparator<T>(query, CompareOperator.EQUALS, column.getColumnName(), expected);
-        comparators.add(comparator);
-        return comparator;
+        return addComparator(column, CompareOperator.EQUALS, expected);
     }
 
     @Override
     public WhereComparator<T> notEquals(Column column, Object expected)
     {
-        return null;
+        return addComparator(column, CompareOperator.NOT_EQUAL, expected);
     }
 
     @Override
     public WhereComparator<T> lessThan(Column column, Object expected)
     {
-        return null;
+        return addComparator(column, CompareOperator.LESS_THAN, expected);
     }
 
     @Override
     public WhereComparator<T> greaterThan(Column column, Object expected)
     {
-        return null;
+        return addComparator(column, CompareOperator.GREATER_THAN, expected);
+    }
+
+    private WhereComparator<T> addComparator(Column column, CompareOperator compareOperator, Object expected)
+    {
+        DefaultWhereComparator<T> comparator = new DefaultWhereComparator<T>(query, compareOperator, column.getColumnName(), expected);
+        comparators.add(comparator);
+        return comparator;
     }
 
     protected List<DefaultWhereComparator<T>> getComparators()

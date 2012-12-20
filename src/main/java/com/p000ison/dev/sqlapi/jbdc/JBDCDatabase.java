@@ -19,10 +19,10 @@
 
 package com.p000ison.dev.sqlapi.jbdc;
 
-import com.p000ison.dev.sqlapi.Database;
-import com.p000ison.dev.sqlapi.DatabaseConfiguration;
+import com.p000ison.dev.sqlapi.*;
 import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
+import com.p000ison.dev.sqlapi.query.PreparedQuery;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -142,6 +142,61 @@ public abstract class JBDCDatabase extends Database {
     {
         try {
             return getConnection().prepareStatement(query);
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
+    }
+
+    Blob createBlob()
+    {
+        try {
+            return getConnection().createBlob();
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
+    }
+
+    @Override
+    protected PreparedQuery createPreparedStatement(String query)
+    {
+        return new JBDCPreparedQuery(this, query);
+    }
+
+    @Override
+    protected boolean existsEntry(RegisteredTable table, TableObject object)
+    {
+        Column column = table.getIDColumn();
+
+        try {
+            PreparedStatement check = getConnection().prepareStatement(String.format("SELECT %s FROM %s WHERE %s=%s;", column.getColumnName(), table.getName(), column.getColumnName(), column.getValue(object)));
+
+//            check.setString(1, column.getColumnName());
+//            check.setString(2, column.getColumnName());
+//            check.setObject(2, column.getValue(object), column.getDatabaseDataType());
+            ResultSet result = check.executeQuery();
+            return result.next();
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
+    }
+
+    @Override
+    protected boolean existsEntry(TableObject object)
+    {
+        return this.existsEntry(getRegisteredTable(object.getClass()), object);
+    }
+
+    @Override
+    protected int getLastEntryId(RegisteredTable table)
+    {
+        Column idColumn = table.getIDColumn();
+        try {
+            PreparedStatement check = getConnection().prepareStatement(String.format("SELECT %s FROM %s ORDER BY %s DESC LIMIT 1;", idColumn.getColumnName(), table.getName(), idColumn.getColumnName()));
+            ResultSet set = check.executeQuery();
+            if (!set.next()) {
+                return 1;
+            }
+            return set.getInt(idColumn.getColumnName());
         } catch (SQLException e) {
             throw new QueryException(e);
         }

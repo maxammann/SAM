@@ -23,12 +23,11 @@ import com.p000ison.dev.sqlapi.jbdc.JBDCDatabase;
 import com.p000ison.dev.sqlapi.jbdc.JBDCSelectQuery;
 import com.p000ison.dev.sqlapi.mysql.MySQLConfiguration;
 import com.p000ison.dev.sqlapi.mysql.MySQLDatabase;
+import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 
 import java.io.FileNotFoundException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Represents a StartTest
@@ -55,9 +54,12 @@ public class StartTest {
             db.registerTable(person);
 //            db.getConnection().prepareStatement("SELECT * FROM d").executeQuery();
 
-            Set<Person> result = new JBDCSelectQuery<Person>(db).prepare().getResults(new HashSet<Person>());
-            System.out.println(result);
+            db.save(person);
 
+//            System.out.println(person.id);
+
+            PreparedSelectQuery<Person> result = new JBDCSelectQuery<Person>(db).from(Person.class).prepare();
+            System.out.println(result.getResults());
             db.close();
 
 

@@ -36,4 +36,9 @@ public class QueryException extends RuntimeException {
     {
         super(cause);
     }
+
+    public QueryException(Exception cause)
+    {
+        super(cause);
+    }
 }

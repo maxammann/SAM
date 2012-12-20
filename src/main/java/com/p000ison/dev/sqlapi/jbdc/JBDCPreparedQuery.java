@@ -2,36 +2,27 @@ package com.p000ison.dev.sqlapi.jbdc;
 
 
 import com.p000ison.dev.sqlapi.Column;
-import com.p000ison.dev.sqlapi.PreparedQuery;
-import com.p000ison.dev.sqlapi.RegisteredTable;
-import com.p000ison.dev.sqlapi.TableObject;
 import com.p000ison.dev.sqlapi.exception.QueryException;
+import com.p000ison.dev.sqlapi.query.PreparedQuery;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.sql.Blob;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.sql.Types;
 
 /**
  * Represents a JBDCPreparedQuery
  */
-public class JBDCPreparedQuery<T extends TableObject> implements PreparedQuery<T> {
-    private final RegisteredTable table;
+public class JBDCPreparedQuery implements PreparedQuery {
     private final PreparedStatement preparedStatement;
+    private final JBDCDatabase database;
+    ;
 
-    protected JBDCPreparedQuery(JBDCDatabase database, String query, RegisteredTable table)
+    protected JBDCPreparedQuery(JBDCDatabase database, String query)
     {
-        this.table = table;
-        preparedStatement = database.prepare(query);
-    }
-
-    protected JBDCPreparedQuery(JBDCDatabase database, String query, Class<? extends TableObject> table)
-    {
-        this.table = database.getRegisteredTable(table);
+        this.database = database;
         preparedStatement = database.prepare(query);
     }
 
@@ -50,51 +41,75 @@ public class JBDCPreparedQuery<T extends TableObject> implements PreparedQuery<T
     }
 
     @Override
-    public <C extends Collection<T>> C getResults(C collection)
+    public void set(int index, Object value, int databaseType)
     {
+        if (index < 0) {
+            throw new IllegalArgumentException("The index must be more or equal 0!");
+        }
+
         try {
-            ResultSet result = preparedStatement.executeQuery();
-            List<Column> columns = table.getRegisteredColumns();
-
-            while (result.next()) {
-                T object = table.createNewInstance();
-
-                for (int i = 0; i < columns.size(); i++) {
-                    Column column = columns.get(i);
-
-                    Object obj;
-
-                    if (column.isSupported()) {
-                        obj = result.getObject(i + 1);
-                    } else if (column.isSerializable()) {
-                        try {
-                            ObjectInputStream inputStream = new ObjectInputStream(result.getBlob(i + 1).getBinaryStream());
-                            obj = inputStream.readObject();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            return collection;
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
-                            return collection;
-                        }
-                    } else {
-                        throw new QueryException("The type %s is not supported!", column.getType().getName());
-                    }
-
-                    column.setValue(object, obj);
-                }
-
-                collection.add(object);
-            }
+            preparedStatement.setObject(index + 1, value, databaseType);
         } catch (SQLException e) {
             throw new QueryException(e);
         }
-        return collection;
     }
 
     @Override
-    public List<T> getResults()
+    public void set(Column column, int index, Object value)
     {
-        return getResults(new ArrayList<T>());
+        if (index < 0) {
+            throw new IllegalArgumentException("The index must be more or equal 0!");
+        }
+
+        index++;
+
+        try {
+            if (column.isSupported()) {
+                if (value == null) {
+                    preparedStatement.setNull(index, column.getDatabaseDataType());
+                } else {
+                    preparedStatement.setObject(index, value, column.getDatabaseDataType());
+                }
+            } else if (column.isSerializable()) {
+                if (value == null) {
+                    preparedStatement.setNull(index, Types.BLOB);
+                } else {
+                    Blob blob = database.createBlob();
+                    ObjectOutputStream stream = new ObjectOutputStream(blob.setBinaryStream(1));
+                    stream.writeObject(value);
+
+                    preparedStatement.setBlob(index, blob);
+                }
+            }
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        } catch (IOException e) {
+            throw new QueryException(e);
+        }
+    }
+
+    @Override
+    public void clearParameters()
+    {
+        try {
+            preparedStatement.clearParameters();
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
+    }
+
+    @Override
+    public boolean update()
+    {
+        try {
+            return preparedStatement.executeUpdate() != 0;
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        }
+    }
+
+    protected PreparedStatement getPreparedStatement()
+    {
+        return preparedStatement;
     }
 }

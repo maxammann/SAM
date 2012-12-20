@@ -168,15 +168,12 @@ public abstract class TableBuilder {
 
             DatabaseColumnSetter setter = method.getAnnotation(DatabaseColumnSetter.class);
             if (setter != null) {
-                MethodColumn.validateSetterMethod(method);
                 columnName = setter.databaseName();
             } else {
                 DatabaseColumnGetter getter = method.getAnnotation(DatabaseColumnGetter.class);
                 if (getter == null) {
                     continue;
                 }
-
-                MethodColumn.validateGetterMethod(method);
 
                 columnName = getter.databaseName();
             }

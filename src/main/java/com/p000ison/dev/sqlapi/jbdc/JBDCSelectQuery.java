@@ -20,7 +20,6 @@
 package com.p000ison.dev.sqlapi.jbdc;
 
 import com.p000ison.dev.sqlapi.DefaultSelectQuery;
-import com.p000ison.dev.sqlapi.PreparedQuery;
 import com.p000ison.dev.sqlapi.TableObject;
 
 /**
@@ -34,8 +33,8 @@ public class JBDCSelectQuery<T extends TableObject> extends DefaultSelectQuery<T
     }
 
     @Override
-    protected PreparedQuery<T> getPreparedQuery()
+    protected JBDCPreparedSelectQuery<T> getPreparedQuery()
     {
-        return new JBDCPreparedQuery<T>((JBDCDatabase) getDatabase(), getQuery(), getTable());
+        return new JBDCPreparedSelectQuery<T>((JBDCDatabase) getDatabase(), getQuery(), getTable());
     }
 }
