@@ -21,6 +21,8 @@ package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
+import java.sql.Types;
+
 /**
  * Represents a Column
  */
@@ -116,7 +118,10 @@ public abstract class Column {
      *
      * @return Weather this type is serializable
      */
-    public abstract boolean isSerializable();
+    public boolean isSerializable()
+    {
+        return getDatabaseDataType() == Types.BLOB;
+    }
 
     public abstract boolean isID();
 
@@ -142,4 +147,6 @@ public abstract class Column {
         }
         this.databaseType = databaseType;
     }
+
+
 }

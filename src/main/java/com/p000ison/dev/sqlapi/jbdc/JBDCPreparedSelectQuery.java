@@ -67,9 +67,7 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
 
                     Object obj;
 
-                    if (column.isSupported()) {
-                        obj = result.getObject(i + 1);
-                    } else if (column.isSerializable()) {
+                    if (column.isSerializable()) {
                         try {
                             ObjectInputStream inputStream = new ObjectInputStream(result.getBlob(i + 1).getBinaryStream());
                             obj = inputStream.readObject();
@@ -80,6 +78,8 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
                             e.printStackTrace();
                             return collection;
                         }
+                    } else if (column.isSupported()) {
+                        obj = result.getObject(i + 1);
                     } else {
                         throw new QueryException("The type %s is not supported!", column.getType().getName());
                     }

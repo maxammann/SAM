@@ -25,30 +25,24 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseColumnGetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnSetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 
-@DatabaseTable(name = "tablenamea")
-public class Person implements TableObject {
+import java.io.Serializable;
+
+@DatabaseTable(name = "tablename")
+public class Person implements TableObject, Serializable {
+
+    private static Person p = new Person();
 
     public String formattedName = "p";
 
     @DatabaseColumn(position = 1, databaseName = "id", id = true)
     public int id = 0;
 
-    @DatabaseColumn(position = 2, databaseName = "name")
-    public String name = "gsdfgc";
+    @DatabaseColumn(position = 2, databaseName = "bool")
+    public Person name = p;
 
 
     public Person()
     {
-    }
-
-    @Override
-    public String toString()
-    {
-        return "Person{" +
-                "formattedName='" + formattedName + '\'' +
-                ", id=" + id +
-                ", name='" + name + '\'' +
-                '}';
     }
 
     @DatabaseColumnSetter(position = 3, databaseName = "fname")

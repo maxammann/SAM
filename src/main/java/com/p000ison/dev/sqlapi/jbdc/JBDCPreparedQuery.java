@@ -5,9 +5,10 @@ import com.p000ison.dev.sqlapi.Column;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.PreparedQuery;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -17,12 +18,9 @@ import java.sql.Types;
  */
 public class JBDCPreparedQuery implements PreparedQuery {
     private final PreparedStatement preparedStatement;
-    private final JBDCDatabase database;
-    ;
 
     protected JBDCPreparedQuery(JBDCDatabase database, String query)
     {
-        this.database = database;
         preparedStatement = database.prepare(query);
     }
 
@@ -64,21 +62,22 @@ public class JBDCPreparedQuery implements PreparedQuery {
         index++;
 
         try {
-            if (column.isSupported()) {
+            if (column.isSerializable()) {
+                if (value == null) {
+                    preparedStatement.setNull(index, Types.BLOB);
+                } else {
+                    ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+                    ObjectOutput outputStream = new ObjectOutputStream(byteBuffer);
+                    outputStream.writeObject(value);
+                    byte[] bytes = byteBuffer.toByteArray();
+
+                    preparedStatement.setBytes(index, bytes);
+                }
+            } else if (column.isSupported()) {
                 if (value == null) {
                     preparedStatement.setNull(index, column.getDatabaseDataType());
                 } else {
                     preparedStatement.setObject(index, value, column.getDatabaseDataType());
-                }
-            } else if (column.isSerializable()) {
-                if (value == null) {
-                    preparedStatement.setNull(index, Types.BLOB);
-                } else {
-                    Blob blob = database.createBlob();
-                    ObjectOutputStream stream = new ObjectOutputStream(blob.setBinaryStream(1));
-                    stream.writeObject(value);
-
-                    preparedStatement.setBlob(index, blob);
                 }
             }
         } catch (SQLException e) {

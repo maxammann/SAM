@@ -26,6 +26,8 @@ import com.p000ison.dev.sqlapi.mysql.MySQLDatabase;
 import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -52,16 +54,15 @@ public class StartTest {
 //            Database db = new SQLiteDatabase(new SQLiteConfiguration(new File("/home/max/Arbeitsfläche/test.db")));
             db.setDropOldColumns(true);
             db.registerTable(person);
-//            db.getConnection().prepareStatement("SELECT * FROM d").executeQuery();
 
             db.save(person);
-
-//            System.out.println(person.id);
 
             PreparedSelectQuery<Person> result = new JBDCSelectQuery<Person>(db).from(Person.class).orderBy("id").prepare();
             System.out.println(result.getResults());
             db.close();
+            ObjectOutputStream d = new ObjectOutputStream(new FileOutputStream("/home/max/Arbeitsfläche/test"));
 
+            d.writeObject(person);
 
         } catch (Exception e) {
             e.printStackTrace();

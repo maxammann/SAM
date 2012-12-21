@@ -194,7 +194,6 @@ public abstract class Database {
     {
         PreparedQuery insert = registeredTable.getInsertStatement();
         setColumnValues(insert, registeredTable, object);
-
         idColumn.setValue(object, getLastEntryId(registeredTable));
         insert.update();
     }

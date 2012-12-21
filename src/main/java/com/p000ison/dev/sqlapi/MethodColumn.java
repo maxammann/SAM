@@ -215,12 +215,6 @@ final class MethodColumn extends Column {
     }
 
     @Override
-    public boolean isSerializable()
-    {
-        return RegisteredTable.isSerializable(getType());
-    }
-
-    @Override
     public String toString()
     {
         return "MethodColumn{" +

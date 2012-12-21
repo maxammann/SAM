@@ -134,12 +134,6 @@ final class FieldColumn extends Column {
     }
 
     @Override
-    public boolean isSerializable()
-    {
-        return RegisteredTable.isSerializable(getType());
-    }
-
-    @Override
     public boolean isID()
     {
         return annotation.id();
