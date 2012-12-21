@@ -48,7 +48,7 @@ public class Person implements TableObject, Serializable {
     @DatabaseColumnSetter(position = 3, databaseName = "fname")
     public void setFormattedName(String formattedName)
     {
-        this.formattedName = formattedName;
+        this.formattedName = formattedName.toUpperCase();
     }
 
     @DatabaseColumnGetter(databaseName = "fname")

@@ -33,6 +33,10 @@ import java.util.Set;
  */
 public abstract class Database {
 
+    //
+    //todo Alter queries
+    //
+
     /**
      * The configuration object which holds all settings
      */
