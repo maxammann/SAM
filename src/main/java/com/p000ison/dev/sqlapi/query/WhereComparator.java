@@ -30,5 +30,10 @@ public interface WhereComparator<T extends TableObject> {
 
     WhereQuery<T> and();
 
+    /**
+     * Return the SelectQuery you used previously.
+     *
+     * @return The SelectQuery
+     */
     SelectQuery<T> select();
 }

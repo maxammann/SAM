@@ -89,13 +89,6 @@ public abstract class Column {
      */
     public abstract boolean isUnique();
 
-//    /**
-//     * Whether this column is primary
-//     *
-//     * @return Whether this column is primary
-//     */
-//    public abstract boolean isPrimary();
-
     /**
      * Sets a value for the column in the {@link TableObject}.
      *

@@ -23,6 +23,7 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.PreparedQuery;
+import com.p000ison.dev.sqlapi.query.SelectQuery;
 
 import java.util.HashSet;
 import java.util.List;
@@ -32,10 +33,6 @@ import java.util.Set;
  * Represents a Database
  */
 public abstract class Database {
-
-    //
-    //todo Alter queries
-    //
 
     /**
      * The configuration object which holds all settings
@@ -78,34 +75,27 @@ public abstract class Database {
         return annotation == null ? null : annotation.name();
     }
 
+    /**
+     * Validates the name of a column
+     *
+     * @param name The name of the column
+     * @return Whether it is valid
+     */
     public static boolean validateColumnName(String name)
     {
         return name.matches("^[a-zA-Z]+$");
     }
 
+    /**
+     * Validates the name of a table
+     *
+     * @param name The name of the table
+     * @return Whether it is valid
+     */
     public static boolean validateTableName(String name)
     {
         return validateColumnName(name);
     }
-
-//    private int prepareStatement(String query)
-//    {
-//        PreparedStatement statement;
-//        try {
-//            statement = getConnection().prepareStatement(query);
-//        } catch (SQLException e) {
-//            throw new QueryException(e);
-//        }
-//        int statementId;
-//        if (preparedStatements.isEmpty()) {
-//            statementId = 0;
-//        } else {
-//            statementId = preparedStatements.lastKey() + 1;
-//        }
-//        preparedStatements.put(statementId, statement);
-//        return statementId;
-//    }
-
 
     /**
      * Closes the connection to the database
@@ -114,17 +104,31 @@ public abstract class Database {
      */
     public abstract void close() throws QueryException;
 
+    /**
+     * Creates a new instance of a TableBuilder. This is used to build the queries to create/modify a table.
+     *
+     * @param table The class of the TableObject
+     * @return The TableBuilder
+     */
     protected abstract TableBuilder createTableBuilder(Class<? extends TableObject> table);
 
-    public final Database registerTable(TableObject table)
+    /**
+     * Registers a new TableObject for further use
+     *
+     * @param table The object to register
+     */
+    public final void registerTable(TableObject table)
     {
-        return registerTable(table.getClass());
+        registerTable(table.getClass());
     }
 
-    public final Database registerTable(Class<? extends TableObject> table)
+    /**
+     * Registers a class for further use
+     *
+     * @param table The class to register
+     */
+    public synchronized final void registerTable(Class<? extends TableObject> table)
     {
-
-
         long start = System.currentTimeMillis();
         TableBuilder builder = createTableBuilder(table);
 
@@ -143,31 +147,38 @@ public abstract class Database {
 
         executeDirectUpdate(tableQuery);
         executeDirectUpdate(modifyQuery);
-        return this;
     }
 
+    /**
+     * Checks whether this the connection to the database is still established
+     *
+     * @return Whether the the the connection is still established
+     */
     public abstract boolean isConnected();
 
-    boolean existsDatabaseTable(String table)
-    {
-        return getDatabaseTables().contains(table);
-    }
+    /**
+     * Checks whether the database exists already.
+     *
+     * @param table The table to check for
+     * @return Whether the table exists
+     */
+    public abstract boolean existsDatabaseTable(String table);
 
-//    private List<String> getDatabaseColumns(Class<? extends TableObject> table)
-//    {
-//        return getDatabaseColumns(getTableName(table));
-//    }
-//
-//    private List<String> getDatabaseColumns(TableObject table)
-//    {
-//        return getDatabaseColumns(getTableName(table.getClass()));
-//    }
-
+    /**
+     * Gets a list of all columns in the database.
+     *
+     * @param table The table to look up
+     * @return A list of columns
+     */
     public abstract List<String> getDatabaseColumns(String table);
 
-    public abstract Set<String> getDatabaseTables();
-
-    public RegisteredTable getRegisteredTable(Class<? extends TableObject> table)
+    /**
+     * Returns the RegisteredTable of a registered class
+     *
+     * @param table The table to look for
+     * @return The RegisteredTable
+     */
+    public synchronized RegisteredTable getRegisteredTable(Class<? extends TableObject> table)
     {
         for (RegisteredTable registeredTable : registeredTables) {
             if (registeredTable.isRegisteredClass(table)) {
@@ -178,19 +189,29 @@ public abstract class Database {
         return null;
     }
 
+    /**
+     * Constructs a new SelectQuery for further use. This should be synchronized with the Database instance
+     *
+     * @param <T> a TableObject type
+     * @return The SelectQuery
+     */
+    public abstract <T extends TableObject> SelectQuery<T> select();
+
     public void save(TableObject tableObject)
     {
-        RegisteredTable table = getRegisteredTable(tableObject.getClass());
-        if (table == null) {
-            throw new QueryException("The class %s is not registered!");
-        }
+        synchronized (this) {
+            RegisteredTable table = getRegisteredTable(tableObject.getClass());
+            if (table == null) {
+                throw new QueryException("The class %s is not registered!");
+            }
 
-        Column idColumn = table.getIDColumn();
+            Column idColumn = table.getIDColumn();
 
-        if (((Number) idColumn.getValue(tableObject)).longValue() <= 0 || !existsEntry(table, tableObject)) {
-            insert(table, tableObject, idColumn);
-        } else {
-            update(table, tableObject, idColumn);
+            if (((Number) idColumn.getValue(tableObject)).longValue() <= 0 || !existsEntry(table, tableObject)) {
+                insert(table, tableObject, idColumn);
+            } else {
+                update(table, tableObject, idColumn);
+            }
         }
     }
 
@@ -238,6 +259,12 @@ public abstract class Database {
         this.dropOldColumns = dropOldColumns;
     }
 
+    /**
+     * Creates a new PreparedQuery which can be executed now or later.
+     *
+     * @param query The query to prepare
+     * @return A PreparedQuery
+     */
     protected abstract PreparedQuery createPreparedStatement(String query);
 
     protected abstract boolean executeDirectUpdate(String query);

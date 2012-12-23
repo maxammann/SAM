@@ -72,7 +72,7 @@ public @interface DatabaseColumn {
      *
      * @return Whether this column can be null
      */
-    boolean notNull() default true;
+    boolean notNull() default false;
 
     /**
      * Sets whether this column is unique. Default is false

@@ -55,44 +55,58 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
     @Override
     public <C extends Collection<T>> C getResults(C collection)
     {
-        try {
-            ResultSet result = getPreparedStatement().executeQuery();
-            List<Column> columns = table.getRegisteredColumns();
+        synchronized (rwLock) {
+            ResultSet result = null;
+            try {
+                result = getPreparedStatement().executeQuery();
+                List<Column> columns = table.getRegisteredColumns();
 
-            while (result.next()) {
-                T object = table.createNewInstance();
+                while (result.next()) {
+                    T object = table.createNewInstance();
 
-                for (int i = 0; i < columns.size(); i++) {
-                    Column column = columns.get(i);
+                    for (int i = 0; i < columns.size(); i++) {
+                        Column column = columns.get(i);
 
-                    Object obj;
+                        Object obj;
 
-                    if (column.isSerializable()) {
-                        try {
-                            ObjectInputStream inputStream = new ObjectInputStream(result.getBlob(i + 1).getBinaryStream());
-                            obj = inputStream.readObject();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            return collection;
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
-                            return collection;
+                        if (column.isSerializable()) {
+                            ObjectInputStream inputStream = null;
+                            try {
+                                inputStream = new ObjectInputStream(result.getBlob(i + 1).getBinaryStream());
+                                obj = inputStream.readObject();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                return collection;
+                            } catch (ClassNotFoundException e) {
+                                e.printStackTrace();
+                                return collection;
+                            } finally {
+                                try {
+                                    if (inputStream != null) {
+                                        inputStream.close();
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        } else if (column.isSupported()) {
+                            obj = result.getObject(i + 1);
+                        } else {
+                            throw new QueryException("The type %s is not supported!", column.getType().getName());
                         }
-                    } else if (column.isSupported()) {
-                        obj = result.getObject(i + 1);
-                    } else {
-                        throw new QueryException("The type %s is not supported!", column.getType().getName());
+
+                        column.setValue(object, obj);
                     }
 
-                    column.setValue(object, obj);
+                    collection.add(object);
                 }
-
-                collection.add(object);
+            } catch (SQLException e) {
+                throw new QueryException(e);
+            } finally {
+                JBDCDatabase.handleClose(null, result);
             }
-        } catch (SQLException e) {
-            throw new QueryException(e);
+            return collection;
         }
-        return collection;
     }
 
     @Override

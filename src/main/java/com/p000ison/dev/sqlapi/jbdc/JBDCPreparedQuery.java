@@ -2,6 +2,7 @@ package com.p000ison.dev.sqlapi.jbdc;
 
 
 import com.p000ison.dev.sqlapi.Column;
+import com.p000ison.dev.sqlapi.Database;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.PreparedQuery;
 
@@ -18,10 +19,12 @@ import java.sql.Types;
  */
 public class JBDCPreparedQuery implements PreparedQuery {
     private final PreparedStatement preparedStatement;
+    protected final Database rwLock;
 
     protected JBDCPreparedQuery(JBDCDatabase database, String query)
     {
         preparedStatement = database.prepare(query);
+        this.rwLock = database;
     }
 
     @Override
@@ -100,8 +103,20 @@ public class JBDCPreparedQuery implements PreparedQuery {
     @Override
     public boolean update()
     {
+        synchronized (rwLock) {
+            try {
+                return preparedStatement.executeUpdate() != 0;
+            } catch (SQLException e) {
+                throw new QueryException(e);
+            }
+        }
+    }
+
+    @Override
+    public void close()
+    {
         try {
-            return preparedStatement.executeUpdate() != 0;
+            getPreparedStatement().close();
         } catch (SQLException e) {
             throw new QueryException(e);
         }

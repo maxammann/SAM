@@ -23,12 +23,11 @@ import com.p000ison.dev.sqlapi.*;
 import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.PreparedQuery;
+import com.p000ison.dev.sqlapi.query.SelectQuery;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Represents a JBDCDatabase
@@ -46,7 +45,7 @@ public abstract class JBDCDatabase extends Database {
         long start = System.currentTimeMillis();
         connection = connect(configuration);
         long finish = System.currentTimeMillis();
-        System.out.printf("Check connection took %s!\n", finish - start);
+        System.out.printf("Check connection took %s!%n", finish - start);
     }
 
     protected abstract Connection connect(DatabaseConfiguration configuration) throws DatabaseConnectionException;
@@ -90,25 +89,30 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    public final Set<String> getDatabaseTables()
+    public boolean existsDatabaseTable(String table)
     {
-        Set<String> columns = new HashSet<String>();
-
         ResultSet columnResult;
         try {
             columnResult = this.getMetadata().getTables(null, null, null, null);
 
             while (columnResult.next()) {
-                columns.add(columnResult.getString("TABLE_NAME"));
+                if (table.equals(columnResult.getString("TABLE_NAME"))) {
+                    return true;
+                }
             }
 
         } catch (SQLException e) {
             throw new QueryException(e);
         }
 
-        return columns;
+        return false;
     }
 
+    @Override
+    public <T extends TableObject> SelectQuery<T> select()
+    {
+        return new JBDCSelectQuery<T>(this);
+    }
 
     protected final Connection getConnection()
     {
@@ -121,10 +125,14 @@ public abstract class JBDCDatabase extends Database {
         if (query == null) {
             return false;
         }
+        Statement statement = null;
         try {
-            return getConnection().createStatement().executeUpdate(query) != 0;
+            statement = getConnection().createStatement();
+            return statement.executeUpdate(query) != 0;
         } catch (SQLException e) {
             throw new QueryException(e);
+        } finally {
+            handleClose(statement, null);
         }
     }
 
@@ -147,15 +155,6 @@ public abstract class JBDCDatabase extends Database {
         }
     }
 
-    Blob createBlob()
-    {
-        try {
-            return getConnection().createBlob();
-        } catch (SQLException e) {
-            throw new QueryException(e);
-        }
-    }
-
     @Override
     protected PreparedQuery createPreparedStatement(String query)
     {
@@ -167,16 +166,17 @@ public abstract class JBDCDatabase extends Database {
     {
         Column column = table.getIDColumn();
 
+        PreparedStatement check = null;
+        ResultSet result = null;
         try {
-            PreparedStatement check = getConnection().prepareStatement(String.format("SELECT %s FROM %s WHERE %s=%s;", column.getColumnName(), table.getName(), column.getColumnName(), column.getValue(object)));
+            check = getConnection().prepareStatement(String.format("SELECT %s FROM %s WHERE %s=%s;", column.getColumnName(), table.getName(), column.getColumnName(), column.getValue(object)));
 
-//            check.setString(1, column.getColumnName());
-//            check.setString(2, column.getColumnName());
-//            check.setObject(2, column.getValue(object), column.getDatabaseDataType());
-            ResultSet result = check.executeQuery();
+            result = check.executeQuery();
             return result.next();
         } catch (SQLException e) {
             throw new QueryException(e);
+        } finally {
+            handleClose(check, result);
         }
     }
 
@@ -190,13 +190,34 @@ public abstract class JBDCDatabase extends Database {
     protected int getLastEntryId(RegisteredTable table)
     {
         Column idColumn = table.getIDColumn();
+        PreparedStatement check = null;
+        ResultSet result = null;
         try {
-            PreparedStatement check = getConnection().prepareStatement(String.format("SELECT %s FROM %s ORDER BY %s DESC LIMIT 1;", idColumn.getColumnName(), table.getName(), idColumn.getColumnName()));
-            ResultSet set = check.executeQuery();
-            if (!set.next()) {
+            check = getConnection().prepareStatement(String.format("SELECT %s FROM %s ORDER BY %s DESC LIMIT 1;", idColumn.getColumnName(), table.getName(), idColumn.getColumnName()));
+            result = check.executeQuery();
+            if (!result.next()) {
                 return 1;
             }
-            return set.getInt(idColumn.getColumnName());
+            int lastId = result.getInt(idColumn.getColumnName());
+            result.close();
+            check.close();
+            return lastId;
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        } finally {
+            handleClose(check, result);
+        }
+    }
+
+    public static void handleClose(Statement check, ResultSet result)
+    {
+        try {
+            if (check != null) {
+                check.close();
+            }
+            if (result != null) {
+                result.close();
+            }
         } catch (SQLException e) {
             throw new QueryException(e);
         }

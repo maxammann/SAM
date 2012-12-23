@@ -29,7 +29,17 @@ import java.util.List;
  */
 public interface PreparedSelectQuery<T extends TableObject> extends PreparedQuery {
 
+    /**
+     * Queries the database and returns a collection of TableObject. This method should be synchronized with the {@link com.p000ison.dev.sqlapi.Database}.
+     *
+     * @return Whether the update was successfully
+     */
     <C extends Collection<T>> C getResults(C collection);
 
+    /**
+     * Queries the database and returns a list of TableObject. This method should be synchronized with the {@link com.p000ison.dev.sqlapi.Database}.
+     *
+     * @return Whether the update was successfully
+     */
     List<T> getResults();
 }

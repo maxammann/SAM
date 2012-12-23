@@ -89,6 +89,8 @@ public final class MySQLTableBuilder extends TableBuilder {
 
         if (column.isNotNull()) {
             query.append(" NOT NULL");
+        } else {
+            query.append(" NULL");
         }
 
         if (column.isUnique()) {

@@ -13,7 +13,17 @@ public interface PreparedQuery {
 
     void set(Column column, int index, Object value);
 
+    /**
+     * Clears the stored values
+     */
     void clearParameters();
 
+    /**
+     * Updates the database and performs the query. This method should be synchronized with the {@link com.p000ison.dev.sqlapi.Database}.
+     *
+     * @return Whether the update was successfully
+     */
     boolean update();
+
+    void close();
 }

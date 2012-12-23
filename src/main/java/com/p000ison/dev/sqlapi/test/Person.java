@@ -25,37 +25,32 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseColumnGetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnSetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 
-import java.io.Serializable;
-
-@DatabaseTable(name = "tablename")
-public class Person implements TableObject, Serializable {
-
-    private static Person p = new Person();
-
-    public String formattedName = "p";
+@DatabaseTable(name = "tesz")
+public class Person implements TableObject {
 
     @DatabaseColumn(position = 1, databaseName = "id", id = true)
-    public int id = 0;
+    private int id;
 
-    @DatabaseColumn(position = 2, databaseName = "bool")
-    public Person name = p;
+    private String name;
 
+    @DatabaseColumn(position = 3, databaseName = "age")
+    private int age;
 
     public Person()
     {
     }
 
-    @DatabaseColumnSetter(position = 3, databaseName = "fname")
-    public void setFormattedName(String formattedName)
+    @DatabaseColumnSetter(position = 2, databaseName = "name", lenght = 100)
+    public void setFormattedName(String name)
     {
-        this.formattedName = formattedName.toUpperCase();
+        if (name != null) {
+            this.name = name.toUpperCase();
+        }
     }
 
-    @DatabaseColumnGetter(databaseName = "fname")
+    @DatabaseColumnGetter(databaseName = "name")
     public String getFormattedName()
     {
-        return formattedName;
+        return name;
     }
-
-
 }

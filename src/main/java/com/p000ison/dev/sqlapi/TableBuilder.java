@@ -46,10 +46,6 @@ public abstract class TableBuilder {
      * The expected columns
      */
     private List<Column> buildingColumns = new ArrayList<Column>();
-    /**
-     * Whether we have already found a primary key
-     */
-    private boolean idColumn = false;
 
     private Database database;
 
@@ -61,7 +57,7 @@ public abstract class TableBuilder {
      */
     private Constructor<? extends TableObject> ctor;
 
-    public static int UNSUPPORTED_TYPE = Integer.MAX_VALUE;
+    public static final int UNSUPPORTED_TYPE = Integer.MAX_VALUE;
 
     public TableBuilder(Class<? extends TableObject> object, Database database)
     {
@@ -252,7 +248,6 @@ public abstract class TableBuilder {
         }
 
         query.deleteCharAt(query.length() - 1);
-        idColumn = false;
     }
 
     private void buildModifyColumns()
