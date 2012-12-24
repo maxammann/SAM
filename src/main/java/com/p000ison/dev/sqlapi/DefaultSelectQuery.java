@@ -206,6 +206,16 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         return this;
     }
 
+    @Override
+    public SelectQuery<T> reset()
+    {
+        this.table = null;
+        this.whereQuery = null;
+        this.orderBy = new ArrayList<DefaultOrderEntry>();
+        this.limits = null;
+        return this;
+    }
+
     protected Database getDatabase()
     {
         return database;

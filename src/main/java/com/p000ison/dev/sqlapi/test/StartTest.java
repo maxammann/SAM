@@ -58,7 +58,7 @@ public class StartTest {
 //                db.save(person);
 //            }
 
-            PreparedSelectQuery<Person> result = db.<Person>select().prepare();
+            PreparedSelectQuery<Person> result = db.<Person>select().from(Person.class).prepare();
             for (Person p : result.getResults()) {
                 System.out.println(p);
             }

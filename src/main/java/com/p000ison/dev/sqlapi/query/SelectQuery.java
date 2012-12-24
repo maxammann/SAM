@@ -46,5 +46,7 @@ public interface SelectQuery<T extends TableObject> {
 
     SelectQuery<T> limit(int from, int to);
 
+    SelectQuery<T> reset();
+
     PreparedSelectQuery<T> prepare();
 }
