@@ -23,6 +23,7 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.PreparedQuery;
+import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 import com.p000ison.dev.sqlapi.query.SelectQuery;
 
 import java.util.HashSet;
@@ -197,7 +198,10 @@ public abstract class Database {
      * @param <T> a TableObject type
      * @return The SelectQuery
      */
-    public abstract <T extends TableObject> SelectQuery<T> select();
+    public <T extends TableObject> SelectQuery<T> select()
+    {
+        return new DefaultSelectQuery<T>(this);
+    }
 
     public void save(TableObject tableObject)
     {
@@ -268,6 +272,10 @@ public abstract class Database {
      * @return A PreparedQuery
      */
     protected abstract PreparedQuery createPreparedStatement(String query);
+
+    protected abstract <T extends TableObject> PreparedSelectQuery<T> createPreparedSelectQuery(String query, Class<T> type);
+
+    protected abstract <T extends TableObject> PreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table);
 
     protected abstract boolean executeDirectUpdate(String query);
 

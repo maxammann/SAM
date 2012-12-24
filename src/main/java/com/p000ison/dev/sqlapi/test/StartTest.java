@@ -52,15 +52,15 @@ public class StartTest {
             db.setDropOldColumns(true);
             db.registerTable(Person.class);
 
-            for (int i = 0; i < 50; i++) {
-                person = new Person();
-                person.setFormattedName(String.valueOf(System.currentTimeMillis()));
-                db.save(person);
-            }
+//            for (int i = 0; i < 50; i++) {
+//                person = new Person();
+//                person.setFormattedName(String.valueOf(System.currentTimeMillis()));
+//                db.save(person);
+//            }
 
-            PreparedSelectQuery<Person> result = db.<Person>select().from(Person.class).orderBy("id").prepare();
+            PreparedSelectQuery<Person> result = db.<Person>select().prepare();
             for (Person p : result.getResults()) {
-                System.out.print(p);
+                System.out.println(p);
             }
 
 

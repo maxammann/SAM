@@ -42,5 +42,9 @@ public interface SelectQuery<T extends TableObject> {
 
     SelectQuery<T> orderByDescending(String order);
 
+    SelectQuery<T> limit(int max);
+
+    SelectQuery<T> limit(int from, int to);
+
     PreparedSelectQuery<T> prepare();
 }

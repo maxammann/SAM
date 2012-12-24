@@ -19,6 +19,7 @@
 
 package com.p000ison.dev.sqlapi;
 
+import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 import com.p000ison.dev.sqlapi.query.SelectQuery;
 import com.p000ison.dev.sqlapi.query.WhereQuery;
@@ -29,12 +30,13 @@ import java.util.List;
 /**
  * Represents a DefaultSelectQuery
  */
-public abstract class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T> {
+public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T> {
 
     private RegisteredTable table;
     private DefaultWhereQuery<T> whereQuery;
     private Database database;
     private List<DefaultOrderEntry> orderBy = new ArrayList<DefaultOrderEntry>();
+    private int[] limits;
 
     public DefaultSelectQuery(Database database)
     {
@@ -92,12 +94,14 @@ public abstract class DefaultSelectQuery<T extends TableObject> implements Selec
         return whereQuery;
     }
 
-    protected abstract PreparedSelectQuery<T> getPreparedQuery();
-
     @Override
-    public final PreparedSelectQuery<T> prepare()
+    public synchronized final PreparedSelectQuery<T> prepare()
     {
-        PreparedSelectQuery<T> preparedQuery = getPreparedQuery();
+        String query = getQuery();
+        if (query == null) {
+            throw new QueryException("The query is not prepared!");
+        }
+        PreparedSelectQuery<T> preparedQuery = database.createPreparedSelectQuery(getQuery(), table);
         if (whereQuery != null) {
             List<DefaultWhereComparator<T>> comparators = whereQuery.getComparators();
             for (int i = 0; i < comparators.size(); i++) {
@@ -108,8 +112,12 @@ public abstract class DefaultSelectQuery<T extends TableObject> implements Selec
         return preparedQuery;
     }
 
-    protected String getQuery()
+    protected synchronized String getQuery()
     {
+        if (table == null) {
+            return null;
+        }
+
         StringBuilder query = new StringBuilder("SELECT ");
         List<Column> columns = table.getRegisteredColumns();
 
@@ -161,9 +169,41 @@ public abstract class DefaultSelectQuery<T extends TableObject> implements Selec
             query.deleteCharAt(query.length() - 1);
         }
 
+        if (limits != null) {
+            query.append(" LIMIT ");
+            if (limits.length == 1) {
+                query.append(limits[0]);
+            } else {
+                query.append(limits[0]).append(',').append(limits[1]);
+            }
+        }
+
         query.append(';');
 
         return query.toString();
+    }
+
+    @Override
+    public SelectQuery<T> limit(int max)
+    {
+        if (max < 1) {
+            throw new IllegalArgumentException("The limit must be greater than 0!");
+        }
+        limits = new int[]{max};
+        return this;
+    }
+
+    @Override
+    public SelectQuery<T> limit(int from, int to)
+    {
+        if (from > 0 || to > 0) {
+            throw new IllegalArgumentException("The limit must be greater than 0!");
+        } else if (from > to) {
+            throw new IllegalArgumentException("The from limit must be less than the to limit!");
+        }
+
+        limits = new int[]{from, to};
+        return this;
     }
 
     protected Database getDatabase()

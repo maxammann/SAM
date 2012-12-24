@@ -23,7 +23,7 @@ import com.p000ison.dev.sqlapi.*;
 import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.PreparedQuery;
-import com.p000ison.dev.sqlapi.query.SelectQuery;
+import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -106,12 +106,6 @@ public abstract class JBDCDatabase extends Database {
         }
 
         return false;
-    }
-
-    @Override
-    public <T extends TableObject> SelectQuery<T> select()
-    {
-        return new JBDCSelectQuery<T>(this);
     }
 
     protected final Connection getConnection()
@@ -263,5 +257,17 @@ public abstract class JBDCDatabase extends Database {
         }
 
         return UNSUPPORTED_TYPE;
+    }
+
+    @Override
+    protected <T extends TableObject> PreparedSelectQuery<T> createPreparedSelectQuery(String query, Class<T> type)
+    {
+        return new JBDCPreparedSelectQuery<T>(this, query, type);
+    }
+
+    @Override
+    protected <T extends TableObject> PreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table)
+    {
+        return new JBDCPreparedSelectQuery<T>(this, query, table);
     }
 }
