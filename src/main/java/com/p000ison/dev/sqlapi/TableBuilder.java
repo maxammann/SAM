@@ -57,7 +57,8 @@ public abstract class TableBuilder {
      */
     private Constructor<? extends TableObject> ctor;
 
-    public static final int UNSUPPORTED_TYPE = Integer.MAX_VALUE;
+    private Set<Column> toAdd;
+    private List<String> toDrop;
 
     public TableBuilder(Class<? extends TableObject> object, Database database)
     {
@@ -112,7 +113,10 @@ public abstract class TableBuilder {
             return this;
         }
 
-        buildModifyColumns();
+        if (isSupportAddColumns() || isSupportModifyColumns() || isSupportRemoveColumns()) {
+            setupModifyColumns();
+            buildModifyColumns();
+        }
 
         return this;
     }
@@ -125,7 +129,7 @@ public abstract class TableBuilder {
     private Column getColumn(String dbColumn)
     {
         for (Column column : buildingColumns) {
-            if (column.getColumnName().equals(dbColumn)) {
+            if (column.getName().equals(dbColumn)) {
                 return column;
             }
         }
@@ -140,7 +144,7 @@ public abstract class TableBuilder {
     private MethodColumn getMethodColumn(String dbColumn)
     {
         for (Column column : buildingColumns) {
-            if ((column instanceof MethodColumn) && column.getColumnName().equals(dbColumn)) {
+            if ((column instanceof MethodColumn) && column.getName().equals(dbColumn)) {
                 return (MethodColumn) column;
             }
         }
@@ -186,7 +190,9 @@ public abstract class TableBuilder {
 
             if (setter == null) {
                 column.setGetter(method);
-                column.setDatabaseType(getDatabaseDataType(column.getType()));
+                if (!database.isSupported(column.getType())) {
+                    throw new TableBuildingException("The type %s of the column %s is not supported by the database!");
+                }
             } else {
                 column.setSetter(method);
                 column.setAnnotation(setter);
@@ -215,7 +221,9 @@ public abstract class TableBuilder {
                     throw new TableBuildingException("Duplicate column \"%s\"!", column.databaseName());
                 }
                 Column fieldColumn = new FieldColumn(field, column);
-                fieldColumn.setDatabaseType(getDatabaseDataType(fieldColumn.getType()));
+                if (!database.isSupported(fieldColumn.getType())) {
+                    throw new TableBuildingException("The type %s of the column %s is not supported by the database!");
+                }
                 buildingColumns.add(fieldColumn);
             }
         }
@@ -250,7 +258,7 @@ public abstract class TableBuilder {
         query.deleteCharAt(query.length() - 1);
     }
 
-    private void buildModifyColumns()
+    private void setupModifyColumns()
     {
         if (buildingColumns.isEmpty()) {
             throw new TableBuildingException("The table must have at least one column!");
@@ -258,18 +266,32 @@ public abstract class TableBuilder {
 
         List<String> databaseColumns = database.getDatabaseColumns(tableName);
 
-        Set<Column> toAdd = new HashSet<Column>();
-        boolean complete = false;
-
-        for (Column column : buildingColumns) {
-            if (!databaseColumns.contains(column.getColumnName())) {
-                //missing in database
-                toAdd.add(column);
+        if (isSupportAddColumns()) {
+            toAdd = new HashSet<Column>();
+            for (Column column : buildingColumns) {
+                if (!databaseColumns.contains(column.getName())) {
+                    //missing in database
+                    toAdd.add(column);
+                }
             }
         }
 
-        if (!toAdd.isEmpty() && isSupportAddColumns()) {
-            complete = true;
+        if (database.isDropOldColumns() && isSupportRemoveColumns()) {
+            toDrop = new ArrayList<String>();
+
+            for (String column : databaseColumns) {
+                if (!existsColumn(column)) {
+                    toDrop.add(column);
+                }
+            }
+        }
+    }
+
+    protected void buildModifyColumns()
+    {
+        boolean complete = false;
+        if (toAdd != null && !toAdd.isEmpty()) {
+
             query.append("ALTER TABLE ").append(Database.getTableName(object)).append(" ADD COLUMN (");
 
             for (Column column : toAdd) {
@@ -281,37 +303,34 @@ public abstract class TableBuilder {
             query.append(')');
         }
 
+        if (toDrop != null && !toDrop.isEmpty()) {
 
-        if (database.isDropOldColumns() && isSupportRemoveColumns()) {
-            List<String> toDrop = new ArrayList<String>();
-
-            for (String column : databaseColumns) {
-                if (!existsColumn(column)) {
-                    toDrop.add(column);
-                }
+            if (toAdd.isEmpty()) {
+                query.append("ALTER TABLE ").append(Database.getTableName(object));
+            } else {
+                query.append(',');
             }
 
-            if (!toDrop.isEmpty()) {
-                if (toAdd.isEmpty()) {
-                    query.append("ALTER TABLE ").append(Database.getTableName(object));
-                } else {
-                    query.append(',');
-                }
-                complete = true;
+            complete = true;
 
-                for (String column : toDrop) {
-                    query.append(" DROP COLUMN ").append(column);
-                    query.append(',');
-                }
-
-                query.deleteCharAt(query.length() - 1);
+            for (String column : toDrop) {
+                query.append(" DROP COLUMN ").append(column);
+                query.append(',');
             }
+
+            query.deleteCharAt(query.length() - 1);
         }
+
         if (complete) {
             query.append(';');
         }
     }
 
+    /**
+     * Builds a column. it returns for example: "column INTEGER(5) NOT NULL UNIQUE KEY"
+     *
+     * @param column The Column object which holds all information about the column.
+     */
     protected abstract void buildColumn(Column column);
 
     protected abstract boolean isSupportAddColumns();
@@ -320,14 +339,12 @@ public abstract class TableBuilder {
 
     protected abstract boolean isSupportModifyColumns();
 
-    public abstract int getDatabaseDataType(Class<?> type);
-
-    Constructor<? extends TableObject> getDefaultConstructor()
+    final Constructor<? extends TableObject> getDefaultConstructor()
     {
         return ctor;
     }
 
-    public String getQuery()
+    public final String getQuery()
     {
         if (query.length() == 0) {
             return null;
@@ -336,17 +353,17 @@ public abstract class TableBuilder {
         return query.toString();
     }
 
-    List<Column> getColumns()
+    final List<Column> getColumns()
     {
         return buildingColumns;
     }
 
-    public String getTableName()
+    final String getTableName()
     {
         return tableName;
     }
 
-    protected StringBuilder getBuilder()
+    protected final StringBuilder getBuilder()
     {
         return query;
     }

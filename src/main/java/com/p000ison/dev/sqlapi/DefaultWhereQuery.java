@@ -66,7 +66,7 @@ class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
 
     private WhereComparator<T> addComparator(Column column, CompareOperator compareOperator, Object expected)
     {
-        DefaultWhereComparator<T> comparator = new DefaultWhereComparator<T>(query, compareOperator, column.getColumnName(), expected);
+        DefaultWhereComparator<T> comparator = new DefaultWhereComparator<T>(query, compareOperator, column.getName(), expected);
         comparators.add(comparator);
         return comparator;
     }

@@ -21,8 +21,6 @@ package com.p000ison.dev.sqlapi.mysql;
 
 import com.p000ison.dev.sqlapi.*;
 
-import java.sql.Types;
-
 /**
  * Represents a SQLiteTableBuilder
  */
@@ -43,7 +41,7 @@ public final class MySQLTableBuilder extends TableBuilder {
     {
         Class<?> type = column.getType();
         StringBuilder query = getBuilder();
-        query.append(column.getColumnName()).append(' ');
+        query.append(column.getName()).append(' ');
 
         boolean allowModifyLength = true;
 
@@ -102,10 +100,6 @@ public final class MySQLTableBuilder extends TableBuilder {
         }
 
         if (column.isID()) {
-//            if (idColumn) {
-//                throw new TableBuildingException("Duplicate primary/autoincrementing column %s!", column.getColumnName());
-//            }
-//            idColumn = true;
             query.append(" PRIMARY KEY");
             if (!column.isAutoIncrementing()) {
                 query.append(" AUTO_INCREMENT");
@@ -133,33 +127,5 @@ public final class MySQLTableBuilder extends TableBuilder {
     protected boolean isSupportModifyColumns()
     {
         return true;
-    }
-
-    @Override
-    public int getDatabaseDataType(Class<?> type)
-    {
-        if (type == boolean.class || type == Boolean.class) {
-            return Types.TINYINT;
-        } else if (type == byte.class || type == Byte.class) {
-            return Types.TINYINT;
-        } else if (type == short.class || type == Short.class) {
-            return Types.SMALLINT;
-        } else if (type == int.class || type == Integer.class) {
-            return Types.INTEGER;
-        } else if (type == float.class || type == Float.class) {
-            return Types.FLOAT;
-        } else if (type == double.class || type == Double.class) {
-            return Types.DOUBLE;
-        } else if (type == long.class || type == Long.class) {
-            return Types.INTEGER;
-        } else if (type == char.class || type == Character.class) {
-            return Types.CHAR;
-        } else if (type == String.class) {
-            return Types.VARCHAR;
-        } else if (RegisteredTable.isSerializable(type)) {
-            return Types.BLOB;
-        }
-
-        return UNSUPPORTED_TYPE;
     }
 }

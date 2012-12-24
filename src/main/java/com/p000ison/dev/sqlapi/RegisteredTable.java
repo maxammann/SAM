@@ -53,7 +53,7 @@ public class RegisteredTable {
     public Column getColumn(String columnName)
     {
         for (Column column : registeredColumns) {
-            String name = column.getColumnName();
+            String name = column.getName();
             if (name.hashCode() == columnName.hashCode() && name.equals(columnName)) {
                 return column;
             }
@@ -117,7 +117,7 @@ public class RegisteredTable {
         StringBuilder query = new StringBuilder("UPDATE ").append(getName()).append(" SET ");
         Column id = null;
         for (Column column : getRegisteredColumns()) {
-            query.append(column.getColumnName()).append("=?,");
+            query.append(column.getName()).append("=?,");
             if (column.isID()) {
                 id = column;
             }
@@ -128,7 +128,7 @@ public class RegisteredTable {
         }
 
         query.deleteCharAt(query.length() - 1);
-        query.append(" WHERE ").append(id.getColumnName()).append("=?");
+        query.append(" WHERE ").append(id.getName()).append("=?");
         query.append(';');
         updateStatement = database.createPreparedStatement(query.toString());
 
@@ -136,7 +136,7 @@ public class RegisteredTable {
         query.append("INSERT INTO ").append(getName()).append(" (");
 
         for (Column column : getRegisteredColumns()) {
-            query.append(column.getColumnName()).append(',');
+            query.append(column.getName()).append(',');
         }
         query.deleteCharAt(query.length() - 1);
         query.append(") VALUES (");

@@ -82,13 +82,5 @@ public @interface DatabaseColumnSetter {
      */
     boolean unique() default false;
 
-//    /**
-//     * Sets whether this column is primary. Default is false
-//     * <p>WARNING: There is only one primary column in one table!</p>
-//     *
-//     * @return Whether this column is primary
-//     */
-//    boolean primary() default false;
-
     boolean id() default false;
 }

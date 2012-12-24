@@ -64,13 +64,13 @@ public abstract class DefaultSelectQuery<T extends TableObject> implements Selec
     @Override
     public SelectQuery<T> orderBy(Column order)
     {
-        return orderBy(order.getColumnName());
+        return orderBy(order.getName());
     }
 
     @Override
     public SelectQuery<T> orderByDescending(Column order)
     {
-        return orderByDescending(order.getColumnName());
+        return orderByDescending(order.getName());
     }
 
     @Override
@@ -116,7 +116,7 @@ public abstract class DefaultSelectQuery<T extends TableObject> implements Selec
         int end = columns.size() - 1;
         for (int i = 0; i < columns.size(); i++) {
             Column column = columns.get(i);
-            query.append(column.getColumnName());
+            query.append(column.getName());
             if (i != end) {
                 query.append(',');
             }

@@ -45,7 +45,7 @@ final class FieldColumn extends Column {
     }
 
     @Override
-    public String getColumnName()
+    public String getName()
     {
         return annotation.databaseName();
     }
@@ -86,12 +86,6 @@ final class FieldColumn extends Column {
         return annotation.unique();
     }
 
-//    @Override
-//    public boolean isPrimary()
-//    {
-//        return annotation.primary();
-//    }
-
     @Override
     public void setValue(TableObject tableObject, Object object)
     {
@@ -117,7 +111,7 @@ final class FieldColumn extends Column {
     public String toString()
     {
         return "FieldColumn{" +
-                "column-name=" + getColumnName() +
+                "column-name=" + getName() +
                 ", field=" + (field == null ? null : field.getName()) +
                 '}';
     }

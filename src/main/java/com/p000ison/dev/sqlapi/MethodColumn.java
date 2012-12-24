@@ -46,7 +46,7 @@ final class MethodColumn extends Column {
     void setGetter(Method getter)
     {
         if (this.getter != null) {
-            throw new TableBuildingException("Duplicate column \"%s\"!", getColumnName());
+            throw new TableBuildingException("Duplicate column \"%s\"!", getName());
         }
 
         Class<?> type = getter.getReturnType();
@@ -70,7 +70,7 @@ final class MethodColumn extends Column {
     void setSetter(Method setter)
     {
         if (this.setter != null) {
-            throw new TableBuildingException("Duplicate column \"%s\"!", getColumnName());
+            throw new TableBuildingException("Duplicate column \"%s\"!", getName());
         }
 
         Class<?> type = setter.getReturnType();
@@ -123,7 +123,7 @@ final class MethodColumn extends Column {
     }
 
     @Override
-    public String getColumnName()
+    public String getName()
     {
         if (getter != null) {
             return getter.getAnnotation(DatabaseColumnGetter.class).databaseName();
@@ -177,12 +177,6 @@ final class MethodColumn extends Column {
         return annotation.unique();
     }
 
-//    @Override
-//    public boolean isPrimary()
-//    {
-//        return annotation.primary();
-//    }
-
     @Override
     public boolean isID()
     {
@@ -218,7 +212,7 @@ final class MethodColumn extends Column {
     public String toString()
     {
         return "MethodColumn{" +
-                "column-name=" + getColumnName() +
+                "column-name=" + getName() +
                 ", getter=" + (getter == null ? "null" : getter.getName()) +
                 ", setter=" + (setter == null ? "null" : setter.getName()) +
                 '}';

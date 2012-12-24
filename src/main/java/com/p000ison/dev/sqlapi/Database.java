@@ -47,6 +47,8 @@ public abstract class Database {
      */
     private Set<RegisteredTable> registeredTables = new HashSet<RegisteredTable>();
 
+    public static final int UNSUPPORTED_TYPE = Integer.MAX_VALUE;
+
     /**
      * Creates a new database connection based on the configuration
      *
@@ -274,4 +276,12 @@ public abstract class Database {
     protected abstract boolean existsEntry(TableObject object);
 
     protected abstract int getLastEntryId(RegisteredTable table);
+
+    /**
+     * Checks whether the class is supported by this database/database engine
+     *
+     * @param type The type to check for
+     * @return Whether the type is supported
+     */
+    public abstract boolean isSupported(Class<?> type);
 }

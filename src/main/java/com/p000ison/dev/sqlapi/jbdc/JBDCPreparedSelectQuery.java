@@ -27,6 +27,7 @@ import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -67,32 +68,31 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
                     for (int i = 0; i < columns.size(); i++) {
                         Column column = columns.get(i);
 
-                        Object obj;
+                        Object obj = null;
 
-                        if (column.isSerializable()) {
+                        if (JBDCDatabase.isSupportedByDatabase(column.getType())) {
+                            obj = result.getObject(i + 1, column.getType());
+                        } else {
                             ObjectInputStream inputStream = null;
                             try {
-                                inputStream = new ObjectInputStream(result.getBlob(i + 1).getBinaryStream());
-                                obj = inputStream.readObject();
+                                InputStream selectedInputStream = result.getBinaryStream(i + 1);
+                                if (selectedInputStream != null) {
+                                    inputStream = new ObjectInputStream(selectedInputStream);
+                                    obj = inputStream.readObject();
+                                }
                             } catch (IOException e) {
-                                e.printStackTrace();
-                                return collection;
+                                throw new QueryException(e);
                             } catch (ClassNotFoundException e) {
-                                e.printStackTrace();
-                                return collection;
+                                throw new QueryException(e);
                             } finally {
                                 try {
                                     if (inputStream != null) {
                                         inputStream.close();
                                     }
                                 } catch (IOException e) {
-                                    e.printStackTrace();
+                                    throw new QueryException(e);
                                 }
                             }
-                        } else if (column.isSupported()) {
-                            obj = result.getObject(i + 1);
-                        } else {
-                            throw new QueryException("The type %s is not supported!", column.getType().getName());
                         }
 
                         column.setValue(object, obj);

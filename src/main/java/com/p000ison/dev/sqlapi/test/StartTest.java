@@ -20,7 +20,6 @@
 package com.p000ison.dev.sqlapi.test;
 
 import com.p000ison.dev.sqlapi.jbdc.JBDCDatabase;
-import com.p000ison.dev.sqlapi.jbdc.JBDCSelectQuery;
 import com.p000ison.dev.sqlapi.mysql.MySQLConfiguration;
 import com.p000ison.dev.sqlapi.mysql.MySQLDatabase;
 import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
@@ -46,23 +45,26 @@ public class StartTest {
         long start = System.currentTimeMillis();
         try {
 
-            Person person = new Person();
+            Person person;
 
             JBDCDatabase db = new MySQLDatabase(new MySQLConfiguration("root", "m1nt", "localhost", PORT, "test"));
 //            Database db = new SQLiteDatabase(new SQLiteConfiguration(new File("/home/max/Arbeitsfläche/test.db")));
             db.setDropOldColumns(true);
-            db.registerTable(person);
+            db.registerTable(Person.class);
 
-            db.save(person);
-
-            PreparedSelectQuery<Person> result = new JBDCSelectQuery<Person>(db).from(Person.class).orderBy("id").prepare();
-            System.out.println(result.getResults());
-
-            while (true) {
-
+            for (int i = 0; i < 50; i++) {
+                person = new Person();
+                person.setFormattedName(String.valueOf(System.currentTimeMillis()));
+                db.save(person);
             }
 
-//            db.close();
+            PreparedSelectQuery<Person> result = db.<Person>select().from(Person.class).orderBy("id").prepare();
+            for (Person p : result.getResults()) {
+                System.out.print(p);
+            }
+
+
+            db.close();
 
         } catch (Exception e) {
             e.printStackTrace();

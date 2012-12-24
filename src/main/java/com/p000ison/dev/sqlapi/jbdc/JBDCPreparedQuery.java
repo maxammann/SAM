@@ -65,7 +65,15 @@ public class JBDCPreparedQuery implements PreparedQuery {
         index++;
 
         try {
-            if (column.isSerializable()) {
+            int type = JBDCDatabase.getDatabaseDataType(column.getType());
+            if (type != Database.UNSUPPORTED_TYPE) {
+                if (value == null) {
+                    preparedStatement.setNull(index, type);
+                } else {
+
+                    preparedStatement.setObject(index, value, type);
+                }
+            } else if (column.isSerializable()) {
                 if (value == null) {
                     preparedStatement.setNull(index, Types.BLOB);
                 } else {
@@ -76,13 +84,8 @@ public class JBDCPreparedQuery implements PreparedQuery {
 
                     preparedStatement.setBytes(index, bytes);
                 }
-            } else if (column.isSupported()) {
-                if (value == null) {
-                    preparedStatement.setNull(index, column.getDatabaseDataType());
-                } else {
-                    preparedStatement.setObject(index, value, column.getDatabaseDataType());
-                }
             }
+
         } catch (SQLException e) {
             throw new QueryException(e);
         } catch (IOException e) {

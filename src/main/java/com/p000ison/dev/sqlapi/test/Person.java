@@ -25,19 +25,32 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseColumnGetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnSetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 
-@DatabaseTable(name = "tesz")
+@DatabaseTable(name = "testdf")
 public class Person implements TableObject {
 
     @DatabaseColumn(position = 1, databaseName = "id", id = true)
-    private int id;
+    private int id = 0;
 
     private String name;
 
     @DatabaseColumn(position = 3, databaseName = "age")
     private int age;
 
+    @DatabaseColumn(position = 3, databaseName = "hage")
+    private int ageg;
+
     public Person()
     {
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Person{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", age=" + age +
+                '}';
     }
 
     @DatabaseColumnSetter(position = 2, databaseName = "name", lenght = 100)

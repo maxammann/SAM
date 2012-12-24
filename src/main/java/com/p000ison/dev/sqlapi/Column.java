@@ -19,10 +19,6 @@
 
 package com.p000ison.dev.sqlapi;
 
-import com.p000ison.dev.sqlapi.exception.TableBuildingException;
-
-import java.sql.Types;
-
 /**
  * Represents a Column
  */
@@ -45,7 +41,7 @@ public abstract class Column {
      *
      * @return The name of the column
      */
-    public abstract String getColumnName();
+    public abstract String getName();
 
     /**
      * Gets the position of the column. This can be any value above or equal 0 or -1 if the order does not matter.
@@ -113,33 +109,8 @@ public abstract class Column {
      */
     public boolean isSerializable()
     {
-        return getDatabaseDataType() == Types.BLOB;
+        return RegisteredTable.isSerializable(getType());
     }
 
     public abstract boolean isID();
-
-    /**
-     * Checks whether the type of this column is supported
-     *
-     * @return Whether this type of the column is supported
-     */
-    public final boolean isSupported()
-    {
-        return getDatabaseDataType() != TableBuilder.UNSUPPORTED_TYPE;
-    }
-
-    public int getDatabaseDataType()
-    {
-        return databaseType;
-    }
-
-    void setDatabaseType(int databaseType)
-    {
-        if (databaseType == TableBuilder.UNSUPPORTED_TYPE) {
-            throw new TableBuildingException("The type %s of the column %s is not supported!", getType(), getColumnName());
-        }
-        this.databaseType = databaseType;
-    }
-
-
 }
