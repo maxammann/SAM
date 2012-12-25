@@ -70,15 +70,15 @@ public abstract class TableBuilder {
             throw new TableBuildingException("The name of the table is not given! Add the @DatabaseTable annotation!");
         }
 
-        if (!Database.validateTableName(tableName)) {
-            throw new TableBuildingException("The name of the table %s is not valid!", tableName);
-        }
+//        if (!Database.validateTableName(tableName)) {
+//            throw new TableBuildingException("The name of the table %s is not valid!", tableName);
+//        }
 
         try {
             ctor = object.getDeclaredConstructor();
             ctor.setAccessible(true);
         } catch (NoSuchMethodException e) {
-            throw new TableBuildingException("No default constructor found in class %s!", object.getName());
+            System.out.println("No default constructor found! Register one!");
         }
 
         existed = database.existsDatabaseTable(tableName);
@@ -178,9 +178,9 @@ public abstract class TableBuilder {
                 columnName = getter.databaseName();
             }
 
-            if (!Database.validateColumnName(columnName)) {
-                throw new TableBuildingException("The name of the column %s is not valid!", columnName);
-            }
+//            if (!Database.validateColumnName(columnName)) {
+//                throw new TableBuildingException("The name of the column %s is not valid!", columnName);
+//            }
 
             MethodColumn column = getMethodColumn(columnName);
             if (column == null) {
@@ -191,7 +191,7 @@ public abstract class TableBuilder {
             if (setter == null) {
                 column.setGetter(method);
                 if (!database.isSupported(column.getType())) {
-                    throw new TableBuildingException("The type %s of the column %s is not supported by the database!");
+                    throw new TableBuildingException("The type %s of the column %s is not supported by the database!", column.getType().getName(), column.getName());
                 }
             } else {
                 column.setSetter(method);

@@ -27,6 +27,7 @@ import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -228,6 +229,7 @@ public abstract class JBDCDatabase extends Database {
         return type.isPrimitive() || Number.class.isAssignableFrom(type)
                 || type == boolean.class || type == Boolean.class
                 || type == char.class || type == Character.class
+                || type == Date.class || type == Timestamp.class
                 || type == String.class;
     }
 
@@ -252,17 +254,13 @@ public abstract class JBDCDatabase extends Database {
             return Types.CHAR;
         } else if (type == String.class) {
             return Types.VARCHAR;
+        } else if (type == java.util.Date.class || type == java.sql.Timestamp.class) {
+            return Types.TIMESTAMP;
         } else if (RegisteredTable.isSerializable(type)) {
             return Types.BLOB;
         }
 
         return UNSUPPORTED_TYPE;
-    }
-
-    @Override
-    protected <T extends TableObject> PreparedSelectQuery<T> createPreparedSelectQuery(String query, Class<T> type)
-    {
-        return new JBDCPreparedSelectQuery<T>(this, query, type);
     }
 
     @Override

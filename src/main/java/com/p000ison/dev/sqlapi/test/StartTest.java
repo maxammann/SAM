@@ -22,7 +22,6 @@ package com.p000ison.dev.sqlapi.test;
 import com.p000ison.dev.sqlapi.jbdc.JBDCDatabase;
 import com.p000ison.dev.sqlapi.mysql.MySQLConfiguration;
 import com.p000ison.dev.sqlapi.mysql.MySQLDatabase;
-import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 
 import java.io.FileNotFoundException;
 import java.sql.DriverManager;
@@ -45,7 +44,7 @@ public class StartTest {
         long start = System.currentTimeMillis();
         try {
 
-            Person person;
+            Person person = new Person();
 
             JBDCDatabase db = new MySQLDatabase(new MySQLConfiguration("root", "m1nt", "localhost", PORT, "test"));
 //            Database db = new SQLiteDatabase(new SQLiteConfiguration(new File("/home/max/Arbeitsfläche/test.db")));
@@ -57,11 +56,12 @@ public class StartTest {
 //                person.setFormattedName(String.valueOf(System.currentTimeMillis()));
 //                db.save(person);
 //            }
+            db.save(person);
 
-            PreparedSelectQuery<Person> result = db.<Person>select().from(Person.class).prepare();
-            for (Person p : result.getResults()) {
-                System.out.println(p);
-            }
+//            PreparedSelectQuery<Person> result = db.<Person>select().from(Person.class).prepare();
+//            for (Person p : result.getResults()) {
+//                System.out.println(p);
+//            }
 
 
             db.close();

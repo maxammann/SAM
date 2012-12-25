@@ -54,7 +54,7 @@ public final class MySQLDatabase extends JBDCDatabase {
         try {
             return dataSource.getConnection();
         } catch (SQLException e) {
-            throw new DatabaseConnectionException(e);
+            throw new DatabaseConnectionException(configuration, e);
         }
     }
 

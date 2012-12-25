@@ -21,6 +21,9 @@ package com.p000ison.dev.sqlapi.mysql;
 
 import com.p000ison.dev.sqlapi.*;
 
+import java.sql.Timestamp;
+import java.util.Date;
+
 /**
  * Represents a SQLiteTableBuilder
  */
@@ -64,6 +67,8 @@ public final class MySQLTableBuilder extends TableBuilder {
             query.append("LONG");
         } else if (type == char.class || type == Character.class) {
             query.append("CHAR");
+        } else if (type == Date.class || type == Timestamp.class) {
+            query.append("DATETIME");
         } else if (type == String.class) {
             if (column.getLength().length != 0) {
                 query.append("VARCHAR");

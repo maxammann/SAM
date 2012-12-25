@@ -14,30 +14,37 @@
  * You should have received a copy of the GNU General Public License
  * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Last modified: 18.12.12 17:27
+ * Last modified: 25.12.12 17:44
  */
 
 package com.p000ison.dev.sqlapi.exception;
 
-import com.p000ison.dev.sqlapi.DatabaseConfiguration;
-
-import java.sql.SQLException;
-
 /**
- * Represents a DatabaseConnectionException
+ * Represents a RegistrationException
  */
-public class DatabaseConnectionException extends Exception {
+public class RegistrationException extends RuntimeException {
 
-    private final DatabaseConfiguration config;
+    private Class<?> clazz;
 
-    public DatabaseConnectionException(DatabaseConfiguration config, SQLException cause)
+    public RegistrationException(Class<?> clazz, String message, Object... args)
     {
-        super(cause);
-        this.config = config;
+        super(args.length == 0 ? message : String.format(message, args));
+        this.clazz = clazz;
     }
 
-    public DatabaseConfiguration getConfig()
+    public RegistrationException(Class<?> clazz, Exception cause)
     {
-        return config;
+        super(cause);
+        this.clazz = clazz;
+    }
+
+    public RegistrationException(Class<?> clazz)
+    {
+        this.clazz = clazz;
+    }
+
+    public Class<?> getRegistrationErrorClass()
+    {
+        return clazz;
     }
 }

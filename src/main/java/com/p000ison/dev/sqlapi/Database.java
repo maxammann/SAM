@@ -22,6 +22,7 @@ package com.p000ison.dev.sqlapi;
 import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
 import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
+import com.p000ison.dev.sqlapi.exception.RegistrationException;
 import com.p000ison.dev.sqlapi.query.PreparedQuery;
 import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 import com.p000ison.dev.sqlapi.query.SelectQuery;
@@ -78,27 +79,27 @@ public abstract class Database {
         return annotation == null ? null : annotation.name();
     }
 
-    /**
-     * Validates the name of a column
-     *
-     * @param name The name of the column
-     * @return Whether it is valid
-     */
-    public static boolean validateColumnName(String name)
-    {
-        return name.matches("^[a-zA-Z]+$");
-    }
-
-    /**
-     * Validates the name of a table
-     *
-     * @param name The name of the table
-     * @return Whether it is valid
-     */
-    public static boolean validateTableName(String name)
-    {
-        return validateColumnName(name);
-    }
+//    /**
+//     * Validates the name of a column
+//     *
+//     * @param name The name of the column
+//     * @return Whether it is valid
+//     */
+//    public static boolean validateColumnName(String name)
+//    {
+//        return name.matches("^[a-zA-Z0-9]+$");
+//    }
+//
+//    /**
+//     * Validates the name of a table
+//     *
+//     * @param name The name of the table
+//     * @return Whether it is valid
+//     */
+//    public static boolean validateTableName(String name)
+//    {
+//        return validateColumnName(name);
+//    }
 
     /**
      * Closes the connection to the database
@@ -120,9 +121,9 @@ public abstract class Database {
      *
      * @param table The object to register
      */
-    public final void registerTable(TableObject table)
+    public final RegisteredTable registerTable(TableObject table)
     {
-        registerTable(table.getClass());
+        return registerTable(table.getClass());
     }
 
     /**
@@ -130,7 +131,7 @@ public abstract class Database {
      *
      * @param table The class to register
      */
-    public synchronized final void registerTable(Class<? extends TableObject> table)
+    public synchronized final RegisteredTable registerTable(Class<? extends TableObject> table)
     {
         long start = System.currentTimeMillis();
         TableBuilder builder = createTableBuilder(table);
@@ -150,6 +151,7 @@ public abstract class Database {
 
         executeDirectUpdate(tableQuery);
         executeDirectUpdate(modifyQuery);
+        return registeredTable;
     }
 
     /**
@@ -203,17 +205,26 @@ public abstract class Database {
         return new DefaultSelectQuery<T>(this);
     }
 
+    /**
+     * Saves a object to the table in your database. The class of the object must not be not registered!
+     * If the there is already an entry in the database with the id of the object or the id is equal or less than 0 the
+     * table gets updated else a new entry gets inserted.
+     *
+     * @param tableObject The object to insert/update
+     * @throws RegistrationException If the table is not registered
+     */
     public void save(TableObject tableObject)
     {
         synchronized (this) {
-            RegisteredTable table = getRegisteredTable(tableObject.getClass());
+            Class<? extends TableObject> clazz = tableObject.getClass();
+            RegisteredTable table = getRegisteredTable(clazz);
             if (table == null) {
-                throw new QueryException("The class %s is not registered!");
+                throw new RegistrationException(clazz, "The class %s is not registered!");
             }
 
             Column idColumn = table.getIDColumn();
 
-            if (((Number) idColumn.getValue(tableObject)).longValue() <= 0 || !existsEntry(table, tableObject)) {
+            if (((Number) idColumn.getValue(tableObject)).intValue() <= 0 || !existsEntry(table, tableObject)) {
                 insert(table, tableObject, idColumn);
             } else {
                 update(table, tableObject, idColumn);
@@ -221,32 +232,57 @@ public abstract class Database {
         }
     }
 
+    /**
+     * Attempts to update the object in the database
+     *
+     * @param tableObject The object to update
+     * @throws RegistrationException If the table is not registered
+     */
+    public void update(TableObject tableObject)
+    {
+        synchronized (this) {
+            Class<? extends TableObject> clazz = tableObject.getClass();
+            RegisteredTable table = getRegisteredTable(clazz);
+            if (table == null) {
+                throw new RegistrationException(clazz, "The class %s is not registered!");
+            }
+
+            Column idColumn = table.getIDColumn();
+
+            update(table, tableObject, idColumn);
+        }
+    }
+
     private void insert(RegisteredTable registeredTable, TableObject object, Column idColumn)
     {
-        PreparedQuery insert = registeredTable.getInsertStatement();
-        setColumnValues(insert, registeredTable, object);
-        idColumn.setValue(object, getLastEntryId(registeredTable));
+        PreparedQuery insert = registeredTable.getPreparedInsertStatement();
+        setColumnValues(insert, registeredTable, object, idColumn);
         insert.update();
+        idColumn.setValue(object, getLastEntryId(registeredTable));
     }
 
     private void update(RegisteredTable registeredTable, TableObject object, Column idColumn)
     {
-        PreparedQuery update = registeredTable.getUpdateStatement();
-        int i = setColumnValues(update, registeredTable, object);
+        PreparedQuery update = registeredTable.getPreparedUpdateStatement();
+        int i = setColumnValues(update, registeredTable, object, idColumn);
         update.set(idColumn, i, idColumn.getValue(object));
         update.update();
     }
 
-    private int setColumnValues(PreparedQuery statement, RegisteredTable registeredTable, TableObject object)
+    private int setColumnValues(PreparedQuery statement, RegisteredTable registeredTable, TableObject object, Column idColumn)
     {
         List<Column> registeredColumns = registeredTable.getRegisteredColumns();
         int i = 0;
-        for (; i < registeredColumns.size(); i++) {
-            Column column = registeredColumns.get(i);
-            Object value = column.getValue(object);
+        for (Column column : registeredColumns) {
+            if (column.equals(idColumn)) {
+                continue;
+            }
 
+            Object value = column.getValue(object);
             statement.set(column, i, value);
+            i++;
         }
+
         return i;
     }
 
@@ -272,8 +308,6 @@ public abstract class Database {
      * @return A PreparedQuery
      */
     protected abstract PreparedQuery createPreparedStatement(String query);
-
-    protected abstract <T extends TableObject> PreparedSelectQuery<T> createPreparedSelectQuery(String query, Class<T> type);
 
     protected abstract <T extends TableObject> PreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table);
 

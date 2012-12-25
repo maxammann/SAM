@@ -47,12 +47,6 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
         this.table = table;
     }
 
-    protected JBDCPreparedSelectQuery(JBDCDatabase database, String query, Class<? extends TableObject> table)
-    {
-        super(database, query);
-        this.table = database.getRegisteredTable(table);
-    }
-
     @Override
     public <C extends Collection<T>> C getResults(C collection)
     {
@@ -71,7 +65,7 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
                         Object obj = null;
 
                         if (JBDCDatabase.isSupportedByDatabase(column.getType())) {
-                            obj = result.getObject(i + 1, column.getType());
+                            obj = result.getObject(i + 1);
                         } else {
                             ObjectInputStream inputStream = null;
                             try {

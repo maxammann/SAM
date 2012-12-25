@@ -19,12 +19,12 @@
 
 package com.p000ison.dev.sqlapi;
 
+import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 import com.p000ison.dev.sqlapi.query.PreparedQuery;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -34,7 +34,7 @@ public class RegisteredTable {
     private String name;
     private Class<? extends TableObject> registeredClass;
     private List<Column> registeredColumns;
-    private Constructor<? extends TableObject> constructor;
+    private RegisteredConstructor constructor;
     private PreparedQuery updateStatement, insertStatement;
 
     RegisteredTable(String name, Class<? extends TableObject> registeredClass, List<Column> registeredColumns, Constructor<? extends TableObject> constructor)
@@ -42,7 +42,9 @@ public class RegisteredTable {
         this.name = name;
         this.registeredClass = registeredClass;
         this.registeredColumns = registeredColumns;
-        this.constructor = constructor;
+        if (constructor != null) {
+            this.constructor = new RegisteredConstructor(constructor);
+        }
     }
 
     public boolean isRegistered(TableObject obj)
@@ -81,19 +83,12 @@ public class RegisteredTable {
         return this.registeredClass.equals(registeredClass);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T createNewInstance()
+    public <T extends TableObject> T createNewInstance()
     {
-        try {
-            return (T) constructor.newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+        if (constructor == null) {
+            throw new QueryException("No default constructor and no constructor registered for class %s!", registeredClass.getName());
         }
-        return null;
+        return constructor.newInstance();
     }
 
     public String getName()
@@ -136,24 +131,73 @@ public class RegisteredTable {
         query.append("INSERT INTO ").append(getName()).append(" (");
 
         for (Column column : getRegisteredColumns()) {
+            if (column.equals(id)) {
+                continue;
+            }
             query.append(column.getName()).append(',');
         }
         query.deleteCharAt(query.length() - 1);
         query.append(") VALUES (");
-        for (int i = 0; i < getRegisteredColumns().size(); i++) {
+        for (int i = 0; i < getRegisteredColumns().size() - 1; i++) {
             query.append("?,");
         }
         query.deleteCharAt(query.length() - 1);
         query.append(");");
+        System.out.println(query.toString());
         insertStatement = database.createPreparedStatement(query.toString());
     }
 
-    public PreparedQuery getUpdateStatement()
+    public PreparedQuery getPreparedUpdateStatement()
     {
         return updateStatement;
     }
 
-    public PreparedQuery getInsertStatement()
+
+    /**
+     * Registers a constructor which will be used to build the objects, just pass for example: "test", 5 in it to
+     * find a constructor with the parameters String and int.
+     *
+     * @param arguments Will be used to build the object, pass in nothing to use the default constructor
+     * @return A registered constructor
+     */
+    public RegisteredConstructor registerConstructor(Object... arguments)
+    {
+        try {
+            if (arguments.length == 0) {
+                constructor = new RegisteredConstructor(registeredClass.getConstructor());
+            } else {
+                constructor = new RegisteredConstructor(registeredClass, arguments);
+            }
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+
+        return constructor;
+    }
+
+    /**
+     * Registers a constructor which will be used to build the objects, just pass for example: String and int in it to
+     * find a constructor with the parameters String and int.
+     *
+     * @param arguments Will be used to build the object, pass in nothing to use the default constructor
+     * @return A registered constructor
+     */
+    public RegisteredConstructor registerConstructor(Class... arguments)
+    {
+        try {
+            if (arguments.length == 0) {
+                constructor = new RegisteredConstructor(registeredClass.getConstructor());
+            } else {
+                constructor = new RegisteredConstructor(registeredClass, arguments);
+            }
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+
+        return constructor;
+    }
+
+    public PreparedQuery getPreparedInsertStatement()
     {
         return insertStatement;
     }
