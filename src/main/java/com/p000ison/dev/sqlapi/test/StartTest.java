@@ -22,6 +22,7 @@ package com.p000ison.dev.sqlapi.test;
 import com.p000ison.dev.sqlapi.jbdc.JBDCDatabase;
 import com.p000ison.dev.sqlapi.mysql.MySQLConfiguration;
 import com.p000ison.dev.sqlapi.mysql.MySQLDatabase;
+import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 
 import java.io.FileNotFoundException;
 import java.sql.DriverManager;
@@ -58,10 +59,10 @@ public class StartTest {
 //            }
             db.save(person);
 
-//            PreparedSelectQuery<Person> result = db.<Person>select().from(Person.class).prepare();
-//            for (Person p : result.getResults()) {
-//                System.out.println(p);
-//            }
+            PreparedSelectQuery<Person> result = db.<Person>select().from(Person.class).prepare();
+            for (Person p : result.getResults()) {
+                System.out.println(p);
+            }
 
 
             db.close();
@@ -72,5 +73,6 @@ public class StartTest {
 
         long finish = System.currentTimeMillis();
         System.out.printf("Check took %s!", finish - start);
+
     }
 }

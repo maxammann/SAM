@@ -34,4 +34,12 @@ public interface WhereQuery<T extends TableObject> {
     public WhereComparator<T> lessThan(Column column, Object expected);
 
     public WhereComparator<T> greaterThan(Column column, Object expected);
+
+    public WhereComparator<T> equals(String column, Object expected);
+
+    public WhereComparator<T> notEquals(String column, Object expected);
+
+    public WhereComparator<T> lessThan(String column, Object expected);
+
+    public WhereComparator<T> greaterThan(String column, Object expected);
 }

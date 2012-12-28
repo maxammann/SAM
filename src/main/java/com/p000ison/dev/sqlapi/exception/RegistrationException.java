@@ -43,6 +43,22 @@ public class RegistrationException extends RuntimeException {
         this.clazz = clazz;
     }
 
+    public RegistrationException(Throwable cause, String message, Object... args)
+    {
+        super(args.length == 0 ? message : String.format(message, args), cause);
+    }
+
+    public RegistrationException(String message, Class<?> clazz)
+    {
+        super(message);
+        this.clazz = clazz;
+    }
+
+    public Class<?> getClazz()
+    {
+        return clazz;
+    }
+
     public Class<?> getRegistrationErrorClass()
     {
         return clazz;

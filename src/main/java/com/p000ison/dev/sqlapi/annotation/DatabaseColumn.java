@@ -82,4 +82,6 @@ public @interface DatabaseColumn {
     boolean unique() default false;
 
     boolean id() default false;
+
+    boolean saveValueAfterLoading() default false;
 }

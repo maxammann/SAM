@@ -94,6 +94,10 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         return whereQuery;
     }
 
+    public <T> void registerInputManipulator(Column column) {
+
+    }
+
     @Override
     public synchronized final PreparedSelectQuery<T> prepare()
     {

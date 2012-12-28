@@ -21,6 +21,7 @@ package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnGetter;
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumnSetter;
+import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -184,14 +185,20 @@ final class MethodColumn extends Column {
     }
 
     @Override
+    public boolean isSaveInputAfterLoading()
+    {
+        return annotation.saveValueAfterLoading();
+    }
+
+    @Override
     public void setValue(TableObject tableObject, Object object)
     {
         try {
             setter.invoke(tableObject, object);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            throw new QueryException(e);
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            throw new QueryException(e.getCause());
         }
     }
 

@@ -34,7 +34,7 @@ import java.sql.SQLException;
  */
 public final class MySQLDatabase extends JBDCDatabase {
 
-    public MySQLDatabase(MySQLConfiguration configuration) throws DatabaseConnectionException
+    public MySQLDatabase(DatabaseConfiguration configuration) throws DatabaseConnectionException
     {
         super(configuration);
     }

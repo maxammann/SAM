@@ -23,7 +23,6 @@ package com.p000ison.dev.sqlapi;
  * Represents a Column
  */
 public abstract class Column {
-    private int databaseType;
 
     protected Column()
     {
@@ -113,4 +112,6 @@ public abstract class Column {
     }
 
     public abstract boolean isID();
+
+    public abstract boolean isSaveInputAfterLoading();
 }

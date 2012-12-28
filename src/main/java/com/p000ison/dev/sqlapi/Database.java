@@ -30,6 +30,8 @@ import com.p000ison.dev.sqlapi.query.SelectQuery;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represents a Database
@@ -51,6 +53,22 @@ public abstract class Database {
 
     public static final int UNSUPPORTED_TYPE = Integer.MAX_VALUE;
 
+    private static Logger logger;
+
+    static void log(Level level, String msg, Object... args)
+    {
+        if (logger == null) {
+            return;
+        }
+
+        logger.log(level, msg, args);
+    }
+
+    public static void setLogger(Logger logger)
+    {
+        Database.logger = logger;
+    }
+
     /**
      * Creates a new database connection based on the configuration
      *
@@ -60,6 +78,7 @@ public abstract class Database {
     {
         this.configuration = configuration;
         String driver = configuration.getDriverName();
+
         try {
             Class.forName(driver);
         } catch (Exception e) {
@@ -79,27 +98,15 @@ public abstract class Database {
         return annotation == null ? null : annotation.name();
     }
 
-//    /**
-//     * Validates the name of a column
-//     *
-//     * @param name The name of the column
-//     * @return Whether it is valid
-//     */
-//    public static boolean validateColumnName(String name)
-//    {
-//        return name.matches("^[a-zA-Z0-9]+$");
-//    }
-//
-//    /**
-//     * Validates the name of a table
-//     *
-//     * @param name The name of the table
-//     * @return Whether it is valid
-//     */
-//    public static boolean validateTableName(String name)
-//    {
-//        return validateColumnName(name);
-//    }
+    public void saveStoredValues(Class<? extends TableObject> clazz)
+    {
+        RegisteredTable table = getRegisteredTable(clazz);
+        if (table == null) {
+            throw new RegistrationException(clazz, "The class %s is not registered!");
+        }
+
+        table.saveStoredValues();
+    }
 
     /**
      * Closes the connection to the database
@@ -190,8 +197,7 @@ public abstract class Database {
                 return registeredTable;
             }
         }
-
-        return null;
+        throw new RegistrationException(table, "The class %s is not registered!", table.getName());
     }
 
     /**
@@ -216,11 +222,7 @@ public abstract class Database {
     public void save(TableObject tableObject)
     {
         synchronized (this) {
-            Class<? extends TableObject> clazz = tableObject.getClass();
-            RegisteredTable table = getRegisteredTable(clazz);
-            if (table == null) {
-                throw new RegistrationException(clazz, "The class %s is not registered!");
-            }
+            RegisteredTable table = getRegisteredTable(tableObject);
 
             Column idColumn = table.getIDColumn();
 
@@ -232,6 +234,24 @@ public abstract class Database {
         }
     }
 
+    public void delete(TableObject tableObject)
+    {
+        synchronized (this) {
+            RegisteredTable table = getRegisteredTable(tableObject);
+            Column idColumn = table.getIDColumn();
+
+
+            PreparedQuery statement = table.getDeleteStatement();
+            statement.set(0, idColumn.getValue(tableObject));
+            statement.update();
+        }
+    }
+
+    private RegisteredTable getRegisteredTable(TableObject obj)
+    {
+        return getRegisteredTable(obj.getClass());
+    }
+
     /**
      * Attempts to update the object in the database
      *
@@ -241,11 +261,7 @@ public abstract class Database {
     public void update(TableObject tableObject)
     {
         synchronized (this) {
-            Class<? extends TableObject> clazz = tableObject.getClass();
-            RegisteredTable table = getRegisteredTable(clazz);
-            if (table == null) {
-                throw new RegistrationException(clazz, "The class %s is not registered!");
-            }
+            RegisteredTable table = getRegisteredTable(tableObject);
 
             Column idColumn = table.getIDColumn();
 
@@ -307,11 +323,11 @@ public abstract class Database {
      * @param query The query to prepare
      * @return A PreparedQuery
      */
-    protected abstract PreparedQuery createPreparedStatement(String query);
+    public abstract PreparedQuery createPreparedStatement(String query);
 
     protected abstract <T extends TableObject> PreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table);
 
-    protected abstract boolean executeDirectUpdate(String query);
+    public abstract boolean executeDirectUpdate(String query);
 
     protected abstract boolean existsEntry(RegisteredTable table, TableObject object);
 
@@ -326,4 +342,23 @@ public abstract class Database {
      * @return Whether the type is supported
      */
     public abstract boolean isSupported(Class<?> type);
+
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Database database = (Database) o;
+
+        return !(configuration != null ? !configuration.equals(database.configuration) : database.configuration != null);
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return configuration != null ? configuration.hashCode() : 0;
+    }
 }

@@ -43,30 +43,54 @@ class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
     @Override
     public WhereComparator<T> equals(Column column, Object expected)
     {
-        return addComparator(column, CompareOperator.EQUALS, expected);
+        return equals(column.getName(), expected);
     }
 
     @Override
     public WhereComparator<T> notEquals(Column column, Object expected)
     {
-        return addComparator(column, CompareOperator.NOT_EQUAL, expected);
+        return notEquals(column.getName(), expected);
     }
 
     @Override
     public WhereComparator<T> lessThan(Column column, Object expected)
     {
-        return addComparator(column, CompareOperator.LESS_THAN, expected);
+        return lessThan(column.getName(), expected);
     }
 
     @Override
     public WhereComparator<T> greaterThan(Column column, Object expected)
     {
+        return greaterThan(column.getName(), expected);
+    }
+
+    @Override
+    public WhereComparator<T> equals(String column, Object expected)
+    {
+        return addComparator(column, CompareOperator.EQUALS, expected);
+    }
+
+    @Override
+    public WhereComparator<T> notEquals(String column, Object expected)
+    {
+        return addComparator(column, CompareOperator.NOT_EQUAL, expected);
+    }
+
+    @Override
+    public WhereComparator<T> lessThan(String column, Object expected)
+    {
+        return addComparator(column, CompareOperator.LESS_THAN, expected);
+    }
+
+    @Override
+    public WhereComparator<T> greaterThan(String column, Object expected)
+    {
         return addComparator(column, CompareOperator.GREATER_THAN, expected);
     }
 
-    private WhereComparator<T> addComparator(Column column, CompareOperator compareOperator, Object expected)
+    private WhereComparator<T> addComparator(String column, CompareOperator compareOperator, Object expected)
     {
-        DefaultWhereComparator<T> comparator = new DefaultWhereComparator<T>(query, compareOperator, column.getName(), expected);
+        DefaultWhereComparator<T> comparator = new DefaultWhereComparator<T>(query, compareOperator, column, expected);
         comparators.add(comparator);
         return comparator;
     }

@@ -115,7 +115,7 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    protected boolean executeDirectUpdate(String query)
+    public boolean executeDirectUpdate(String query)
     {
         if (query == null) {
             return false;
@@ -141,7 +141,7 @@ public abstract class JBDCDatabase extends Database {
         }
     }
 
-    PreparedStatement prepare(String query)
+    public PreparedStatement prepare(String query)
     {
         try {
             return getConnection().prepareStatement(query);
@@ -151,7 +151,7 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    protected PreparedQuery createPreparedStatement(String query)
+    public PreparedQuery createPreparedStatement(String query)
     {
         return new JBDCPreparedQuery(this, query);
     }
@@ -267,5 +267,24 @@ public abstract class JBDCDatabase extends Database {
     protected <T extends TableObject> PreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table)
     {
         return new JBDCPreparedSelectQuery<T>(this, query, table);
+    }
+
+    public ResultSet query(String query)
+    {
+        Statement statement = null;
+        try {
+            statement = getConnection().createStatement();
+            return statement.executeQuery(query);
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (SQLException e) {
+                    throw new QueryException(e);
+                }
+            }
+        }
     }
 }

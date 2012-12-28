@@ -41,6 +41,7 @@ import java.util.List;
 public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPreparedQuery implements PreparedSelectQuery<T> {
     private final RegisteredTable table;
 
+
     protected JBDCPreparedSelectQuery(JBDCDatabase database, String query, RegisteredTable table)
     {
         super(database, query);
@@ -89,7 +90,12 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
                             }
                         }
 
-                        column.setValue(object, obj);
+                        if (column.isSaveInputAfterLoading()) {
+                            //set this value after returning getResults
+                            table.storeColumnValue(column, obj, object);
+                        } else {
+                            column.setValue(object, obj);
+                        }
                     }
 
                     collection.add(object);

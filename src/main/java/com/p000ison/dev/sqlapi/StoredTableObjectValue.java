@@ -14,31 +14,39 @@
  * You should have received a copy of the GNU General Public License
  * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Last modified: 18.12.12 17:27
+ * Last modified: 26.12.12 19:50
  */
 
-package com.p000ison.dev.sqlapi.exception;
-
-import java.sql.SQLException;
+package com.p000ison.dev.sqlapi;
 
 /**
- * Represents a QueryException
+ * Represents a StoredTableObjectValue
  */
-public class QueryException extends RuntimeException {
+public class StoredTableObjectValue {
 
+    private TableObject tableObject;
+    private Object value;
+    private Column column;
 
-    public QueryException(String message, Object... args)
+    public StoredTableObjectValue(TableObject tableObject, Object value, Column column)
     {
-        super(args.length == 0 ? message : String.format(message, args));
+        this.tableObject = tableObject;
+        this.value = value;
+        this.column = column;
     }
 
-    public QueryException(SQLException cause)
+    public TableObject getTableObject()
     {
-        super(cause);
+        return tableObject;
     }
 
-    public QueryException(Throwable cause)
+    public Object getValue()
     {
-        super(cause);
+        return value;
+    }
+
+    public Column getColumn()
+    {
+        return column;
     }
 }

@@ -87,6 +87,12 @@ final class FieldColumn extends Column {
     }
 
     @Override
+    public boolean isSaveInputAfterLoading()
+    {
+        return annotation.saveValueAfterLoading();
+    }
+
+    @Override
     public void setValue(TableObject tableObject, Object object)
     {
         try {

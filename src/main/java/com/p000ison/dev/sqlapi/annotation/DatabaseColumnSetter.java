@@ -83,4 +83,6 @@ public @interface DatabaseColumnSetter {
     boolean unique() default false;
 
     boolean id() default false;
+
+    boolean saveValueAfterLoading() default false;
 }

@@ -64,4 +64,26 @@ public abstract class DatabaseConfiguration {
     {
         return Class.forName(driver);
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DatabaseConfiguration that = (DatabaseConfiguration) o;
+
+        if (driver != null ? !driver.equals(that.driver) : that.driver != null) return false;
+        if (properties != null ? !properties.equals(that.properties) : that.properties != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = properties != null ? properties.hashCode() : 0;
+        result = 31 * result + (driver != null ? driver.hashCode() : 0);
+        return result;
+    }
 }

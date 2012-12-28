@@ -20,12 +20,15 @@
 package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.exception.QueryException;
+import com.p000ison.dev.sqlapi.exception.RegistrationException;
 import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 import com.p000ison.dev.sqlapi.query.PreparedQuery;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a RegisteredTable
@@ -35,7 +38,8 @@ public class RegisteredTable {
     private Class<? extends TableObject> registeredClass;
     private List<Column> registeredColumns;
     private RegisteredConstructor constructor;
-    private PreparedQuery updateStatement, insertStatement;
+    private PreparedQuery updateStatement, insertStatement, deleteStatement;
+    private Set<StoredTableObjectValue> storedColumnValues = new HashSet<StoredTableObjectValue>();
 
     RegisteredTable(String name, Class<? extends TableObject> registeredClass, List<Column> registeredColumns, Constructor<? extends TableObject> constructor)
     {
@@ -143,8 +147,13 @@ public class RegisteredTable {
         }
         query.deleteCharAt(query.length() - 1);
         query.append(");");
-        System.out.println(query.toString());
+
         insertStatement = database.createPreparedStatement(query.toString());
+
+        query.setLength(0);
+        query.append("DELETE FROM ").append(getName()).append(" WHERE ").append(id.getName()).append("=?;");
+
+        deleteStatement = database.createPreparedStatement(query.toString());
     }
 
     public PreparedQuery getPreparedUpdateStatement()
@@ -191,7 +200,7 @@ public class RegisteredTable {
                 constructor = new RegisteredConstructor(registeredClass, arguments);
             }
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
+            throw new RegistrationException(e, "Failed at registering the constructor! Constructor not found!");
         }
 
         return constructor;
@@ -200,5 +209,28 @@ public class RegisteredTable {
     public PreparedQuery getPreparedInsertStatement()
     {
         return insertStatement;
+    }
+
+    public void storeColumnValue(Column column, Object value, TableObject tableObject)
+    {
+        storedColumnValues.add(new StoredTableObjectValue(tableObject, value, column));
+    }
+
+    public void saveStoredValues()
+    {
+        for (StoredTableObjectValue value : storedColumnValues) {
+            value.getColumn().setValue(value.getTableObject(), value.getValue());
+        }
+        clearStoredValues();
+    }
+
+    public void clearStoredValues()
+    {
+        storedColumnValues.clear();
+    }
+
+    public PreparedQuery getDeleteStatement()
+    {
+        return deleteStatement;
     }
 }

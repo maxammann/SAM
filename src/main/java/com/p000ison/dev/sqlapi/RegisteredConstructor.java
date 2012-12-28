@@ -21,7 +21,6 @@ package com.p000ison.dev.sqlapi;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 
 /**
  * Represents a RegisteredConstructor
@@ -58,8 +57,6 @@ public class RegisteredConstructor {
         if (arguments.length != types.length) {
             throw new IllegalArgumentException("The length of the new arguments must match the size of the parameter types!");
         }
-
-        System.out.println(Arrays.toString(arguments));
 
         currentArgumentValues = arguments;
     }
