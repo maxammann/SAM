@@ -17,7 +17,10 @@
  * Last modified: 27.12.12 14:45
  */
 
-package com.p000ison.dev.sqlapi;
+package com.p000ison.dev.sqlapi.util;
+
+import com.p000ison.dev.sqlapi.Database;
+import com.p000ison.dev.sqlapi.TableObject;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;

@@ -100,7 +100,6 @@ public abstract class Column {
      */
     public abstract Object getValue(TableObject tableObject);
 
-
     /**
      * Checks if the type is serializable so we can store it in a blob
      *

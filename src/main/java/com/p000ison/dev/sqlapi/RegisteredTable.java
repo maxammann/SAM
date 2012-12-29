@@ -26,9 +26,9 @@ import com.p000ison.dev.sqlapi.query.PreparedQuery;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Queue;
 
 /**
  * Represents a RegisteredTable
@@ -39,7 +39,7 @@ public class RegisteredTable {
     private List<Column> registeredColumns;
     private RegisteredConstructor constructor;
     private PreparedQuery updateStatement, insertStatement, deleteStatement;
-    private Set<StoredTableObjectValue> storedColumnValues = new HashSet<StoredTableObjectValue>();
+    private Queue<StoredTableObjectValue> storedColumnValues = new LinkedList<StoredTableObjectValue>();
 
     RegisteredTable(String name, Class<? extends TableObject> registeredClass, List<Column> registeredColumns, Constructor<? extends TableObject> constructor)
     {
@@ -218,10 +218,11 @@ public class RegisteredTable {
 
     public void saveStoredValues()
     {
-        for (StoredTableObjectValue value : storedColumnValues) {
+        StoredTableObjectValue value;
+
+        while ((value = storedColumnValues.poll()) != null) {
             value.getColumn().setValue(value.getTableObject(), value.getValue());
         }
-        clearStoredValues();
     }
 
     public void clearStoredValues()

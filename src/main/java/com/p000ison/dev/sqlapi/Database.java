@@ -147,17 +147,16 @@ public abstract class Database {
         System.out.printf("Check register took %s!\n", finish - start);
         RegisteredTable registeredTable = new RegisteredTable(builder.getTableName(), table, builder.getColumns(), builder.getDefaultConstructor());
 
-        registeredTable.prepareSaveStatement(this);
-        registeredTables.add(registeredTable);
-
         String tableQuery = builder.createTable().getQuery();
         System.out.println("Create Query:" + tableQuery);
 
         String modifyQuery = builder.createModifyQuery().getQuery();
         System.out.println("Modify Query:" + modifyQuery);
-
         executeDirectUpdate(tableQuery);
         executeDirectUpdate(modifyQuery);
+        registeredTable.prepareSaveStatement(this);
+        registeredTables.add(registeredTable);
+
         return registeredTable;
     }
 

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
@@ -109,6 +110,17 @@ public class JBDCPreparedQuery implements PreparedQuery {
         synchronized (rwLock) {
             try {
                 return preparedStatement.executeUpdate() != 0;
+            } catch (SQLException e) {
+                throw new QueryException(e);
+            }
+        }
+    }
+
+    public ResultSet query()
+    {
+        synchronized (rwLock) {
+            try {
+                return preparedStatement.executeQuery();
             } catch (SQLException e) {
                 throw new QueryException(e);
             }

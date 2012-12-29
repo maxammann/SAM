@@ -22,8 +22,6 @@ package com.p000ison.dev.sqlapi.jbdc;
 import com.p000ison.dev.sqlapi.*;
 import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
-import com.p000ison.dev.sqlapi.query.PreparedQuery;
-import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -151,7 +149,7 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    public PreparedQuery createPreparedStatement(String query)
+    public JBDCPreparedQuery createPreparedStatement(String query)
     {
         return new JBDCPreparedQuery(this, query);
     }
@@ -264,27 +262,19 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    protected <T extends TableObject> PreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table)
+    protected <T extends TableObject> JBDCPreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table)
     {
         return new JBDCPreparedSelectQuery<T>(this, query, table);
     }
 
     public ResultSet query(String query)
     {
-        Statement statement = null;
+        Statement statement;
         try {
             statement = getConnection().createStatement();
             return statement.executeQuery(query);
         } catch (SQLException e) {
             throw new QueryException(e);
-        } finally {
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    throw new QueryException(e);
-                }
-            }
         }
     }
 }

@@ -215,7 +215,7 @@ public abstract class TableBuilder {
             DatabaseColumn column;
             if ((column = field.getAnnotation(DatabaseColumn.class)) != null) {
                 if (existsColumn(column.databaseName())) {
-                    throw new TableBuildingException("Duplicate column \"%s\"!", column.databaseName());
+                    throw new TableBuildingException("Duplicate column \"%s\" in class %s!", column.databaseName(), object.getName());
                 }
                 Column fieldColumn = new FieldColumn(field, column);
                 if (!database.isSupported(fieldColumn.getType())) {

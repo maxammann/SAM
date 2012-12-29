@@ -23,6 +23,7 @@ package com.p000ison.dev.sqlapi.jbdc;
 import com.p000ison.dev.sqlapi.Column;
 import com.p000ison.dev.sqlapi.RegisteredTable;
 import com.p000ison.dev.sqlapi.TableObject;
+import com.p000ison.dev.sqlapi.exception.NoQueryException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 
@@ -59,11 +60,13 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
 
                 while (result.next()) {
                     T object = table.createNewInstance();
+                    boolean add = true;
 
                     for (int i = 0; i < columns.size(); i++) {
                         Column column = columns.get(i);
 
                         Object obj = null;
+
 
                         if (JBDCDatabase.isSupportedByDatabase(column.getType())) {
                             obj = result.getObject(i + 1);
@@ -94,11 +97,17 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
                             //set this value after returning getResults
                             table.storeColumnValue(column, obj, object);
                         } else {
-                            column.setValue(object, obj);
+                            try {
+                                column.setValue(object, obj);
+                            } catch (NoQueryException e) {
+                                add = false;
+                            }
                         }
                     }
 
-                    collection.add(object);
+                    if (add) {
+                        collection.add(object);
+                    }
                 }
             } catch (SQLException e) {
                 throw new QueryException(e);
