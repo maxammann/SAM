@@ -24,9 +24,8 @@ import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Represents a JBDCDatabase
@@ -259,6 +258,39 @@ public abstract class JBDCDatabase extends Database {
         }
 
         return UNSUPPORTED_TYPE;
+    }
+
+    static Object getDatabaseDataType(int index, ResultSet set, Class<?> type)
+    {
+        try {
+            if (type == boolean.class || type == Boolean.class) {
+                return set.getBoolean(index);
+            } else if (type == byte.class || type == Byte.class) {
+                return set.getByte(index);
+            } else if (type == short.class || type == Short.class) {
+                return set.getShort(index);
+            } else if (type == int.class || type == Integer.class) {
+                return set.getInt(index);
+            } else if (type == float.class || type == Float.class) {
+                return set.getFloat(index);
+            } else if (type == double.class || type == Double.class) {
+                return set.getDouble(index);
+            } else if (type == long.class || type == Long.class) {
+                return set.getLong(index);
+            } else if (type == char.class || type == Character.class) {
+                return (char) set.getInt(index);
+            } else if (type == String.class) {
+                return set.getString(index);
+            } else if (type == java.util.Date.class || type == java.sql.Timestamp.class) {
+                return set.getDate(index);
+            } else if (RegisteredTable.isSerializable(type)) {
+                return set.getBlob(index);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     @Override

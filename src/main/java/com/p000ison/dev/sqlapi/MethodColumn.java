@@ -194,11 +194,15 @@ final class MethodColumn extends Column {
     public void setValue(TableObject tableObject, Object object)
     {
         try {
+
             setter.invoke(tableObject, object);
         } catch (IllegalAccessException e) {
             throw new QueryException(e);
         } catch (InvocationTargetException e) {
             throw new QueryException(e.getCause());
+        }   catch (IllegalArgumentException e) {
+            System.out.println("object: " + object);
+            System.out.println("class: " + object.getClass().getName());
         }
     }
 
