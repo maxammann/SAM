@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Last modified: 18.12.12 18:21
+ * Last modified: 29.12.12 16:43
  */
 
 package com.p000ison.dev.sqlapi;

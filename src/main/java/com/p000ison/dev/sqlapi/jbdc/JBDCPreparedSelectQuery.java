@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Last modified: 20.12.12 20:02
+ * Last modified: 29.12.12 15:57
  */
 
 package com.p000ison.dev.sqlapi.jbdc;
@@ -23,7 +23,6 @@ package com.p000ison.dev.sqlapi.jbdc;
 import com.p000ison.dev.sqlapi.Column;
 import com.p000ison.dev.sqlapi.RegisteredTable;
 import com.p000ison.dev.sqlapi.TableObject;
-import com.p000ison.dev.sqlapi.exception.NoQueryException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
 
@@ -60,7 +59,6 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
 
                 while (result.next()) {
                     T object = table.createNewInstance();
-                    boolean add = true;
 
                     for (int i = 0; i < columns.size(); i++) {
                         Column column = columns.get(i);
@@ -97,17 +95,11 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
                             //set this value after returning getResults
                             table.storeColumnValue(column, obj, object);
                         } else {
-                            try {
-                                column.setValue(object, obj);
-                            } catch (NoQueryException e) {
-                                add = false;
-                            }
+                            column.setValue(object, obj);
                         }
                     }
 
-                    if (add) {
-                        collection.add(object);
-                    }
+                    collection.add(object);
                 }
             } catch (SQLException e) {
                 throw new QueryException(e);
