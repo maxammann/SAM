@@ -116,10 +116,11 @@ public class RegisteredTable {
         StringBuilder query = new StringBuilder("UPDATE ").append(getName()).append(" SET ");
         Column id = null;
         for (Column column : getRegisteredColumns()) {
-            query.append(column.getName()).append("=?,");
             if (column.isID()) {
                 id = column;
+                continue;
             }
+            query.append(column.getName()).append("=?,");
         }
 
         if (id == null) {
@@ -129,6 +130,7 @@ public class RegisteredTable {
         query.deleteCharAt(query.length() - 1);
         query.append(" WHERE ").append(id.getName()).append("=?");
         query.append(';');
+        System.out.println("------------>" + query.toString());
         updateStatement = database.createPreparedStatement(query.toString());
 
         query.setLength(0);

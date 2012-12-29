@@ -67,7 +67,7 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
 
 
                         if (JBDCDatabase.isSupportedByDatabase(column.getType())) {
-                            obj = JBDCDatabase.getDatabaseDataType(i + 1, result, column.getType());
+                            obj = JBDCDatabase.getDatabaseFromResultSet(i + 1, result, column.getType());
                         } else {
                             ObjectInputStream inputStream = null;
                             try {

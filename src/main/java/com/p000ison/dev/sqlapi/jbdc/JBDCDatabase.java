@@ -24,8 +24,9 @@ import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Represents a JBDCDatabase
@@ -230,7 +231,6 @@ public abstract class JBDCDatabase extends Database {
                 || type == String.class;
     }
 
-
     static int getDatabaseDataType(Class<?> type)
     {
         if (type == boolean.class || type == Boolean.class) {
@@ -260,7 +260,7 @@ public abstract class JBDCDatabase extends Database {
         return UNSUPPORTED_TYPE;
     }
 
-    static Object getDatabaseDataType(int index, ResultSet set, Class<?> type)
+    static Object getDatabaseFromResultSet(int index, ResultSet set, Class<?> type)
     {
         try {
             if (type == boolean.class || type == Boolean.class) {
