@@ -33,11 +33,6 @@ import java.util.*;
  * Represents a TableBuilder
  */
 public abstract class TableBuilder {
-
-    /**
-     * A temporary query which is used to create a table or modify a table for example
-     */
-    private StringBuilder query = new StringBuilder();
     /**
      * The class which represents the table
      */
@@ -58,7 +53,9 @@ public abstract class TableBuilder {
     private Constructor<? extends TableObject> ctor;
 
     private Set<Column> toAdd;
-    private List<String> toDrop;
+    private Set<String> toDrop;
+
+    private Set<StringBuilder> builders = new HashSet<StringBuilder>();
 
     public TableBuilder(Class<? extends TableObject> object, Database database)
     {
@@ -88,22 +85,29 @@ public abstract class TableBuilder {
 
     public TableBuilder createTable()
     {
-        clearQuery();
         if (existed) {
             return this;
         }
+
+        StringBuilder query = new StringBuilder();
         query.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append('(');
 
-        buildColumns();
+        for (Column column : buildingColumns) {
+            query.append(buildColumn(column));
+            query.append(',');
+        }
+
+        query.deleteCharAt(query.length() - 1);
 
         query.append(");");
+
+        builders.add(query);
 
         return this;
     }
 
     public TableBuilder createModifyQuery()
     {
-        clearQuery();
         if (!existed) {
             return this;
         }
@@ -114,11 +118,6 @@ public abstract class TableBuilder {
         }
 
         return this;
-    }
-
-    private void clearQuery()
-    {
-        query.setLength(0);
     }
 
     private Column getColumn(String dbColumn)
@@ -172,10 +171,6 @@ public abstract class TableBuilder {
 
                 columnName = getter.databaseName();
             }
-
-//            if (!Database.validateColumnName(columnName)) {
-//                throw new TableBuildingException("The name of the column %s is not valid!", columnName);
-//            }
 
             MethodColumn column = getMethodColumn(columnName);
             if (column == null) {
@@ -239,20 +234,6 @@ public abstract class TableBuilder {
         buildingColumns = Collections.unmodifiableList(buildingColumns);
     }
 
-    private void buildColumns()
-    {
-        if (buildingColumns.isEmpty()) {
-            throw new TableBuildingException("The table must have at least one column!");
-        }
-
-        for (Column column : buildingColumns) {
-            buildColumn(column);
-            query.append(',');
-        }
-
-        query.deleteCharAt(query.length() - 1);
-    }
-
     private void setupModifyColumns()
     {
         if (buildingColumns.isEmpty()) {
@@ -272,7 +253,7 @@ public abstract class TableBuilder {
         }
 
         if (database.isDropOldColumns() && isSupportRemoveColumns()) {
-            toDrop = new ArrayList<String>();
+            toDrop = new HashSet<String>();
 
             for (String column : databaseColumns) {
                 if (!existsColumn(column)) {
@@ -284,10 +265,11 @@ public abstract class TableBuilder {
 
     protected void buildModifyColumns()
     {
+        StringBuilder query = new StringBuilder();
         boolean complete = false;
         if (toAdd != null && !toAdd.isEmpty()) {
 
-            query.append("ALTER TABLE ").append(Database.getTableName(object)).append(" ADD COLUMN (");
+            query.append("ALTER TABLE ").append(tableName).append(" ADD COLUMN (");
 
             for (Column column : toAdd) {
                 buildColumn(column);
@@ -301,7 +283,7 @@ public abstract class TableBuilder {
         if (toDrop != null && !toDrop.isEmpty()) {
 
             if (toAdd.isEmpty()) {
-                query.append("ALTER TABLE ").append(Database.getTableName(object));
+                query.append("ALTER TABLE ").append(tableName);
             } else {
                 query.append(',');
             }
@@ -319,6 +301,8 @@ public abstract class TableBuilder {
         if (complete) {
             query.append(';');
         }
+
+        addQuery(query);
     }
 
     /**
@@ -326,7 +310,7 @@ public abstract class TableBuilder {
      *
      * @param column The Column object which holds all information about the column.
      */
-    protected abstract void buildColumn(Column column);
+    protected abstract StringBuilder buildColumn(Column column);
 
     protected abstract boolean isSupportAddColumns();
 
@@ -339,28 +323,35 @@ public abstract class TableBuilder {
         return ctor;
     }
 
-    public final String getQuery()
-    {
-        if (query.length() == 0) {
-            return null;
-        }
-
-        return query.toString();
-    }
 
     final List<Column> getColumns()
     {
         return buildingColumns;
     }
 
-    final String getTableName()
+    public final String getTableName()
     {
         return tableName;
     }
 
-    protected final StringBuilder getBuilder()
+    protected Set<Column> getColumnsToAdd()
     {
-        return query;
+        return toAdd;
+    }
+
+    protected Set<String> getColumnsToRemove()
+    {
+        return toDrop;
+    }
+
+    public Set<StringBuilder> getBuilders()
+    {
+        return builders;
+    }
+
+    protected void addQuery(StringBuilder builder)
+    {
+        builders.add(builder);
     }
 }
 

@@ -151,17 +151,12 @@ public abstract class Database {
         TableBuilder builder = createTableBuilder(table);
         RegisteredTable registeredTable = new RegisteredTable(builder.getTableName(), table, builder.getColumns(), builder.getDefaultConstructor());
 
-        String tableQuery = builder.createTable().getQuery();
-        String modifyQuery = builder.createModifyQuery().getQuery();
+        builder.createTable().createModifyQuery();
 
-        if (tableQuery != null) {
-            log(Level.INFO, "Generating table %s...", registeredTable.getName());
-            executeDirectUpdate(tableQuery);
-        }
-
-        if (modifyQuery != null) {
-            log(Level.INFO, "Modifying table %s...", registeredTable.getName());
-            executeDirectUpdate(modifyQuery);
+        for (StringBuilder query : builder.getBuilders()) {
+            log(Level.INFO, "Generating and updating table %s!", registeredTable.getName());
+            System.out.println(query);
+            executeDirectUpdate(query.toString());
         }
 
         registeredTable.prepareSaveStatement(this);

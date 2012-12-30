@@ -101,6 +101,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         if (query == null) {
             throw new QueryException("The query is not prepared!");
         }
+
         PreparedSelectQuery<T> preparedQuery = database.createPreparedSelectQuery(getQuery(), table);
         if (whereQuery != null) {
             List<DefaultWhereComparator<T>> comparators = whereQuery.getComparators();

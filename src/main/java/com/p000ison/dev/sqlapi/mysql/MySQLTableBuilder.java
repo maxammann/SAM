@@ -40,10 +40,10 @@ public final class MySQLTableBuilder extends TableBuilder {
     }
 
     @Override
-    protected void buildColumn(Column column)
+    protected StringBuilder buildColumn(Column column)
     {
         Class<?> type = column.getType();
-        StringBuilder query = getBuilder();
+        StringBuilder query = new StringBuilder();
         query.append(column.getName()).append(' ');
 
         boolean allowModifyLength = true;
@@ -114,6 +114,8 @@ public final class MySQLTableBuilder extends TableBuilder {
         if (!column.getDefaultValue().isEmpty()) {
             query.append(" DEFAULT ").append(column.getDefaultValue());
         }
+
+        return query;
     }
 
     @Override
