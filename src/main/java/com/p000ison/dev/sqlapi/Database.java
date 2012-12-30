@@ -113,7 +113,15 @@ public abstract class Database {
      *
      * @throws QueryException
      */
-    public abstract void close() throws QueryException;
+    public final void close() throws QueryException
+    {
+        for (RegisteredTable table : registeredTables) {
+            table.close();
+        }
+        closeDatabaseConnection();
+    }
+
+    protected abstract void closeDatabaseConnection() throws QueryException;
 
     /**
      * Creates a new instance of a TableBuilder. This is used to build the queries to create/modify a table.

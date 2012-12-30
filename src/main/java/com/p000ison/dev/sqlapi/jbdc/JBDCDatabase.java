@@ -41,16 +41,13 @@ public abstract class JBDCDatabase extends Database {
     {
         super(configuration);
 
-        long start = System.currentTimeMillis();
         connection = connect(configuration);
-        long finish = System.currentTimeMillis();
-        System.out.printf("Check connection took %s!%n", finish - start);
     }
 
     protected abstract Connection connect(DatabaseConfiguration configuration) throws DatabaseConnectionException;
 
     @Override
-    public void close() throws QueryException
+    public void closeDatabaseConnection() throws QueryException
     {
         try {
             getConnection().close();

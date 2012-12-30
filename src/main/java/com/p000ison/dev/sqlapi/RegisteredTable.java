@@ -234,4 +234,11 @@ public class RegisteredTable {
     {
         return deleteStatement;
     }
+
+    public void close()
+    {
+        updateStatement.close();
+        insertStatement.close();
+        deleteStatement.close();
+    }
 }
