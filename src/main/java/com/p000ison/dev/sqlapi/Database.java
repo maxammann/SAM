@@ -61,7 +61,7 @@ public abstract class Database {
             return;
         }
 
-        logger.log(level, msg, args);
+        logger.log(level, String.format(msg, args));
     }
 
     public static void setLogger(Logger logger)
@@ -140,20 +140,22 @@ public abstract class Database {
      */
     public synchronized final RegisteredTable registerTable(Class<? extends TableObject> table)
     {
-        long start = System.currentTimeMillis();
         TableBuilder builder = createTableBuilder(table);
-
-        long finish = System.currentTimeMillis();
-        System.out.printf("Check register took %s!\n", finish - start);
         RegisteredTable registeredTable = new RegisteredTable(builder.getTableName(), table, builder.getColumns(), builder.getDefaultConstructor());
 
         String tableQuery = builder.createTable().getQuery();
-        System.out.println("Create Query:" + tableQuery);
-
         String modifyQuery = builder.createModifyQuery().getQuery();
-        System.out.println("Modify Query:" + modifyQuery);
-        executeDirectUpdate(tableQuery);
-        executeDirectUpdate(modifyQuery);
+
+        if (tableQuery != null) {
+            log(Level.INFO, "Generating table %s...", registeredTable.getName());
+            executeDirectUpdate(tableQuery);
+        }
+
+        if (modifyQuery != null) {
+            log(Level.INFO, "Modifying table %s...", registeredTable.getName());
+            executeDirectUpdate(modifyQuery);
+        }
+
         registeredTable.prepareSaveStatement(this);
         registeredTables.add(registeredTable);
 

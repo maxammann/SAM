@@ -28,7 +28,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.logging.Level;
 
 /**
  * Represents a TableBuilder
@@ -74,8 +73,7 @@ public abstract class TableBuilder {
         try {
             ctor = object.getDeclaredConstructor();
             ctor.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            Database.log(Level.WARNING, "No default constructor found! Register one!");
+        } catch (NoSuchMethodException ignored) {
         }
 
         existed = database.existsDatabaseTable(tableName);
