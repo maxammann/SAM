@@ -24,6 +24,7 @@ import com.p000ison.dev.sqlapi.TableObject;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Represents a OutputQueueConsumer
@@ -31,10 +32,11 @@ import java.util.concurrent.LinkedBlockingQueue;
  * This Runnable can be used to store TableObject. In most usages you want another thread handle queries. This thread
  * will wait if there is nothing to save.
  */
-public class OutputQueueConsumer implements Runnable {
+public class OutputQueueConsumer extends Thread {
     private BlockingQueue<TableObject> queue = new LinkedBlockingQueue<TableObject>();
     private int maxSize = -1;
     private final Database database;
+    private AtomicBoolean bool = new AtomicBoolean(true);
 
     public OutputQueueConsumer(int maxSize, Database database)
     {
@@ -47,30 +49,41 @@ public class OutputQueueConsumer implements Runnable {
         this(-1, database);
     }
 
-    public synchronized void addTableObject(TableObject tableObject)
+    public void addTableObject(TableObject tableObject)
     {
-        if (queue.size() >= maxSize) {
-            return;
-        }
-        try {
-            queue.put(tableObject);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        synchronized (this) {
+            if (queue.size() >= maxSize) {
+                return;
+            }
+            try {
+                queue.put(tableObject);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @Override
-    public synchronized void run()
+    public void run()
     {
-        TableObject obj;
+        while (bool.get()) {
+            synchronized (this) {
+                TableObject obj;
 
-        try {
-            while ((obj = queue.take()) != null) {
-                database.save(obj);
+                try {
+                    while ((obj = queue.take()) != null) {
+                        database.save(obj);
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
+    }
+
+    public void stopThread()
+    {
+        bool.set(false);
     }
 
     protected Database getDatabase()

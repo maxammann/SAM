@@ -20,6 +20,7 @@
 package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.annotation.DatabaseColumn;
+import com.p000ison.dev.sqlapi.exception.QueryException;
 
 import java.lang.reflect.Field;
 
@@ -98,7 +99,7 @@ final class FieldColumn extends Column {
         try {
             field.set(tableObject, object);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            throw new QueryException(e);
         }
     }
 
@@ -108,9 +109,8 @@ final class FieldColumn extends Column {
         try {
             return field.get(tableObject);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            throw new QueryException(e);
         }
-        return null;
     }
 
     @Override

@@ -19,6 +19,8 @@
 
 package com.p000ison.dev.sqlapi;
 
+import com.p000ison.dev.sqlapi.exception.RegistrationException;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -70,13 +72,12 @@ public class RegisteredConstructor {
             }
             return (T) constructor.newInstance(currentArgumentValues);
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            throw new RegistrationException(e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            throw new RegistrationException(e);
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            throw new RegistrationException(e);
         }
-        return null;
     }
 
     public void clear()

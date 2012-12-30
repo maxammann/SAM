@@ -146,7 +146,7 @@ public abstract class Database {
      *
      * @param table The class to register
      */
-    public synchronized final RegisteredTable registerTable(Class<? extends TableObject> table)
+    public final synchronized RegisteredTable registerTable(Class<? extends TableObject> table)
     {
         TableBuilder builder = createTableBuilder(table);
         RegisteredTable registeredTable = new RegisteredTable(builder.getTableName(), table, builder.getColumns(), builder.getDefaultConstructor());

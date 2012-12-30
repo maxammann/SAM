@@ -178,7 +178,7 @@ public class RegisteredTable {
                 constructor = new RegisteredConstructor(registeredClass, arguments);
             }
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
+            throw new RuntimeException(String.format("Constructor for class %s not found!", getName()), e);
         }
 
         return constructor;

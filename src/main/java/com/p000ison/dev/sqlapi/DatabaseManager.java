@@ -21,10 +21,6 @@ package com.p000ison.dev.sqlapi;
 
 import com.p000ison.dev.sqlapi.jbdc.JBDCDatabase;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.WeakHashMap;
 
 /**
@@ -86,47 +82,5 @@ public class DatabaseManager {
     public static boolean isJBDCDatabase(Database database)
     {
         return database instanceof JBDCDatabase;
-    }
-
-    public static void main(String[] args)
-    {
-        try {
-            BufferedImage img = ImageIO.read(new File("/home/max/test.jpg"));
-            int mean = 0, count = 0;
-            for (int i = 0; i < img.getWidth(); i++) {
-                for (int j = 0; j < img.getHeight(); j++) {
-                    int rgb = img.getRGB(i, j);
-                    Color color = new Color(rgb);
-
-                    int newrgb = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
-
-                    img.setRGB(i, j, new Color(newrgb, newrgb, newrgb).getRGB());
-
-                    mean += newrgb;
-                    count++;
-                }
-            }
-
-            mean /= count;
-
-            for (int i = 0; i < img.getWidth(); i++) {
-                for (int j = 0; j < img.getHeight(); j++) {
-                    int rgb = img.getRGB(i, j);
-                    Color color = new Color(rgb);
-
-                    if (color.getRed() < mean) {
-                        rgb = 0;
-                    } else {
-                        rgb = 255;
-                    }
-
-                    img.setRGB(i, j, new Color(rgb, rgb, rgb).getRGB());
-                }
-            }
-
-            ImageIO.write(img, "jpg", new File("/home/max/test1.jpg"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

@@ -54,6 +54,11 @@ public class RegistrationException extends RuntimeException {
         this.clazz = clazz;
     }
 
+    public RegistrationException(Throwable cause)
+    {
+        super(cause);
+    }
+
     public Class<?> getClazz()
     {
         return clazz;

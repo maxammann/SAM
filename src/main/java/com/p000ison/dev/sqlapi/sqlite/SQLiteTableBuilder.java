@@ -102,7 +102,7 @@ public final class SQLiteTableBuilder extends TableBuilder {
         }
 
         if (column.isAutoIncrementing()) {
-            //no autoincrement
+            throw new IllegalArgumentException("AutoIncrement is not supported by SQLite.");
         }
 
         if (column.isID()) {

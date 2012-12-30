@@ -95,7 +95,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     }
 
     @Override
-    public synchronized final PreparedSelectQuery<T> prepare()
+    public final synchronized PreparedSelectQuery<T> prepare()
     {
         String query = getQuery();
         if (query == null) {
