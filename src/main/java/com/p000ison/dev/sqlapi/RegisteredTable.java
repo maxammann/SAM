@@ -130,7 +130,6 @@ public class RegisteredTable {
         query.deleteCharAt(query.length() - 1);
         query.append(" WHERE ").append(id.getName()).append("=?");
         query.append(';');
-        System.out.println("------------>" + query.toString());
         updateStatement = database.createPreparedStatement(query.toString());
 
         query.setLength(0);
@@ -162,7 +161,6 @@ public class RegisteredTable {
     {
         return updateStatement;
     }
-
 
     /**
      * Registers a constructor which will be used to build the objects, just pass for example: "test", 5 in it to

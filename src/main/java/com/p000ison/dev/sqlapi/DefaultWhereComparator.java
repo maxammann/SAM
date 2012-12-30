@@ -34,6 +34,7 @@ class DefaultWhereComparator<T extends TableObject> implements WhereComparator<T
     private String column;
     private Object expectedValue;
     private CompareOperator operator;
+    private boolean prepared = false;
 
     DefaultWhereComparator(DefaultSelectQuery<T> query, CompareOperator operator, String column, Object expectedValue)
     {
@@ -41,6 +42,14 @@ class DefaultWhereComparator<T extends TableObject> implements WhereComparator<T
         this.column = column;
         this.operator = operator;
         this.expectedValue = expectedValue;
+    }
+
+    DefaultWhereComparator(DefaultSelectQuery<T> query, CompareOperator operator, String column, boolean prepared)
+    {
+        this.query = query;
+        this.column = column;
+        this.operator = operator;
+        this.prepared = prepared;
     }
 
     @Override
@@ -73,11 +82,6 @@ class DefaultWhereComparator<T extends TableObject> implements WhereComparator<T
         return and;
     }
 
-    protected boolean isFinished()
-    {
-        return !or && !and;
-    }
-
     protected String getColumn()
     {
         return column;
@@ -91,5 +95,10 @@ class DefaultWhereComparator<T extends TableObject> implements WhereComparator<T
     protected CompareOperator getOperator()
     {
         return operator;
+    }
+
+    public boolean isPrepared()
+    {
+        return prepared;
     }
 }

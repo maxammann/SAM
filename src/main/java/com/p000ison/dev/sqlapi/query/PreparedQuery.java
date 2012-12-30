@@ -24,6 +24,7 @@ import com.p000ison.dev.sqlapi.Column;
 /**
  * Represents a PreparedQuery
  */
+@SuppressWarnings("unused")
 public interface PreparedQuery {
 
     void set(int index, Object value);

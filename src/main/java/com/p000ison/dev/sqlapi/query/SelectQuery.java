@@ -26,6 +26,7 @@ import com.p000ison.dev.sqlapi.TableObject;
 /**
  *
  */
+@SuppressWarnings("unused")
 public interface SelectQuery<T extends TableObject> {
 
     SelectQuery<T> from(Class<T> object);

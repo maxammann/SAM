@@ -24,6 +24,7 @@ import com.p000ison.dev.sqlapi.TableObject;
 /**
  *
  */
+@SuppressWarnings("unused")
 public interface WhereComparator<T extends TableObject> {
 
     WhereQuery<T> or();

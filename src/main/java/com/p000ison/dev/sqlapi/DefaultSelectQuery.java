@@ -94,10 +94,6 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         return whereQuery;
     }
 
-    public <T> void registerInputManipulator(Column column) {
-
-    }
-
     @Override
     public synchronized final PreparedSelectQuery<T> prepare()
     {
@@ -109,7 +105,10 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         if (whereQuery != null) {
             List<DefaultWhereComparator<T>> comparators = whereQuery.getComparators();
             for (int i = 0; i < comparators.size(); i++) {
-                preparedQuery.set(i, comparators.get(i).getExpectedValue());
+                DefaultWhereComparator<T> comparator = comparators.get(i);
+                if (!comparator.isPrepared()) {
+                    preparedQuery.set(i, comparator.getExpectedValue());
+                }
             }
         }
 

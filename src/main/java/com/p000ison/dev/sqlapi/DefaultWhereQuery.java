@@ -47,9 +47,21 @@ class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
     }
 
     @Override
+    public WhereComparator<T> preparedEquals(Column column)
+    {
+        return preparedEquals(column.getName());
+    }
+
+    @Override
     public WhereComparator<T> notEquals(Column column, Object expected)
     {
         return notEquals(column.getName(), expected);
+    }
+
+    @Override
+    public WhereComparator<T> preparedNotEquals(Column column)
+    {
+        return preparedNotEquals(column.getName());
     }
 
     @Override
@@ -59,9 +71,21 @@ class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
     }
 
     @Override
+    public WhereComparator<T> preparedLessThan(Column column)
+    {
+        return preparedLessThan(column.getName());
+    }
+
+    @Override
     public WhereComparator<T> greaterThan(Column column, Object expected)
     {
         return greaterThan(column.getName(), expected);
+    }
+
+    @Override
+    public WhereComparator<T> preparedGreaterThan(Column column)
+    {
+        return preparedGreaterThan(column.getName());
     }
 
     @Override
@@ -71,9 +95,21 @@ class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
     }
 
     @Override
+    public WhereComparator<T> preparedEquals(String column)
+    {
+        return addPreparedComparator(column, CompareOperator.EQUALS);
+    }
+
+    @Override
     public WhereComparator<T> notEquals(String column, Object expected)
     {
         return addComparator(column, CompareOperator.NOT_EQUAL, expected);
+    }
+
+    @Override
+    public WhereComparator<T> preparedNotEquals(String column)
+    {
+        return addPreparedComparator(column, CompareOperator.NOT_EQUAL);
     }
 
     @Override
@@ -83,14 +119,33 @@ class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
     }
 
     @Override
+    public WhereComparator<T> preparedLessThan(String column)
+    {
+        return addPreparedComparator(column, CompareOperator.LESS_THAN);
+    }
+
+    @Override
     public WhereComparator<T> greaterThan(String column, Object expected)
     {
         return addComparator(column, CompareOperator.GREATER_THAN, expected);
     }
 
+    @Override
+    public WhereComparator<T> preparedGreaterThan(String column)
+    {
+        return addPreparedComparator(column, CompareOperator.GREATER_THAN);
+    }
+
     private WhereComparator<T> addComparator(String column, CompareOperator compareOperator, Object expected)
     {
         DefaultWhereComparator<T> comparator = new DefaultWhereComparator<T>(query, compareOperator, column, expected);
+        comparators.add(comparator);
+        return comparator;
+    }
+
+    private WhereComparator<T> addPreparedComparator(String column, CompareOperator compareOperator)
+    {
+        DefaultWhereComparator<T> comparator = new DefaultWhereComparator<T>(query, compareOperator, column, true);
         comparators.add(comparator);
         return comparator;
     }
