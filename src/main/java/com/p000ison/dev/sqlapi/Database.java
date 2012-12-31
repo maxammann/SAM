@@ -154,6 +154,9 @@ public abstract class Database {
         builder.createTable().createModifyQuery();
 
         for (StringBuilder query : builder.getBuilders()) {
+            if (query.length() == 0) {
+                continue;
+            }
             log(Level.INFO, "Generating and updating table %s!", registeredTable.getName());
             System.out.println(query);
             executeDirectUpdate(query.toString());

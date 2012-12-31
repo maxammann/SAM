@@ -42,6 +42,9 @@ public final class SQLiteConfiguration extends DatabaseConfiguration {
 
     public SQLiteConfiguration setLocation(File location)
     {
+        if (location.isDirectory()) {
+            throw new IllegalArgumentException("The file is a directory!");
+        }
         super.setProperty("location", location);
         return this;
     }
