@@ -28,7 +28,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * Represents a FieldColumn
+ * Implementation for methods of {@link Column}
  */
 final class MethodColumn extends Column {
 

@@ -97,6 +97,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <encoding>UTF-8</encoding>
                     <quiet>true</quiet>
                 </configuration>
             </plugin>

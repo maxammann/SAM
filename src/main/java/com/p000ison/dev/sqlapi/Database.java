@@ -34,7 +34,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Represents a Database
+ * A Database holds the connection to a database. If you can to extend this API you will have to implement this
+ * and modify it for you database engine.
  */
 public abstract class Database {
 

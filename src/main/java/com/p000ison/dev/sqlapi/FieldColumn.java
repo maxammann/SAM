@@ -25,7 +25,7 @@ import com.p000ison.dev.sqlapi.exception.QueryException;
 import java.lang.reflect.Field;
 
 /**
- * Represents a FieldColumn
+ * Implementation for fields of {@link Column}
  */
 final class FieldColumn extends Column {
 

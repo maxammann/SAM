@@ -22,7 +22,7 @@ package com.p000ison.dev.sqlapi.query;
 import com.p000ison.dev.sqlapi.TableObject;
 
 /**
- *
+ * A entry for the {@link WhereQuery}
  */
 @SuppressWarnings("unused")
 public interface WhereComparator<T extends TableObject> {

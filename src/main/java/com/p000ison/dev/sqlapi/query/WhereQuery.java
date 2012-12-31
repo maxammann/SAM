@@ -23,7 +23,7 @@ import com.p000ison.dev.sqlapi.Column;
 import com.p000ison.dev.sqlapi.TableObject;
 
 /**
- * Represents a WhereQuery
+ * The WHERE part of a query. Used in {@link SelectQuery}
  */
 @SuppressWarnings("unused")
 public interface WhereQuery<T extends TableObject> {
@@ -31,6 +31,10 @@ public interface WhereQuery<T extends TableObject> {
     WhereComparator<T> equals(Column column, Object expected);
 
     WhereComparator<T> preparedEquals(Column column);
+
+    WhereComparator<T> like(Column column, Object expected);
+
+    WhereComparator<T> preparedLike(Column column);
 
     WhereComparator<T> notEquals(Column column, Object expected);
 
@@ -47,6 +51,10 @@ public interface WhereQuery<T extends TableObject> {
     WhereComparator<T> equals(String column, Object expected);
 
     WhereComparator<T> preparedEquals(String column);
+
+    WhereComparator<T> like(String column, Object expected);
+
+    WhereComparator<T> preparedLike(String column);
 
     WhereComparator<T> notEquals(String column, Object expected);
 

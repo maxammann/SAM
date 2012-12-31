@@ -20,32 +20,32 @@
 package com.p000ison.dev.sqlapi;
 
 /**
- * Represents a StoredTableObjectValue
+ * Used for later value-setting of TableObjects.
  */
-public class StoredTableObjectValue {
+class StoredTableObjectValue {
 
     private TableObject tableObject;
     private Object value;
     private Column column;
 
-    public StoredTableObjectValue(TableObject tableObject, Object value, Column column)
+    StoredTableObjectValue(TableObject tableObject, Object value, Column column)
     {
         this.tableObject = tableObject;
         this.value = value;
         this.column = column;
     }
 
-    public TableObject getTableObject()
+    TableObject getTableObject()
     {
         return tableObject;
     }
 
-    public Object getValue()
+    Object getValue()
     {
         return value;
     }
 
-    public Column getColumn()
+    Column getColumn()
     {
         return column;
     }

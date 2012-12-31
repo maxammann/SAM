@@ -27,7 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a DefaultWhereQuery
+ * The WHERE part of your query.
+ * <p/>
+ * <strong>Info:</strong>
+ * <p/>
+ * All Default... classes are pre-made classes which may already work with your database engine.
  */
 class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
 
@@ -50,6 +54,18 @@ class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
     public WhereComparator<T> preparedEquals(Column column)
     {
         return preparedEquals(column.getName());
+    }
+
+    @Override
+    public WhereComparator<T> like(Column column, Object expected)
+    {
+        return like(column.getName(), expected);
+    }
+
+    @Override
+    public WhereComparator<T> preparedLike(Column column)
+    {
+        return preparedLike(column.getName());
     }
 
     @Override
@@ -98,6 +114,18 @@ class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
     public WhereComparator<T> preparedEquals(String column)
     {
         return addPreparedComparator(column, CompareOperator.EQUALS);
+    }
+
+    @Override
+    public WhereComparator<T> like(String column, Object expected)
+    {
+        return addComparator(column, CompareOperator.LIKE, expected);
+    }
+
+    @Override
+    public WhereComparator<T> preparedLike(String column)
+    {
+        return addPreparedComparator(column, CompareOperator.LIKE);
     }
 
     @Override

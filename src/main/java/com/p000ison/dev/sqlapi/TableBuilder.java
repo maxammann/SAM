@@ -30,8 +30,17 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * Represents a TableBuilder
+ * The main part to build tables.
+ * <p/>
+ * <p/>
+ * <strong>Implementation notes:</strong>
+ * <p/>
+ * If you want to modify the table creation query override createTable(). To alter the table altering query override
+ * buildModifyColumns(). The columns are prepared in setupColumns(); so do not override this. Once the columns are prepared
+ * they are unmodifiable. Implement isSupportAddColumns(), isSupportRemoveColumns() and isSupportModifyColumns() to
+ * specify what your database engine can handle. getBuilders() finally returns the queries.
  */
+
 public abstract class TableBuilder {
     /**
      * The class which represents the table
@@ -55,7 +64,7 @@ public abstract class TableBuilder {
     private Set<Column> toAdd;
     private Set<String> toDrop;
 
-    private Set<StringBuilder> builders = new HashSet<StringBuilder>();
+    private final Set<StringBuilder> builders = new HashSet<StringBuilder>();
 
     public TableBuilder(Class<? extends TableObject> object, Database database)
     {

@@ -31,7 +31,8 @@ import java.util.List;
 import java.util.Queue;
 
 /**
- * Represents a RegisteredTable
+ * Used to register TableObjects. Holds the columns, the registered constructor, some prepared statements and of the class
+ * or the TableObject.
  */
 public class RegisteredTable {
     private String name;

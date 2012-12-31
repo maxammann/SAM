@@ -25,7 +25,11 @@ import com.p000ison.dev.sqlapi.query.WhereComparator;
 import com.p000ison.dev.sqlapi.query.WhereQuery;
 
 /**
- * Represents a DefaultWhereComparator
+ * A where entry, used in {@link com.p000ison.dev.sqlapi.query.SelectQuery}
+ * <p/>
+ * <strong>Info:</strong>
+ * <p/>
+ * All Default... classes are pre-made classes which may already work with your database engine.
  */
 class DefaultWhereComparator<T extends TableObject> implements WhereComparator<T> {
 

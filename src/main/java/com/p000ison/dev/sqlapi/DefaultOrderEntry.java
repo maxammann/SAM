@@ -20,7 +20,11 @@
 package com.p000ison.dev.sqlapi;
 
 /**
- * Represents a DefaultOrderEntry
+ * A order entry, used in {@link com.p000ison.dev.sqlapi.query.SelectQuery}
+ * <p/>
+ * <strong>Info:</strong>
+ * <p/>
+ * All Default... classes are pre-made classes which may already work with your database engine.
  */
 public class DefaultOrderEntry {
 

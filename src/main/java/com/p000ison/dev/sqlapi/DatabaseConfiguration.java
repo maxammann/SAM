@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Represents a DatabaseConfiguration
+ * The Configuration for a {@link Database} connection.
  */
 public abstract class DatabaseConfiguration {
     private final Map<String, Object> properties;

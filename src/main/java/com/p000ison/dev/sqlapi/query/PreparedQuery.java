@@ -22,7 +22,7 @@ package com.p000ison.dev.sqlapi.query;
 import com.p000ison.dev.sqlapi.Column;
 
 /**
- * Represents a PreparedQuery
+ * This is used to prepare queries/statements.
  */
 @SuppressWarnings("unused")
 public interface PreparedQuery {

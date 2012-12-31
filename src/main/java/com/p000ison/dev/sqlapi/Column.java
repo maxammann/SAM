@@ -20,7 +20,8 @@
 package com.p000ison.dev.sqlapi;
 
 /**
- * Represents a Column
+ * This class represents a column. Known implementations are {@link FieldColumn} (Used to store {@link com.p000ison.dev.sqlapi.annotation.DatabaseColumn}s)
+ * and {@link MethodColumn} (Used to store {@link com.p000ison.dev.sqlapi.annotation.DatabaseColumnSetter}s.
  */
 public abstract class Column {
 

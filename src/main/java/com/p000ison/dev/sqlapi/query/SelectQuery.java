@@ -24,7 +24,7 @@ import com.p000ison.dev.sqlapi.RegisteredTable;
 import com.p000ison.dev.sqlapi.TableObject;
 
 /**
- *
+ * This builds a query and prepares it finally.
  */
 @SuppressWarnings("unused")
 public interface SelectQuery<T extends TableObject> {

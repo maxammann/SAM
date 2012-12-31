@@ -27,8 +27,10 @@ import java.util.WeakHashMap;
  * Represents a DatabaseManager
  */
 public class DatabaseManager {
-    public static WeakHashMap<Database, Object> connections = new WeakHashMap<Database, Object>();
-    private static Object obj = new Object();
+
+    private static WeakHashMap<Database, Object> connections = new WeakHashMap<Database, Object>();
+    private static final Object obj = new Object();
+
 
     /**
      * If you use this, always use the reference which is returned to store the connection. This registration implements
@@ -40,11 +42,15 @@ public class DatabaseManager {
      */
     public static Database registerConnection(Database database)
     {
-        if (!connections.containsKey(database)) {
-            connections.put(database, obj);
+        for (Database db : connections.keySet()) {
+            if (db.getConfiguration().equals(database.getConfiguration())) {
+                return db;
+            }
         }
 
-        return getConnection(database.getConfiguration());
+        connections.put(database, obj);
+
+        return registerConnection(database);
     }
 
     public static void unregisterConnection(Database database)
@@ -55,23 +61,12 @@ public class DatabaseManager {
     public static boolean isConnected(DatabaseConfiguration config)
     {
         for (Database db : connections.keySet()) {
-            if (db.getConfiguration().equals(config)) {
+            if (db.getConfiguration().equals(config) && db.isConnected()) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    public static Database getConnection(DatabaseConfiguration config)
-    {
-        for (Database db : connections.keySet()) {
-            if (db.getConfiguration().equals(config)) {
-                return db;
-            }
-        }
-
-        return null;
     }
 
     public static boolean isJBDCDatabase(Class<? extends Database> database)

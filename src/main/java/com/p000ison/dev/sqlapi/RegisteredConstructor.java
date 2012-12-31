@@ -25,7 +25,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * Represents a RegisteredConstructor
+ * This holds a constructor. You can register any constructor for your {@link RegisteredTable}.
+ * The default constructor has no parameters.
  */
 public class RegisteredConstructor {
     private Constructor<? extends TableObject> constructor;

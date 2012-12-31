@@ -28,7 +28,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a DefaultSelectQuery
+ * A default select query which may work with your database engine
+ * <p/>
+ * <strong>Info:</strong>
+ * <p/>
+ * All Default... classes are pre-made classes which may already work with your database engine.
  */
 public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T> {
 

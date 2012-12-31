@@ -20,10 +20,10 @@
 package com.p000ison.dev.sqlapi.query;
 
 /**
- * Represents a CompareOperator
+ * A enum with the default comparators like '<', '>', '>=', '<=', '=' or LIKE;
  */
 public enum CompareOperator {
-    EQUALS("="), GREATER_THAN(">"), LESS_THAN("<"), NOT_EQUAL("!=");
+    EQUALS("="), GREATER_THAN(">"), LESS_THAN("<"), NOT_EQUAL("!="), LIKE("LIKE");
 
     private String sign;
 

@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Represents a PreparedQuery
+ * This is used to prepare queries/statements.
  */
 @SuppressWarnings("unused")
 public interface PreparedSelectQuery<T extends TableObject> extends PreparedQuery {
