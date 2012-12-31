@@ -279,7 +279,7 @@ public abstract class JBDCDatabase extends Database {
             } else if (type == String.class) {
                 return set.getString(index);
             } else if (type == java.util.Date.class || type == java.sql.Timestamp.class) {
-                return set.getDate(index);
+                return set.getTimestamp(index);
             } else if (RegisteredTable.isSerializable(type)) {
                 return set.getBlob(index);
             }
