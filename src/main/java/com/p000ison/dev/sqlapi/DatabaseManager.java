@@ -69,6 +69,17 @@ public class DatabaseManager {
         return false;
     }
 
+    public static Database getConnection(DatabaseConfiguration config)
+    {
+        for (Database db : connections.keySet()) {
+            if (db.getConfiguration().equals(config) && db.isConnected()) {
+                return db;
+            }
+        }
+
+        return null;
+    }
+
     public static boolean isJBDCDatabase(Class<? extends Database> database)
     {
         return database.isAssignableFrom(JBDCDatabase.class);
