@@ -25,11 +25,41 @@ a return type.
 
 Example:
 
-https://gist.github.com/4349849
+```java
+@DatabaseTable(name = "table")
+public class Person implements TableObject {
+ 
+    @DatabaseColumn(position = 1, databaseName = "id", id = true)
+    private int id;
+ 
+    private String name;
+ 
+    @DatabaseColumn(position = 3, databaseName = "age")
+    private int age;
+ 
+    public Person()
+    {
+    }
+ 
+    @DatabaseColumnSetter(position = 2, databaseName = "name")
+    public void setFormattedName(String name)
+    {
+        if (name != null) {
+            this.name = name.toUpperCase();
+        }
+    }
+ 
+    @DatabaseColumnGetter(databaseName = "name")
+    public String getFormattedName()
+    {
+        return name;
+    }
+}
+```
 
 
 As you can see you need to define the table name in the "DatabaseTable" annotation above the class. Every table needs to
-have one id, which increments automatically, if you insert the object into the database it will update this value.
+have one id, which increments automatically if you insert the object into the database.
 
 
 
