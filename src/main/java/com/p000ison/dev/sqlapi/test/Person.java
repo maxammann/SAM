@@ -39,9 +39,6 @@ public class Person implements TableObject {
     @DatabaseColumn(position = 3, databaseName = "hage")
     private int ageg;
 
-    @DatabaseColumn(position = 3, databaseName = "hagde")
-    private int dageg;
-
     public Person()
     {
     }

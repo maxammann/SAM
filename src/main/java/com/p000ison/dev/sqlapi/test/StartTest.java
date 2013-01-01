@@ -19,12 +19,11 @@
 
 package com.p000ison.dev.sqlapi.test;
 
-import com.p000ison.dev.sqlapi.Database;
+import com.p000ison.dev.sqlapi.jbdc.JBDCDatabase;
+import com.p000ison.dev.sqlapi.mysql.MySQLConfiguration;
+import com.p000ison.dev.sqlapi.mysql.MySQLDatabase;
 import com.p000ison.dev.sqlapi.query.PreparedSelectQuery;
-import com.p000ison.dev.sqlapi.sqlite.SQLiteConfiguration;
-import com.p000ison.dev.sqlapi.sqlite.SQLiteDatabase;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 
 /**
@@ -46,8 +45,8 @@ public class StartTest {
 
             Person person = new Person();
 
-//            JBDCDatabase db = new MySQLDatabase(new MySQLConfiguration("root", "m1nt", "localhost", PORT, "test"));
-            Database db = new SQLiteDatabase(new SQLiteConfiguration(new File("/home/max/Arbeitsfläche/test.db")));
+            JBDCDatabase db = new MySQLDatabase(new MySQLConfiguration("root", "m1nt", "localhost", PORT, "test"));
+//            Database db = new SQLiteDatabase(new SQLiteConfiguration(new File("/home/max/Arbeitsfläche/test.db")));
             db.setDropOldColumns(true);
             db.registerTable(Person.class);
 

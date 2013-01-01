@@ -275,13 +275,12 @@ public abstract class TableBuilder {
     protected void buildModifyColumns()
     {
         StringBuilder query = new StringBuilder();
-        boolean complete = false;
+
         if (toAdd != null && !toAdd.isEmpty()) {
 
             query.append("ALTER TABLE ").append(tableName).append(" ADD COLUMN (");
-
             for (Column column : toAdd) {
-                buildColumn(column);
+                query.append(buildColumn(column));
                 query.append(',');
             }
 
@@ -297,7 +296,6 @@ public abstract class TableBuilder {
                 query.append(',');
             }
 
-            complete = true;
 
             for (String column : toDrop) {
                 query.append(" DROP COLUMN ").append(column);
@@ -307,11 +305,11 @@ public abstract class TableBuilder {
             query.deleteCharAt(query.length() - 1);
         }
 
-        if (complete) {
-            query.append(';');
-        }
+        query.append(';');
 
-        addQuery(query);
+        if (query.length() != 0) {
+            addQuery(query);
+        }
     }
 
     /**
