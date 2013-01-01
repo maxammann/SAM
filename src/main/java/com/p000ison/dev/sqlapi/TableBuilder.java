@@ -275,6 +275,7 @@ public abstract class TableBuilder {
     protected void buildModifyColumns()
     {
         StringBuilder query = new StringBuilder();
+        boolean complete = false;
 
         if (toAdd != null && !toAdd.isEmpty()) {
 
@@ -286,6 +287,7 @@ public abstract class TableBuilder {
 
             query.deleteCharAt(query.length() - 1);
             query.append(')');
+            complete = true;
         }
 
         if (toDrop != null && !toDrop.isEmpty()) {
@@ -303,9 +305,12 @@ public abstract class TableBuilder {
             }
 
             query.deleteCharAt(query.length() - 1);
+            complete = true;
         }
 
-        query.append(';');
+        if (complete) {
+            query.append(';');
+        }
 
         if (query.length() != 0) {
             addQuery(query);
