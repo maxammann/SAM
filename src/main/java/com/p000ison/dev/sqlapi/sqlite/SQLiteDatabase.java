@@ -66,4 +66,16 @@ public final class SQLiteDatabase extends JBDCDatabase {
     {
         return (SQLiteConfiguration) super.getConfiguration();
     }
+
+    @Override
+    protected boolean recreatePreparedStatementsAfterException()
+    {
+        return true;
+    }
+
+    @Override
+    public String getEngineName()
+    {
+        return "SQLite";
+    }
 }

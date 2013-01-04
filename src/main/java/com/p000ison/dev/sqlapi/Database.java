@@ -162,7 +162,7 @@ public abstract class Database {
             executeDirectUpdate(query.toString());
         }
 
-        registeredTable.prepareSaveStatement(this);
+        registeredTable.prepareAllStatements(this);
         registeredTables.add(registeredTable);
 
         return registeredTable;
@@ -231,7 +231,6 @@ public abstract class Database {
     {
         synchronized (this) {
             RegisteredTable table = getRegisteredTable(tableObject);
-
             Column idColumn = table.getIDColumn();
 
             if (((Number) idColumn.getValue(tableObject)).intValue() <= 0 || !existsEntry(table, tableObject)) {
@@ -246,13 +245,20 @@ public abstract class Database {
     {
         synchronized (this) {
             RegisteredTable table = getRegisteredTable(tableObject);
-            Column idColumn = table.getIDColumn();
+            try {
+                Column idColumn = table.getIDColumn();
 
-
-            PreparedQuery statement = table.getDeleteStatement();
-            statement.set(0, idColumn.getValue(tableObject));
-            statement.update();
+                PreparedQuery statement = table.getDeleteStatement();
+                statement.set(0, idColumn.getValue(tableObject));
+                statement.update();
+            } catch (QueryException e) {
+                if (recreatePreparedStatementsAfterException()) {
+                    table.prepareDeleteStatement(this);
+                }
+                throw e;
+            }
         }
+
     }
 
     private RegisteredTable getRegisteredTable(TableObject obj)
@@ -270,27 +276,56 @@ public abstract class Database {
     {
         synchronized (this) {
             RegisteredTable table = getRegisteredTable(tableObject);
-
             Column idColumn = table.getIDColumn();
 
             update(table, tableObject, idColumn);
         }
     }
 
+    /**
+     * Attempts to insert a entry in the database. Can throw an exception if for example there is a unique column!
+     *
+     * @param tableObject The object to insert
+     * @throws QueryException if the query fails
+     */
+    public void insert(TableObject tableObject)
+    {
+        synchronized (this) {
+            RegisteredTable table = getRegisteredTable(tableObject);
+            Column idColumn = table.getIDColumn();
+
+            insert(table, tableObject, idColumn);
+        }
+    }
+
     private void insert(RegisteredTable registeredTable, TableObject object, Column idColumn)
     {
-        PreparedQuery insert = registeredTable.getPreparedInsertStatement();
-        setColumnValues(insert, registeredTable, object, idColumn);
-        insert.update();
-        idColumn.setValue(object, getLastEntryId(registeredTable));
+        try {
+            PreparedQuery insert = registeredTable.getPreparedInsertStatement();
+            setColumnValues(insert, registeredTable, object, idColumn);
+            insert.update();
+            idColumn.setValue(object, getLastEntryId(registeredTable));
+        } catch (QueryException e) {
+            if (recreatePreparedStatementsAfterException()) {
+                registeredTable.prepareInsertStatement(this);
+            }
+            throw e;
+        }
     }
 
     private void update(RegisteredTable registeredTable, TableObject object, Column idColumn)
     {
-        PreparedQuery update = registeredTable.getPreparedUpdateStatement();
-        int i = setColumnValues(update, registeredTable, object, idColumn);
-        update.set(idColumn, i, idColumn.getValue(object));
-        update.update();
+        try {
+            PreparedQuery update = registeredTable.getPreparedUpdateStatement();
+            int i = setColumnValues(update, registeredTable, object, idColumn);
+            update.set(idColumn, i, idColumn.getValue(object));
+            update.update();
+        } catch (QueryException e) {
+            if (recreatePreparedStatementsAfterException()) {
+                registeredTable.prepareUpdateStatement(this);
+            }
+            throw e;
+        }
     }
 
     private int setColumnValues(PreparedQuery statement, RegisteredTable registeredTable, TableObject object, Column idColumn)
@@ -379,6 +414,7 @@ public abstract class Database {
                     statement.set(column, i, column.getValue(entry));
                     i++;
                 }
+                statement.update();
             }
         }
 
@@ -418,4 +454,8 @@ public abstract class Database {
     {
         return configuration != null ? configuration.hashCode() : 0;
     }
+
+    protected abstract boolean recreatePreparedStatementsAfterException();
+
+    public abstract String getEngineName();
 }

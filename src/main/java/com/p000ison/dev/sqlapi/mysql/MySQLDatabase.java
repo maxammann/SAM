@@ -69,4 +69,16 @@ public final class MySQLDatabase extends JBDCDatabase {
     {
         return (MySQLConfiguration) super.getConfiguration();
     }
+
+    @Override
+    protected boolean recreatePreparedStatementsAfterException()
+    {
+        return false;
+    }
+
+    @Override
+    public String getEngineName()
+    {
+        return "MySQL";
+    }
 }

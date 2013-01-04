@@ -112,7 +112,14 @@ public class RegisteredTable {
         return false;
     }
 
-    void prepareSaveStatement(Database database)
+    void prepareAllStatements(Database database)
+    {
+        prepareDeleteStatement(database);
+        prepareInsertStatement(database);
+        prepareUpdateStatement(database);
+    }
+
+     void prepareUpdateStatement(Database database)
     {
         StringBuilder query = new StringBuilder("UPDATE ").append(getName()).append(" SET ");
         Column id = null;
@@ -132,8 +139,21 @@ public class RegisteredTable {
         query.append(" WHERE ").append(id.getName()).append("=?");
         query.append(';');
         updateStatement = database.createPreparedStatement(query.toString());
+    }
 
-        query.setLength(0);
+     void prepareDeleteStatement(Database database)
+    {
+        StringBuilder query = new StringBuilder();
+        Column id = getIDColumn();
+        query.append("DELETE FROM ").append(getName()).append(" WHERE ").append(id.getName()).append("=?;");
+
+        deleteStatement = database.createPreparedStatement(query.toString());
+    }
+
+     void prepareInsertStatement(Database database)
+    {
+        StringBuilder query = new StringBuilder();
+        Column id = getIDColumn();
         query.append("INSERT INTO ").append(getName()).append(" (");
 
         for (Column column : getRegisteredColumns()) {
@@ -151,11 +171,6 @@ public class RegisteredTable {
         query.append(");");
 
         insertStatement = database.createPreparedStatement(query.toString());
-
-        query.setLength(0);
-        query.append("DELETE FROM ").append(getName()).append(" WHERE ").append(id.getName()).append("=?;");
-
-        deleteStatement = database.createPreparedStatement(query.toString());
     }
 
     public PreparedQuery getPreparedUpdateStatement()
