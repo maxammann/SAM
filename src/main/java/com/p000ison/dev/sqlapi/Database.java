@@ -350,6 +350,21 @@ public abstract class Database {
      */
     public abstract boolean isSupported(Class<?> type);
 
+    /**
+     * Copies all entries of a table from this database to another database.
+     *
+     * @param table The table
+     * @param to    The destination
+     * @param <T>   The type of the table
+     */
+    public <T extends TableObject> void copy(Class<T> table, Database to)
+    {
+        PreparedSelectQuery<T> prepare = this.<T>select().from(table).prepare();
+
+        for (T entry : prepare.getResults()) {
+            to.save(entry);
+        }
+    }
 
     @Override
     public boolean equals(Object o)
