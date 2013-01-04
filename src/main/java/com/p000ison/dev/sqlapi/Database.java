@@ -196,6 +196,7 @@ public abstract class Database {
      *
      * @param table The table to look for
      * @return The RegisteredTable
+     * @throws RegistrationException If the table is not registered
      */
     public synchronized RegisteredTable getRegisteredTable(Class<? extends TableObject> table)
     {
@@ -359,11 +360,33 @@ public abstract class Database {
      */
     public <T extends TableObject> void copy(Class<T> table, Database to)
     {
+
+        for (RegisteredTable registeredTable : registeredTables) {
+            if (!to.isRegistered(registeredTable)) {
+                to.registerTable(table);
+            }
+        }
+
         PreparedSelectQuery<T> prepare = this.<T>select().from(table).prepare();
 
         for (T entry : prepare.getResults()) {
             to.save(entry);
         }
+    }
+
+    public boolean isRegistered(Class<? extends TableObject> table)
+    {
+        try {
+            getRegisteredTable(table);
+            return true;
+        } catch (RegistrationException e) {
+            return false;
+        }
+    }
+
+    public boolean isRegistered(RegisteredTable table)
+    {
+        return registeredTables.contains(table);
     }
 
     @Override
