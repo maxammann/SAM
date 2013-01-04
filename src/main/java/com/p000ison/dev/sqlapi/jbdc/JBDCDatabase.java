@@ -152,7 +152,7 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    protected boolean existsEntry(RegisteredTable table, TableObject object)
+    public boolean existsEntry(RegisteredTable table, TableObject object)
     {
         Column column = table.getIDColumn();
 
@@ -171,7 +171,7 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    protected boolean existsEntry(TableObject object)
+    public boolean existsEntry(TableObject object)
     {
         return this.existsEntry(getRegisteredTable(object.getClass()), object);
     }
