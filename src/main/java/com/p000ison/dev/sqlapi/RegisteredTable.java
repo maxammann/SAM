@@ -259,4 +259,24 @@ public class RegisteredTable {
         insertStatement.close();
         deleteStatement.close();
     }
+
+    PreparedQuery createFullInsertStatement(Database database)
+    {
+        StringBuilder query = new StringBuilder();
+        query.append("INSERT INTO ").append(getName()).append(" (");
+
+        for (Column column : getRegisteredColumns()) {
+            query.append(column.getName()).append(',');
+        }
+
+        query.deleteCharAt(query.length() - 1);
+        query.append(") VALUES (");
+        for (int i = 0; i < getRegisteredColumns().size(); i++) {
+            query.append("?,");
+        }
+        query.deleteCharAt(query.length() - 1);
+        query.append(");");
+
+        return database.createPreparedStatement(query.toString());
+    }
 }

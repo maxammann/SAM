@@ -337,9 +337,9 @@ public abstract class Database {
 
     public abstract boolean executeDirectUpdate(String query);
 
-    protected abstract boolean existsEntry(RegisteredTable table, TableObject object);
+    public abstract boolean existsEntry(RegisteredTable table, TableObject object);
 
-    protected abstract boolean existsEntry(TableObject object);
+    public abstract boolean existsEntry(TableObject object);
 
     protected abstract int getLastEntryId(RegisteredTable table);
 
@@ -353,6 +353,7 @@ public abstract class Database {
 
     /**
      * Copies all entries of a table from this database to another database.
+     * The is a 100% copy. If the a entry with the same id exists it gets updated.
      *
      * @param table The table
      * @param to    The destination
@@ -360,18 +361,29 @@ public abstract class Database {
      */
     public <T extends TableObject> void copy(Class<T> table, Database to)
     {
-
-        for (RegisteredTable registeredTable : registeredTables) {
-            if (!to.isRegistered(registeredTable)) {
-                to.registerTable(table);
-            }
+        RegisteredTable registeredTable = to.getRegisteredTable(table);
+        if (registeredTable == null) {
+            registeredTable = to.registerTable(table);
         }
 
         PreparedSelectQuery<T> prepare = this.<T>select().from(table).prepare();
+        PreparedQuery statement = registeredTable.createFullInsertStatement(to);
 
         for (T entry : prepare.getResults()) {
-            to.save(entry);
+
+            if (to.existsEntry(registeredTable, entry)) {
+                to.update(entry);
+            } else {
+                int i = 0;
+                for (Column column : registeredTable.getRegisteredColumns()) {
+                    statement.set(column, i, column.getValue(entry));
+                    i++;
+                }
+            }
         }
+
+        prepare.close();
+        statement.update();
     }
 
     public boolean isRegistered(Class<? extends TableObject> table)

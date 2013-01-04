@@ -49,7 +49,7 @@ public final class SQLiteTableBuilder extends TableBuilder {
         query.append(column.getName()).append(' ');
 
         if (column.isID()) {
-            query.append("INT");
+            query.append("INTEGER");
         } else {
             boolean allowModifyLength = true;
 
@@ -110,7 +110,7 @@ public final class SQLiteTableBuilder extends TableBuilder {
         }
 
         if (column.isID()) {
-            query.append(" PRIMARY KEY");
+            query.append(" PRIMARY KEY AUTOINCREMENT");
             //no autoincrement
         }
 
