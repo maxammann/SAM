@@ -46,4 +46,10 @@ public interface PreparedQuery {
     boolean update();
 
     void close();
+
+    void reset();
+
+    void setAutoReset(boolean reset);
+
+    boolean isAutoReset();
 }

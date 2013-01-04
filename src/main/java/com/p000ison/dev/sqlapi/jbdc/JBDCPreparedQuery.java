@@ -38,13 +38,17 @@ import java.sql.Types;
  * Represents a JBDCPreparedQuery
  */
 public class JBDCPreparedQuery implements PreparedQuery {
-    private final PreparedStatement preparedStatement;
-    protected final Database rwLock;
+    private PreparedStatement preparedStatement;
+    private final JBDCDatabase database;
+    private final String query;
+    private boolean autoReset;
 
     protected JBDCPreparedQuery(JBDCDatabase database, String query)
     {
+        this.query = query;
         preparedStatement = database.prepare(query);
-        this.rwLock = database;
+        autoReset = database.isAutoReset();
+        this.database = database;
     }
 
     @Override
@@ -57,6 +61,9 @@ public class JBDCPreparedQuery implements PreparedQuery {
         try {
             preparedStatement.setObject(index + 1, value);
         } catch (SQLException e) {
+            if (autoReset) {
+                reset();
+            }
             throw new QueryException(e);
         }
     }
@@ -71,6 +78,9 @@ public class JBDCPreparedQuery implements PreparedQuery {
         try {
             preparedStatement.setObject(index + 1, value, databaseType);
         } catch (SQLException e) {
+            if (autoReset) {
+                reset();
+            }
             throw new QueryException(e);
         }
     }
@@ -107,6 +117,9 @@ public class JBDCPreparedQuery implements PreparedQuery {
             }
 
         } catch (SQLException e) {
+            if (autoReset) {
+                reset();
+            }
             throw new QueryException(e);
         } catch (IOException e) {
             throw new QueryException(e);
@@ -119,6 +132,9 @@ public class JBDCPreparedQuery implements PreparedQuery {
         try {
             preparedStatement.clearParameters();
         } catch (SQLException e) {
+            if (autoReset) {
+                reset();
+            }
             throw new QueryException(e);
         }
     }
@@ -126,10 +142,13 @@ public class JBDCPreparedQuery implements PreparedQuery {
     @Override
     public boolean update()
     {
-        synchronized (rwLock) {
+        synchronized (database) {
             try {
                 return preparedStatement.executeUpdate() != 0;
             } catch (SQLException e) {
+                if (autoReset) {
+                    reset();
+                }
                 throw new QueryException(e);
             }
         }
@@ -137,10 +156,13 @@ public class JBDCPreparedQuery implements PreparedQuery {
 
     public ResultSet query()
     {
-        synchronized (rwLock) {
+        synchronized (database) {
             try {
                 return preparedStatement.executeQuery();
             } catch (SQLException e) {
+                if (autoReset) {
+                    reset();
+                }
                 throw new QueryException(e);
             }
         }
@@ -156,8 +178,31 @@ public class JBDCPreparedQuery implements PreparedQuery {
         }
     }
 
+    @Override
+    public void reset()
+    {
+        preparedStatement = database.prepare(query);
+    }
+
+    @Override
+    public void setAutoReset(boolean reset)
+    {
+        autoReset = reset;
+    }
+
+    @Override
+    public boolean isAutoReset()
+    {
+        return autoReset;
+    }
+
     protected PreparedStatement getPreparedStatement()
     {
         return preparedStatement;
+    }
+
+    protected JBDCDatabase getDatabase()
+    {
+        return database;
     }
 }

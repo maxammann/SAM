@@ -71,7 +71,7 @@ public final class MySQLDatabase extends JBDCDatabase {
     }
 
     @Override
-    protected boolean recreatePreparedStatementsAfterException()
+    public boolean isAutoReset()
     {
         return false;
     }

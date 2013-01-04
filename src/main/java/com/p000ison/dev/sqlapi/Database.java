@@ -245,20 +245,12 @@ public abstract class Database {
     {
         synchronized (this) {
             RegisteredTable table = getRegisteredTable(tableObject);
-            try {
-                Column idColumn = table.getIDColumn();
+            Column idColumn = table.getIDColumn();
 
-                PreparedQuery statement = table.getDeleteStatement();
-                statement.set(0, idColumn.getValue(tableObject));
-                statement.update();
-            } catch (QueryException e) {
-                if (recreatePreparedStatementsAfterException()) {
-                    table.prepareDeleteStatement(this);
-                }
-                throw e;
-            }
+            PreparedQuery statement = table.getDeleteStatement();
+            statement.set(0, idColumn.getValue(tableObject));
+            statement.update();
         }
-
     }
 
     private RegisteredTable getRegisteredTable(TableObject obj)
@@ -300,32 +292,18 @@ public abstract class Database {
 
     private void insert(RegisteredTable registeredTable, TableObject object, Column idColumn)
     {
-        try {
-            PreparedQuery insert = registeredTable.getPreparedInsertStatement();
-            setColumnValues(insert, registeredTable, object, idColumn);
-            insert.update();
-            idColumn.setValue(object, getLastEntryId(registeredTable));
-        } catch (QueryException e) {
-            if (recreatePreparedStatementsAfterException()) {
-                registeredTable.prepareInsertStatement(this);
-            }
-            throw e;
-        }
+        PreparedQuery insert = registeredTable.getPreparedInsertStatement();
+        setColumnValues(insert, registeredTable, object, idColumn);
+        insert.update();
+        idColumn.setValue(object, getLastEntryId(registeredTable));
     }
 
     private void update(RegisteredTable registeredTable, TableObject object, Column idColumn)
     {
-        try {
-            PreparedQuery update = registeredTable.getPreparedUpdateStatement();
-            int i = setColumnValues(update, registeredTable, object, idColumn);
-            update.set(idColumn, i, idColumn.getValue(object));
-            update.update();
-        } catch (QueryException e) {
-            if (recreatePreparedStatementsAfterException()) {
-                registeredTable.prepareUpdateStatement(this);
-            }
-            throw e;
-        }
+        PreparedQuery update = registeredTable.getPreparedUpdateStatement();
+        int i = setColumnValues(update, registeredTable, object, idColumn);
+        update.set(idColumn, i, idColumn.getValue(object));
+        update.update();
     }
 
     private int setColumnValues(PreparedQuery statement, RegisteredTable registeredTable, TableObject object, Column idColumn)
@@ -455,7 +433,7 @@ public abstract class Database {
         return configuration != null ? configuration.hashCode() : 0;
     }
 
-    protected abstract boolean recreatePreparedStatementsAfterException();
+    public abstract boolean isAutoReset();
 
     public abstract String getEngineName();
 }

@@ -51,7 +51,7 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
     @Override
     public <C extends Collection<T>> C getResults(C collection)
     {
-        synchronized (rwLock) {
+        synchronized (getDatabase()) {
             ResultSet result = null;
             try {
                 result = getPreparedStatement().executeQuery();
@@ -102,6 +102,9 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
                     collection.add(object);
                 }
             } catch (SQLException e) {
+                if (isAutoReset()) {
+                    reset();
+                }
                 throw new QueryException(e);
             } finally {
                 JBDCDatabase.handleClose(null, result);

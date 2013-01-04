@@ -68,7 +68,7 @@ public final class SQLiteDatabase extends JBDCDatabase {
     }
 
     @Override
-    protected boolean recreatePreparedStatementsAfterException()
+    public boolean isAutoReset()
     {
         return true;
     }
