@@ -46,8 +46,8 @@ public class JBDCPreparedQuery implements PreparedQuery {
     protected JBDCPreparedQuery(JBDCDatabase database, String query)
     {
         this.query = query;
-        preparedStatement = database.prepare(query);
-        autoReset = database.isAutoReset();
+        this.preparedStatement = database.prepare(query);
+        this.autoReset = database.isAutoReset();
         this.database = database;
     }
 
@@ -59,6 +59,9 @@ public class JBDCPreparedQuery implements PreparedQuery {
         }
 
         try {
+            if (preparedStatement.isClosed()) {
+                reset();
+            }
             preparedStatement.setObject(index + 1, value);
         } catch (SQLException e) {
             if (autoReset) {
@@ -76,6 +79,9 @@ public class JBDCPreparedQuery implements PreparedQuery {
         }
 
         try {
+            if (preparedStatement.isClosed()) {
+                reset();
+            }
             preparedStatement.setObject(index + 1, value, databaseType);
         } catch (SQLException e) {
             if (autoReset) {
@@ -95,6 +101,9 @@ public class JBDCPreparedQuery implements PreparedQuery {
         index++;
 
         try {
+            if (preparedStatement.isClosed()) {
+                reset();
+            }
             int type = JBDCDatabase.getDatabaseDataType(column.getType());
             if (type != Database.UNSUPPORTED_TYPE) {
                 if (value == null) {
@@ -130,7 +139,11 @@ public class JBDCPreparedQuery implements PreparedQuery {
     public void clearParameters()
     {
         try {
-            preparedStatement.clearParameters();
+            if (preparedStatement.isClosed()) {
+                reset();
+            } else {
+                preparedStatement.clearParameters();
+            }
         } catch (SQLException e) {
             if (autoReset) {
                 reset();
@@ -144,6 +157,9 @@ public class JBDCPreparedQuery implements PreparedQuery {
     {
         synchronized (database) {
             try {
+                if (preparedStatement.isClosed()) {
+                    reset();
+                }
                 return preparedStatement.executeUpdate() != 0;
             } catch (SQLException e) {
                 if (autoReset) {
@@ -158,6 +174,9 @@ public class JBDCPreparedQuery implements PreparedQuery {
     {
         synchronized (database) {
             try {
+                if (preparedStatement.isClosed()) {
+                    reset();
+                }
                 return preparedStatement.executeQuery();
             } catch (SQLException e) {
                 if (autoReset) {
@@ -171,7 +190,11 @@ public class JBDCPreparedQuery implements PreparedQuery {
     @Override
     public void close()
     {
+
         try {
+            if (preparedStatement.isClosed()) {
+                return;
+            }
             getPreparedStatement().close();
         } catch (SQLException e) {
             throw new QueryException(e);

@@ -54,6 +54,10 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
         synchronized (getDatabase()) {
             ResultSet result = null;
             try {
+                if (getPreparedStatement().isClosed()) {
+                    reset();
+                }
+
                 result = getPreparedStatement().executeQuery();
                 List<Column> columns = table.getRegisteredColumns();
 

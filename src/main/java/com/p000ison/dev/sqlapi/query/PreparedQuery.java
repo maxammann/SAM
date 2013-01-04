@@ -22,7 +22,7 @@ package com.p000ison.dev.sqlapi.query;
 import com.p000ison.dev.sqlapi.Column;
 
 /**
- * This is used to prepare queries/statements.
+ * This is used to prepare queries/statements. If you close this and call a method of this class the prepared statement gets reset.({@link #reset()})
  */
 @SuppressWarnings("unused")
 public interface PreparedQuery {
@@ -45,11 +45,26 @@ public interface PreparedQuery {
      */
     boolean update();
 
+    /**
+     * Closes this prepared statement and releases resources
+     */
     void close();
 
+    /**
+     * Resets or reopens the statement. If {@link #isAutoReset()} is true this gets automatically called
+     * when a exception occurs.
+     */
     void reset();
 
+    /**
+     * Automatically calls {@link #reset()} if a exception occurs. Default is the database engine's default.
+     *
+     * @param reset Whether we want to reset it automatically
+     */
     void setAutoReset(boolean reset);
 
+    /**
+     * @return Whether we want to reset it automatically
+     */
     boolean isAutoReset();
 }
