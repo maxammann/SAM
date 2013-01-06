@@ -51,6 +51,8 @@ public final class MySQLDatabase extends JBDCDatabase {
         dataSource.setServerName(mysqlConfiguration.getHost());
         dataSource.setPort(mysqlConfiguration.getPort());
 
+        dataSource.setAutoClosePStmtStreams(false);
+
         try {
             return dataSource.getConnection();
         } catch (SQLException e) {
