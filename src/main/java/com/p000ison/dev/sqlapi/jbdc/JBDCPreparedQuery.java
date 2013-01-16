@@ -43,8 +43,7 @@ public class JBDCPreparedQuery implements PreparedQuery {
     private final String query;
     private boolean autoReset;
 
-    protected JBDCPreparedQuery(JBDCDatabase database, String query)
-    {
+    protected JBDCPreparedQuery(JBDCDatabase database, String query) {
         this.query = query;
         this.preparedStatement = database.prepare(query);
         this.autoReset = database.isAutoReset();
@@ -52,15 +51,17 @@ public class JBDCPreparedQuery implements PreparedQuery {
     }
 
     @Override
-    public void set(int index, Object value)
-    {
+    public void set(int index, Object value) {
         if (index < 0) {
             throw new IllegalArgumentException("The index must be more or equal 0!");
         }
 
         try {
-            if (preparedStatement.isClosed()) {
-                reset();
+            try {
+                if (preparedStatement.isClosed()) {
+                    reset();
+                }
+            } catch (AbstractMethodError ignored) {
             }
             preparedStatement.setObject(index + 1, value);
         } catch (SQLException e) {
@@ -72,15 +73,17 @@ public class JBDCPreparedQuery implements PreparedQuery {
     }
 
     @Override
-    public void set(int index, Object value, int databaseType)
-    {
+    public void set(int index, Object value, int databaseType) {
         if (index < 0) {
             throw new IllegalArgumentException("The index must be more or equal 0!");
         }
 
         try {
-            if (preparedStatement.isClosed()) {
-                reset();
+            try {
+                if (preparedStatement.isClosed()) {
+                    reset();
+                }
+            } catch (AbstractMethodError ignored) {
             }
             preparedStatement.setObject(index + 1, value, databaseType);
         } catch (SQLException e) {
@@ -92,8 +95,7 @@ public class JBDCPreparedQuery implements PreparedQuery {
     }
 
     @Override
-    public void set(Column column, int index, Object value)
-    {
+    public void set(Column column, int index, Object value) {
         if (index < 0) {
             throw new IllegalArgumentException("The index must be more or equal 0!");
         }
@@ -101,8 +103,11 @@ public class JBDCPreparedQuery implements PreparedQuery {
         index++;
 
         try {
-            if (preparedStatement.isClosed()) {
-                reset();
+            try {
+                if (preparedStatement.isClosed()) {
+                    reset();
+                }
+            } catch (AbstractMethodError ignored) {
             }
             int type = JBDCDatabase.getDatabaseDataType(column.getType());
             if (type != Database.UNSUPPORTED_TYPE) {
@@ -136,14 +141,14 @@ public class JBDCPreparedQuery implements PreparedQuery {
     }
 
     @Override
-    public void clearParameters()
-    {
+    public void clearParameters() {
         try {
             if (preparedStatement.isClosed()) {
                 reset();
             } else {
                 preparedStatement.clearParameters();
             }
+        } catch (AbstractMethodError ignored) {
         } catch (SQLException e) {
             if (autoReset) {
                 reset();
@@ -153,12 +158,14 @@ public class JBDCPreparedQuery implements PreparedQuery {
     }
 
     @Override
-    public boolean update()
-    {
+    public boolean update() {
         synchronized (database) {
             try {
-                if (preparedStatement.isClosed()) {
-                    reset();
+                try {
+                    if (preparedStatement.isClosed()) {
+                        reset();
+                    }
+                } catch (AbstractMethodError ignored) {
                 }
                 return preparedStatement.executeUpdate() != 0;
             } catch (SQLException e) {
@@ -170,12 +177,14 @@ public class JBDCPreparedQuery implements PreparedQuery {
         }
     }
 
-    public ResultSet query()
-    {
+    public ResultSet query() {
         synchronized (database) {
             try {
-                if (preparedStatement.isClosed()) {
-                    reset();
+                try {
+                    if (preparedStatement.isClosed()) {
+                        reset();
+                    }
+                } catch (AbstractMethodError ignored) {
                 }
                 return preparedStatement.executeQuery();
             } catch (SQLException e) {
@@ -188,12 +197,14 @@ public class JBDCPreparedQuery implements PreparedQuery {
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
 
         try {
-            if (preparedStatement.isClosed()) {
-                return;
+            try {
+                if (preparedStatement.isClosed()) {
+                    return;
+                }
+            } catch (AbstractMethodError ignored) {
             }
             getPreparedStatement().close();
         } catch (SQLException e) {
@@ -202,30 +213,25 @@ public class JBDCPreparedQuery implements PreparedQuery {
     }
 
     @Override
-    public void reset()
-    {
+    public void reset() {
         preparedStatement = database.prepare(query);
     }
 
     @Override
-    public void setAutoReset(boolean reset)
-    {
+    public void setAutoReset(boolean reset) {
         autoReset = reset;
     }
 
     @Override
-    public boolean isAutoReset()
-    {
+    public boolean isAutoReset() {
         return autoReset;
     }
 
-    protected PreparedStatement getPreparedStatement()
-    {
+    protected PreparedStatement getPreparedStatement() {
         return preparedStatement;
     }
 
-    protected JBDCDatabase getDatabase()
-    {
+    protected JBDCDatabase getDatabase() {
         return database;
     }
 }

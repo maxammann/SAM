@@ -42,20 +42,21 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
     private final RegisteredTable table;
 
 
-    protected JBDCPreparedSelectQuery(JBDCDatabase database, String query, RegisteredTable table)
-    {
+    protected JBDCPreparedSelectQuery(JBDCDatabase database, String query, RegisteredTable table) {
         super(database, query);
         this.table = table;
     }
 
     @Override
-    public <C extends Collection<T>> C getResults(C collection)
-    {
+    public <C extends Collection<T>> C getResults(C collection) {
         synchronized (getDatabase()) {
             ResultSet result = null;
             try {
-                if (getPreparedStatement().isClosed()) {
-                    reset();
+                try {
+                    if (getPreparedStatement().isClosed()) {
+                        reset();
+                    }
+                } catch (AbstractMethodError ignored) {
                 }
 
                 result = getPreparedStatement().executeQuery();
@@ -118,8 +119,7 @@ public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPrepared
     }
 
     @Override
-    public List<T> getResults()
-    {
+    public List<T> getResults() {
         return getResults(new ArrayList<T>());
     }
 }
