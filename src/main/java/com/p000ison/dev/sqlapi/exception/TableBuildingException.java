@@ -21,28 +21,23 @@ package com.p000ison.dev.sqlapi.exception;
 
 public class TableBuildingException extends RuntimeException {
 
-    public TableBuildingException()
-    {
+    public TableBuildingException() {
         super("Failed at building table!");
     }
 
-    public TableBuildingException(String message)
-    {
+    public TableBuildingException(String message) {
         super(message);
     }
 
-    public TableBuildingException(String message, Object... args)
-    {
+    public TableBuildingException(String message, Object... args) {
         super(String.format(message, args));
     }
 
-    public TableBuildingException(String message, Throwable cause)
-    {
+    public TableBuildingException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public TableBuildingException(Throwable cause)
-    {
+    public TableBuildingException(Throwable cause) {
         super(cause);
     }
 }

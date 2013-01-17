@@ -31,20 +31,17 @@ public class DefaultOrderEntry {
     private final String order;
     private final boolean desc;
 
-    DefaultOrderEntry(String order, boolean desc)
-    {
+    DefaultOrderEntry(String order, boolean desc) {
         this.order = order;
         this.desc = desc;
     }
 
 
-    protected String getOrder()
-    {
+    protected String getOrder() {
         return order;
     }
 
-    protected boolean isDescending()
-    {
+    protected boolean isDescending() {
         return desc;
     }
 }

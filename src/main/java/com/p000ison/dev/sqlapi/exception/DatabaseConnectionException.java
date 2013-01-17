@@ -30,14 +30,17 @@ public class DatabaseConnectionException extends Exception {
 
     private final DatabaseConfiguration config;
 
-    public DatabaseConnectionException(DatabaseConfiguration config, SQLException cause)
-    {
+    public DatabaseConnectionException(DatabaseConfiguration config, SQLException cause) {
         super(cause);
         this.config = config;
     }
 
-    public DatabaseConfiguration getConfig()
-    {
+    public DatabaseConnectionException(DatabaseConfiguration config, String cause) {
+        super(cause);
+        this.config = config;
+    }
+
+    public DatabaseConfiguration getConfig() {
         return config;
     }
 }

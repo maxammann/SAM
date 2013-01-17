@@ -56,8 +56,7 @@ public abstract class Database {
 
     private static Logger logger;
 
-    static void log(Level level, String msg, Object... args)
-    {
+    static void log(Level level, String msg, Object... args) {
         if (logger == null) {
             return;
         }
@@ -65,8 +64,7 @@ public abstract class Database {
         logger.log(level, String.format(msg, args));
     }
 
-    public static void setLogger(Logger logger)
-    {
+    public static void setLogger(Logger logger) {
         Database.logger = logger;
     }
 
@@ -75,15 +73,14 @@ public abstract class Database {
      *
      * @param configuration The database configuration
      */
-    protected Database(DatabaseConfiguration configuration) throws DatabaseConnectionException
-    {
+    protected Database(DatabaseConfiguration configuration) throws DatabaseConnectionException {
         this.configuration = configuration;
         String driver = configuration.getDriverName();
 
         try {
             Class.forName(driver);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to load driver " + driver + "!");
+            throw new DatabaseConnectionException(configuration, "Failed to load driver " + driver + "!");
         }
     }
 
@@ -93,14 +90,12 @@ public abstract class Database {
      * @param clazz The class of the {@link TableObject}.
      * @return The name
      */
-    static String getTableName(Class<? extends TableObject> clazz)
-    {
+    static String getTableName(Class<? extends TableObject> clazz) {
         DatabaseTable annotation = clazz.getAnnotation(DatabaseTable.class);
         return annotation == null ? null : annotation.name();
     }
 
-    public void saveStoredValues(Class<? extends TableObject> clazz)
-    {
+    public void saveStoredValues(Class<? extends TableObject> clazz) {
         RegisteredTable table = getRegisteredTable(clazz);
         if (table == null) {
             throw new RegistrationException(clazz, "The class %s is not registered!");
@@ -114,8 +109,7 @@ public abstract class Database {
      *
      * @throws QueryException
      */
-    public final void close() throws QueryException
-    {
+    public final void close() throws QueryException {
         for (RegisteredTable table : registeredTables) {
             table.close();
         }
@@ -137,8 +131,7 @@ public abstract class Database {
      *
      * @param table The object to register
      */
-    public final RegisteredTable registerTable(TableObject table)
-    {
+    public final RegisteredTable registerTable(TableObject table) {
         return registerTable(table.getClass());
     }
 
@@ -147,8 +140,7 @@ public abstract class Database {
      *
      * @param table The class to register
      */
-    public final synchronized RegisteredTable registerTable(Class<? extends TableObject> table)
-    {
+    public final synchronized RegisteredTable registerTable(Class<? extends TableObject> table) {
         TableBuilder builder = createTableBuilder(table);
         RegisteredTable registeredTable = new RegisteredTable(builder.getTableName(), table, builder.getColumns(), builder.getDefaultConstructor());
 
@@ -198,8 +190,7 @@ public abstract class Database {
      * @return The RegisteredTable
      * @throws RegistrationException If the table is not registered
      */
-    public synchronized RegisteredTable getRegisteredTable(Class<? extends TableObject> table)
-    {
+    public synchronized RegisteredTable getRegisteredTable(Class<? extends TableObject> table) {
         for (RegisteredTable registeredTable : registeredTables) {
             if (registeredTable.isRegisteredClass(table)) {
                 return registeredTable;
@@ -214,8 +205,7 @@ public abstract class Database {
      * @param <T> a TableObject type
      * @return The SelectQuery
      */
-    public <T extends TableObject> SelectQuery<T> select()
-    {
+    public <T extends TableObject> SelectQuery<T> select() {
         return new DefaultSelectQuery<T>(this);
     }
 
@@ -227,8 +217,7 @@ public abstract class Database {
      * @param tableObject The object to insert/update
      * @throws RegistrationException If the table is not registered
      */
-    public void save(TableObject tableObject)
-    {
+    public void save(TableObject tableObject) {
         synchronized (this) {
             RegisteredTable table = getRegisteredTable(tableObject);
             Column idColumn = table.getIDColumn();
@@ -241,8 +230,7 @@ public abstract class Database {
         }
     }
 
-    public void delete(TableObject tableObject)
-    {
+    public void delete(TableObject tableObject) {
         synchronized (this) {
             RegisteredTable table = getRegisteredTable(tableObject);
             Column idColumn = table.getIDColumn();
@@ -253,8 +241,7 @@ public abstract class Database {
         }
     }
 
-    private RegisteredTable getRegisteredTable(TableObject obj)
-    {
+    private RegisteredTable getRegisteredTable(TableObject obj) {
         return getRegisteredTable(obj.getClass());
     }
 
@@ -264,8 +251,7 @@ public abstract class Database {
      * @param tableObject The object to update
      * @throws RegistrationException If the table is not registered
      */
-    public void update(TableObject tableObject)
-    {
+    public void update(TableObject tableObject) {
         synchronized (this) {
             RegisteredTable table = getRegisteredTable(tableObject);
             Column idColumn = table.getIDColumn();
@@ -280,8 +266,7 @@ public abstract class Database {
      * @param tableObject The object to insert
      * @throws QueryException if the query fails
      */
-    public void insert(TableObject tableObject)
-    {
+    public void insert(TableObject tableObject) {
         synchronized (this) {
             RegisteredTable table = getRegisteredTable(tableObject);
             Column idColumn = table.getIDColumn();
@@ -290,24 +275,21 @@ public abstract class Database {
         }
     }
 
-    private void insert(RegisteredTable registeredTable, TableObject object, Column idColumn)
-    {
+    private void insert(RegisteredTable registeredTable, TableObject object, Column idColumn) {
         PreparedQuery insert = registeredTable.getPreparedInsertStatement();
         setColumnValues(insert, registeredTable, object, idColumn);
         insert.update();
         idColumn.setValue(object, getLastEntryId(registeredTable));
     }
 
-    private void update(RegisteredTable registeredTable, TableObject object, Column idColumn)
-    {
+    private void update(RegisteredTable registeredTable, TableObject object, Column idColumn) {
         PreparedQuery update = registeredTable.getPreparedUpdateStatement();
         int i = setColumnValues(update, registeredTable, object, idColumn);
         update.set(idColumn, i, idColumn.getValue(object));
         update.update();
     }
 
-    private int setColumnValues(PreparedQuery statement, RegisteredTable registeredTable, TableObject object, Column idColumn)
-    {
+    private int setColumnValues(PreparedQuery statement, RegisteredTable registeredTable, TableObject object, Column idColumn) {
         List<Column> registeredColumns = registeredTable.getRegisteredColumns();
         int i = 0;
         for (Column column : registeredColumns) {
@@ -323,18 +305,15 @@ public abstract class Database {
         return i;
     }
 
-    protected DatabaseConfiguration getConfiguration()
-    {
+    protected DatabaseConfiguration getConfiguration() {
         return configuration;
     }
 
-    public final boolean isDropOldColumns()
-    {
+    public final boolean isDropOldColumns() {
         return dropOldColumns;
     }
 
-    public final void setDropOldColumns(boolean dropOldColumns)
-    {
+    public final void setDropOldColumns(boolean dropOldColumns) {
         this.dropOldColumns = dropOldColumns;
     }
 
@@ -372,8 +351,7 @@ public abstract class Database {
      * @param to    The destination
      * @param <T>   The type of the table
      */
-    public <T extends TableObject> void copy(Class<T> table, Database to)
-    {
+    public <T extends TableObject> void copy(Class<T> table, Database to) {
         RegisteredTable registeredTable = to.getRegisteredTable(table);
         if (registeredTable == null) {
             registeredTable = to.registerTable(table);
@@ -400,8 +378,7 @@ public abstract class Database {
         statement.update();
     }
 
-    public boolean isRegistered(Class<? extends TableObject> table)
-    {
+    public boolean isRegistered(Class<? extends TableObject> table) {
         try {
             getRegisteredTable(table);
             return true;
@@ -410,14 +387,12 @@ public abstract class Database {
         }
     }
 
-    public boolean isRegistered(RegisteredTable table)
-    {
+    public boolean isRegistered(RegisteredTable table) {
         return registeredTables.contains(table);
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
@@ -428,10 +403,11 @@ public abstract class Database {
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return configuration != null ? configuration.hashCode() : 0;
     }
+
+    public abstract boolean testConnection();
 
     public abstract boolean isAutoReset();
 

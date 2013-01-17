@@ -32,70 +32,59 @@ final class FieldColumn extends Column {
     private Field field;
     private DatabaseColumn annotation;
 
-    FieldColumn(Field field, DatabaseColumn annotation)
-    {
+    FieldColumn(Field field, DatabaseColumn annotation) {
         this.field = field;
         field.setAccessible(true);
         this.annotation = annotation;
     }
 
     @Override
-    public Class<?> getType()
-    {
+    public Class<?> getType() {
         return field.getType();
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         return annotation.databaseName();
     }
 
     @Override
-    public int getPosition()
-    {
+    public int getPosition() {
         return annotation.position();
     }
 
     @Override
-    public String getDefaultValue()
-    {
+    public String getDefaultValue() {
         return annotation.defaultValue();
     }
 
     @Override
-    public int[] getLength()
-    {
+    public int[] getLength() {
         return annotation.lenght();
     }
 
     @Override
-    public boolean isAutoIncrementing()
-    {
+    public boolean isAutoIncrementing() {
         return annotation.autoIncrement();
     }
 
     @Override
-    public boolean isNotNull()
-    {
+    public boolean isNotNull() {
         return annotation.notNull();
     }
 
     @Override
-    public boolean isUnique()
-    {
+    public boolean isUnique() {
         return annotation.unique();
     }
 
     @Override
-    public boolean isSaveInputAfterLoading()
-    {
+    public boolean isSaveInputAfterLoading() {
         return annotation.saveValueAfterLoading();
     }
 
     @Override
-    public void setValue(TableObject tableObject, Object object)
-    {
+    public void setValue(TableObject tableObject, Object object) {
         try {
             field.set(tableObject, object);
         } catch (IllegalAccessException e) {
@@ -104,8 +93,7 @@ final class FieldColumn extends Column {
     }
 
     @Override
-    public Object getValue(TableObject tableObject)
-    {
+    public Object getValue(TableObject tableObject) {
         try {
             return field.get(tableObject);
         } catch (IllegalAccessException e) {
@@ -114,8 +102,7 @@ final class FieldColumn extends Column {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "FieldColumn{" +
                 "column-name=" + getName() +
                 ", field=" + (field == null ? null : field.getName()) +
@@ -123,8 +110,7 @@ final class FieldColumn extends Column {
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
@@ -134,14 +120,12 @@ final class FieldColumn extends Column {
     }
 
     @Override
-    public boolean isID()
-    {
+    public boolean isID() {
         return annotation.id();
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return field != null ? field.hashCode() : 0;
     }
 }

@@ -27,18 +27,15 @@ import java.sql.SQLException;
 public class QueryException extends RuntimeException {
 
 
-    public QueryException(String message, Object... args)
-    {
+    public QueryException(String message, Object... args) {
         super(args.length == 0 ? message : String.format(message, args));
     }
 
-    public QueryException(SQLException cause)
-    {
+    public QueryException(SQLException cause) {
         super(cause);
     }
 
-    public QueryException(Throwable cause)
-    {
+    public QueryException(Throwable cause) {
         super(cause);
     }
 }

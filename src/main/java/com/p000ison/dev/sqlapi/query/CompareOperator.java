@@ -27,14 +27,12 @@ public enum CompareOperator {
 
     private String sign;
 
-    private CompareOperator(String sign)
-    {
+    private CompareOperator(String sign) {
         this.sign = sign;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return sign;
     }
 }

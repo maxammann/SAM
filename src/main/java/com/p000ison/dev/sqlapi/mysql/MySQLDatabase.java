@@ -34,14 +34,12 @@ import java.sql.SQLException;
  */
 public final class MySQLDatabase extends JBDCDatabase {
 
-    public MySQLDatabase(DatabaseConfiguration configuration) throws DatabaseConnectionException
-    {
+    public MySQLDatabase(DatabaseConfiguration configuration) throws DatabaseConnectionException {
         super(configuration);
     }
 
     @Override
-    protected Connection connect(DatabaseConfiguration configuration) throws DatabaseConnectionException
-    {
+    protected Connection connect(DatabaseConfiguration configuration) throws DatabaseConnectionException {
         MysqlDataSource dataSource = new MysqlDataSource();
         MySQLConfiguration mysqlConfiguration = (MySQLConfiguration) configuration;
 
@@ -61,26 +59,22 @@ public final class MySQLDatabase extends JBDCDatabase {
     }
 
     @Override
-    protected TableBuilder createTableBuilder(Class<? extends TableObject> table)
-    {
+    protected TableBuilder createTableBuilder(Class<? extends TableObject> table) {
         return new MySQLTableBuilder(table, this);
     }
 
     @Override
-    public MySQLConfiguration getConfiguration()
-    {
+    public MySQLConfiguration getConfiguration() {
         return (MySQLConfiguration) super.getConfiguration();
     }
 
     @Override
-    public boolean isAutoReset()
-    {
+    public boolean isAutoReset() {
         return false;
     }
 
     @Override
-    public String getEngineName()
-    {
+    public String getEngineName() {
         return "MySQL";
     }
 }

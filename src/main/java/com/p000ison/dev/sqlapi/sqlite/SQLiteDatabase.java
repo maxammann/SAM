@@ -34,14 +34,12 @@ import java.sql.SQLException;
  */
 public final class SQLiteDatabase extends JBDCDatabase {
 
-    public SQLiteDatabase(DatabaseConfiguration configuration) throws DatabaseConnectionException
-    {
+    public SQLiteDatabase(DatabaseConfiguration configuration) throws DatabaseConnectionException {
         super(configuration);
     }
 
     @Override
-    protected Connection connect(DatabaseConfiguration configuration) throws DatabaseConnectionException
-    {
+    protected Connection connect(DatabaseConfiguration configuration) throws DatabaseConnectionException {
         SQLiteDataSource dataSource = new SQLiteDataSource();
 
         SQLiteConfiguration SQLiteConfiguration = (SQLiteConfiguration) configuration;
@@ -56,26 +54,22 @@ public final class SQLiteDatabase extends JBDCDatabase {
     }
 
     @Override
-    protected TableBuilder createTableBuilder(Class<? extends TableObject> table)
-    {
+    protected TableBuilder createTableBuilder(Class<? extends TableObject> table) {
         return new SQLiteTableBuilder(table, this);
     }
 
     @Override
-    public SQLiteConfiguration getConfiguration()
-    {
+    public SQLiteConfiguration getConfiguration() {
         return (SQLiteConfiguration) super.getConfiguration();
     }
 
     @Override
-    public boolean isAutoReset()
-    {
+    public boolean isAutoReset() {
         return true;
     }
 
     @Override
-    public String getEngineName()
-    {
+    public String getEngineName() {
         return "SQLite";
     }
 }

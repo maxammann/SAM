@@ -42,8 +42,7 @@ public class RegisteredTable {
     private PreparedQuery updateStatement, insertStatement, deleteStatement;
     private Queue<StoredTableObjectValue> storedColumnValues = new LinkedList<StoredTableObjectValue>();
 
-    RegisteredTable(String name, Class<? extends TableObject> registeredClass, List<Column> registeredColumns, Constructor<? extends TableObject> constructor)
-    {
+    RegisteredTable(String name, Class<? extends TableObject> registeredClass, List<Column> registeredColumns, Constructor<? extends TableObject> constructor) {
         this.name = name;
         this.registeredClass = registeredClass;
         this.registeredColumns = registeredColumns;
@@ -52,13 +51,11 @@ public class RegisteredTable {
         }
     }
 
-    public boolean isRegistered(TableObject obj)
-    {
+    public boolean isRegistered(TableObject obj) {
         return isRegisteredClass(obj.getClass());
     }
 
-    public Column getColumn(String columnName)
-    {
+    public Column getColumn(String columnName) {
         for (Column column : registeredColumns) {
             String name = column.getName();
             if (name.hashCode() == columnName.hashCode() && name.equals(columnName)) {
@@ -68,8 +65,7 @@ public class RegisteredTable {
         return null;
     }
 
-    public Column getIDColumn()
-    {
+    public Column getIDColumn() {
         for (Column column : registeredColumns) {
             if (column.isID()) {
                 return column;
@@ -78,31 +74,26 @@ public class RegisteredTable {
         return null;
     }
 
-    public List<Column> getRegisteredColumns()
-    {
+    public List<Column> getRegisteredColumns() {
         return registeredColumns;
     }
 
-    public boolean isRegisteredClass(Class<? extends TableObject> registeredClass)
-    {
+    public boolean isRegisteredClass(Class<? extends TableObject> registeredClass) {
         return this.registeredClass.equals(registeredClass);
     }
 
-    public <T extends TableObject> T createNewInstance()
-    {
+    public <T extends TableObject> T createNewInstance() {
         if (constructor == null) {
             throw new QueryException("No default constructor and no constructor registered for class %s!", registeredClass.getName());
         }
         return constructor.newInstance();
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public static boolean isSerializable(Class<?> clazz)
-    {
+    public static boolean isSerializable(Class<?> clazz) {
         for (Class interfacee : clazz.getInterfaces()) {
             if (interfacee == Serializable.class) {
                 return true;
@@ -112,15 +103,13 @@ public class RegisteredTable {
         return false;
     }
 
-    void prepareAllStatements(Database database)
-    {
+    void prepareAllStatements(Database database) {
         prepareDeleteStatement(database);
         prepareInsertStatement(database);
         prepareUpdateStatement(database);
     }
 
-     void prepareUpdateStatement(Database database)
-    {
+    void prepareUpdateStatement(Database database) {
         StringBuilder query = new StringBuilder("UPDATE ").append(getName()).append(" SET ");
         Column id = null;
         for (Column column : getRegisteredColumns()) {
@@ -141,8 +130,7 @@ public class RegisteredTable {
         updateStatement = database.createPreparedStatement(query.toString());
     }
 
-     void prepareDeleteStatement(Database database)
-    {
+    void prepareDeleteStatement(Database database) {
         StringBuilder query = new StringBuilder();
         Column id = getIDColumn();
         query.append("DELETE FROM ").append(getName()).append(" WHERE ").append(id.getName()).append("=?;");
@@ -150,8 +138,7 @@ public class RegisteredTable {
         deleteStatement = database.createPreparedStatement(query.toString());
     }
 
-     void prepareInsertStatement(Database database)
-    {
+    void prepareInsertStatement(Database database) {
         StringBuilder query = new StringBuilder();
         Column id = getIDColumn();
         query.append("INSERT INTO ").append(getName()).append(" (");
@@ -173,8 +160,7 @@ public class RegisteredTable {
         insertStatement = database.createPreparedStatement(query.toString());
     }
 
-    public PreparedQuery getPreparedUpdateStatement()
-    {
+    public PreparedQuery getPreparedUpdateStatement() {
         return updateStatement;
     }
 
@@ -185,8 +171,7 @@ public class RegisteredTable {
      * @param arguments Will be used to build the object, pass in nothing to use the default constructor
      * @return A registered constructor
      */
-    public RegisteredConstructor registerConstructor(Object... arguments)
-    {
+    public RegisteredConstructor registerConstructor(Object... arguments) {
         try {
             if (arguments.length == 0) {
                 constructor = new RegisteredConstructor(registeredClass.getConstructor());
@@ -207,8 +192,7 @@ public class RegisteredTable {
      * @param arguments Will be used to build the object, pass in nothing to use the default constructor
      * @return A registered constructor
      */
-    public RegisteredConstructor registerConstructor(Class... arguments)
-    {
+    public RegisteredConstructor registerConstructor(Class... arguments) {
         try {
             if (arguments.length == 0) {
                 constructor = new RegisteredConstructor(registeredClass.getConstructor());
@@ -222,18 +206,15 @@ public class RegisteredTable {
         return constructor;
     }
 
-    public PreparedQuery getPreparedInsertStatement()
-    {
+    public PreparedQuery getPreparedInsertStatement() {
         return insertStatement;
     }
 
-    public void storeColumnValue(Column column, Object value, TableObject tableObject)
-    {
+    public void storeColumnValue(Column column, Object value, TableObject tableObject) {
         storedColumnValues.add(new StoredTableObjectValue(tableObject, value, column));
     }
 
-    public void saveStoredValues()
-    {
+    public void saveStoredValues() {
         StoredTableObjectValue value;
 
         while ((value = storedColumnValues.poll()) != null) {
@@ -241,19 +222,16 @@ public class RegisteredTable {
         }
     }
 
-    public void clearStoredValues()
-    {
+    public void clearStoredValues() {
         storedColumnValues.clear();
     }
 
-    public PreparedQuery getDeleteStatement()
-    {
+    public PreparedQuery getDeleteStatement() {
         return deleteStatement;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
@@ -263,20 +241,17 @@ public class RegisteredTable {
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return name != null ? name.hashCode() : 0;
     }
 
-    public void close()
-    {
+    public void close() {
         updateStatement.close();
         insertStatement.close();
         deleteStatement.close();
     }
 
-    PreparedQuery createFullInsertStatement(Database database)
-    {
+    PreparedQuery createFullInsertStatement(Database database) {
         StringBuilder query = new StringBuilder();
         query.append("INSERT INTO ").append(getName()).append(" (");
 

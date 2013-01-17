@@ -42,65 +42,55 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     private List<DefaultOrderEntry> orderBy = new ArrayList<DefaultOrderEntry>();
     private int[] limits;
 
-    public DefaultSelectQuery(Database database)
-    {
+    public DefaultSelectQuery(Database database) {
         this.database = database;
     }
 
     @Override
-    public SelectQuery<T> from(Class<T> object)
-    {
+    public SelectQuery<T> from(Class<T> object) {
         this.table = database.getRegisteredTable(object);
         return this;
     }
 
     @Override
-    public SelectQuery<T> from(RegisteredTable table)
-    {
+    public SelectQuery<T> from(RegisteredTable table) {
         this.table = table;
         return this;
     }
 
     @Override
-    public WhereQuery<T> where()
-    {
+    public WhereQuery<T> where() {
         return whereQuery = new DefaultWhereQuery<T>(this);
     }
 
     @Override
-    public SelectQuery<T> orderBy(Column order)
-    {
+    public SelectQuery<T> orderBy(Column order) {
         return orderBy(order.getName());
     }
 
     @Override
-    public SelectQuery<T> orderByDescending(Column order)
-    {
+    public SelectQuery<T> orderByDescending(Column order) {
         return orderByDescending(order.getName());
     }
 
     @Override
-    public SelectQuery<T> orderByDescending(String order)
-    {
+    public SelectQuery<T> orderByDescending(String order) {
         orderBy.add(new DefaultOrderEntry(order, true));
         return this;
     }
 
     @Override
-    public SelectQuery<T> orderBy(String order)
-    {
+    public SelectQuery<T> orderBy(String order) {
         orderBy.add(new DefaultOrderEntry(order, false));
         return this;
     }
 
-    protected DefaultWhereQuery<T> getWhereQuery()
-    {
+    protected DefaultWhereQuery<T> getWhereQuery() {
         return whereQuery;
     }
 
     @Override
-    public final synchronized PreparedSelectQuery<T> prepare()
-    {
+    public final synchronized PreparedSelectQuery<T> prepare() {
         String query = getQuery();
         if (query == null) {
             throw new QueryException("The query is not prepared!");
@@ -120,8 +110,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         return preparedQuery;
     }
 
-    protected synchronized String getQuery()
-    {
+    protected synchronized String getQuery() {
         if (table == null) {
             return null;
         }
@@ -192,8 +181,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     }
 
     @Override
-    public SelectQuery<T> limit(int max)
-    {
+    public SelectQuery<T> limit(int max) {
         if (max < 1) {
             throw new IllegalArgumentException("The limit must be greater than 0!");
         }
@@ -202,8 +190,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     }
 
     @Override
-    public SelectQuery<T> limit(int from, int to)
-    {
+    public SelectQuery<T> limit(int from, int to) {
         if (from > 0 || to > 0) {
             throw new IllegalArgumentException("The limit must be greater than 0!");
         } else if (from > to) {
@@ -215,8 +202,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     }
 
     @Override
-    public SelectQuery<T> reset()
-    {
+    public SelectQuery<T> reset() {
         this.table = null;
         this.whereQuery = null;
         this.orderBy = new ArrayList<DefaultOrderEntry>();
@@ -224,13 +210,11 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         return this;
     }
 
-    protected Database getDatabase()
-    {
+    protected Database getDatabase() {
         return database;
     }
 
-    protected RegisteredTable getTable()
-    {
+    protected RegisteredTable getTable() {
         return table;
     }
 }

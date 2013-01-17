@@ -28,20 +28,17 @@ import java.io.File;
  */
 public final class SQLiteConfiguration extends DatabaseConfiguration {
 
-    public SQLiteConfiguration(File location)
-    {
+    public SQLiteConfiguration(File location) {
         super("org.sqlite.JDBC");
         setLocation(location);
     }
 
-    public File getLocation()
-    {
+    public File getLocation() {
         return (File) super.getProperty("location");
     }
 
 
-    public SQLiteConfiguration setLocation(File location)
-    {
+    public SQLiteConfiguration setLocation(File location) {
         if (location.isDirectory()) {
             throw new IllegalArgumentException("The file is a directory!");
         }

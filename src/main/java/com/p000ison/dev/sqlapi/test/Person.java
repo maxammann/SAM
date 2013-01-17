@@ -39,13 +39,11 @@ public class Person implements TableObject {
     @DatabaseColumn(position = 3, databaseName = "hage")
     private int ageg;
 
-    public Person()
-    {
+    public Person() {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "Person{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
@@ -54,16 +52,14 @@ public class Person implements TableObject {
     }
 
     @DatabaseColumnSetter(position = 2, databaseName = "name", lenght = 100)
-    public void setFormattedName(String name)
-    {
+    public void setFormattedName(String name) {
         if (name != null) {
             this.name = name.toUpperCase();
         }
     }
 
     @DatabaseColumnGetter(databaseName = "name")
-    public String getFormattedName()
-    {
+    public String getFormattedName() {
         return name;
     }
 }

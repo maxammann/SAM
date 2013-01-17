@@ -32,13 +32,11 @@ public class RegisteredConstructor {
     private Constructor<? extends TableObject> constructor;
     private Object[] currentArgumentValues;
 
-    public RegisteredConstructor(Constructor<? extends TableObject> constructor)
-    {
+    public RegisteredConstructor(Constructor<? extends TableObject> constructor) {
         this.constructor = constructor;
     }
 
-    public RegisteredConstructor(Class<? extends TableObject> clazz, Object... args) throws NoSuchMethodException
-    {
+    public RegisteredConstructor(Class<? extends TableObject> clazz, Object... args) throws NoSuchMethodException {
         Class[] types = new Class[args.length];
 
         for (int i = 0; i < args.length; i++) {
@@ -48,13 +46,11 @@ public class RegisteredConstructor {
         setArguments(args);
     }
 
-    public RegisteredConstructor(Class<? extends TableObject> clazz, Class... args) throws NoSuchMethodException
-    {
+    public RegisteredConstructor(Class<? extends TableObject> clazz, Class... args) throws NoSuchMethodException {
         constructor = clazz.getConstructor(args);
     }
 
-    public void setArguments(Object... arguments)
-    {
+    public void setArguments(Object... arguments) {
         Class<?>[] types = constructor.getParameterTypes();
 
         if (arguments.length != types.length) {
@@ -65,8 +61,7 @@ public class RegisteredConstructor {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends TableObject> T newInstance()
-    {
+    public <T extends TableObject> T newInstance() {
         try {
             if (currentArgumentValues == null) {
                 return (T) constructor.newInstance();
@@ -81,8 +76,7 @@ public class RegisteredConstructor {
         }
     }
 
-    public void clear()
-    {
+    public void clear() {
         currentArgumentValues = null;
     }
 }

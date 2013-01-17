@@ -37,18 +37,19 @@ public abstract class JBDCDatabase extends Database {
      */
     private Connection connection;
 
-    public JBDCDatabase(DatabaseConfiguration configuration) throws DatabaseConnectionException
-    {
+    public JBDCDatabase(DatabaseConfiguration configuration) throws DatabaseConnectionException {
         super(configuration);
 
         connection = connect(configuration);
+        if (!testConnection()) {
+            throw new DatabaseConnectionException(configuration, "Failed to connect to the database! Test failed!");
+        }
     }
 
     protected abstract Connection connect(DatabaseConfiguration configuration) throws DatabaseConnectionException;
 
     @Override
-    public void closeDatabaseConnection() throws QueryException
-    {
+    public void closeDatabaseConnection() throws QueryException {
         try {
             getConnection().close();
         } catch (SQLException e) {
@@ -57,8 +58,7 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    public List<String> getDatabaseColumns(String table)
-    {
+    public List<String> getDatabaseColumns(String table) {
         List<String> columns = new ArrayList<String>();
 
         try {
@@ -75,8 +75,7 @@ public abstract class JBDCDatabase extends Database {
         return columns;
     }
 
-    private DatabaseMetaData getMetadata()
-    {
+    private DatabaseMetaData getMetadata() {
         try {
             return getConnection().getMetaData();
         } catch (SQLException e) {
@@ -85,8 +84,7 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    public boolean existsDatabaseTable(String table)
-    {
+    public boolean existsDatabaseTable(String table) {
         ResultSet columnResult;
         try {
             columnResult = this.getMetadata().getTables(null, null, null, null);
@@ -104,14 +102,12 @@ public abstract class JBDCDatabase extends Database {
         return false;
     }
 
-    protected final Connection getConnection()
-    {
+    protected final Connection getConnection() {
         return connection;
     }
 
     @Override
-    public boolean executeDirectUpdate(String query)
-    {
+    public boolean executeDirectUpdate(String query) {
         if (query == null) {
             return false;
         }
@@ -127,8 +123,7 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    public boolean isConnected()
-    {
+    public boolean isConnected() {
         try {
             return getConnection() != null && !getConnection().isClosed();
         } catch (SQLException e) {
@@ -136,8 +131,7 @@ public abstract class JBDCDatabase extends Database {
         }
     }
 
-    public PreparedStatement prepare(String query)
-    {
+    public PreparedStatement prepare(String query) {
         try {
             return getConnection().prepareStatement(query);
         } catch (SQLException e) {
@@ -146,14 +140,12 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    public JBDCPreparedQuery createPreparedStatement(String query)
-    {
+    public JBDCPreparedQuery createPreparedStatement(String query) {
         return new JBDCPreparedQuery(this, query);
     }
 
     @Override
-    public boolean existsEntry(RegisteredTable table, TableObject object)
-    {
+    public boolean existsEntry(RegisteredTable table, TableObject object) {
         Column column = table.getIDColumn();
 
         PreparedStatement check = null;
@@ -171,14 +163,12 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    public boolean existsEntry(TableObject object)
-    {
+    public boolean existsEntry(TableObject object) {
         return this.existsEntry(getRegisteredTable(object.getClass()), object);
     }
 
     @Override
-    protected int getLastEntryId(RegisteredTable table)
-    {
+    protected int getLastEntryId(RegisteredTable table) {
         Column idColumn = table.getIDColumn();
         PreparedStatement check = null;
         ResultSet result = null;
@@ -199,8 +189,7 @@ public abstract class JBDCDatabase extends Database {
         }
     }
 
-    public static void handleClose(Statement check, ResultSet result)
-    {
+    public static void handleClose(Statement check, ResultSet result) {
         try {
             if (check != null) {
                 check.close();
@@ -214,13 +203,11 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    public boolean isSupported(Class<?> type)
-    {
+    public boolean isSupported(Class<?> type) {
         return isSupportedByDatabase(type);
     }
 
-    static boolean isSupportedByDatabase(Class<?> type)
-    {
+    static boolean isSupportedByDatabase(Class<?> type) {
         return type.isPrimitive() || Number.class.isAssignableFrom(type)
                 || type == boolean.class || type == Boolean.class
                 || type == char.class || type == Character.class
@@ -228,8 +215,7 @@ public abstract class JBDCDatabase extends Database {
                 || type == String.class;
     }
 
-    static int getDatabaseDataType(Class<?> type)
-    {
+    static int getDatabaseDataType(Class<?> type) {
         if (type == boolean.class || type == Boolean.class) {
             return Types.TINYINT;
         } else if (type == byte.class || type == Byte.class) {
@@ -257,8 +243,7 @@ public abstract class JBDCDatabase extends Database {
         return UNSUPPORTED_TYPE;
     }
 
-    static Object getDatabaseFromResultSet(int index, ResultSet set, Class<?> type)
-    {
+    static Object getDatabaseFromResultSet(int index, ResultSet set, Class<?> type) {
         try {
             if (type == boolean.class || type == Boolean.class) {
                 return set.getBoolean(index);
@@ -291,19 +276,27 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    protected <T extends TableObject> JBDCPreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table)
-    {
+    protected <T extends TableObject> JBDCPreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table) {
         return new JBDCPreparedSelectQuery<T>(this, query, table);
     }
 
-    public ResultSet query(String query)
-    {
+    public ResultSet query(String query) {
         Statement statement;
         try {
             statement = getConnection().createStatement();
             return statement.executeQuery(query);
         } catch (SQLException e) {
             throw new QueryException(e);
+        }
+    }
+
+    @Override
+    public boolean testConnection() {
+        try {
+            query("SELECT 1;");
+            return true;
+        } catch (QueryException e) {
+            return false;
         }
     }
 }

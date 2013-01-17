@@ -28,25 +28,21 @@ class StoredTableObjectValue {
     private Object value;
     private Column column;
 
-    StoredTableObjectValue(TableObject tableObject, Object value, Column column)
-    {
+    StoredTableObjectValue(TableObject tableObject, Object value, Column column) {
         this.tableObject = tableObject;
         this.value = value;
         this.column = column;
     }
 
-    TableObject getTableObject()
-    {
+    TableObject getTableObject() {
         return tableObject;
     }
 
-    Object getValue()
-    {
+    Object getValue() {
         return value;
     }
 
-    Column getColumn()
-    {
+    Column getColumn() {
         return column;
     }
 }

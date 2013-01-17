@@ -38,19 +38,16 @@ public class OutputQueueConsumer extends Thread {
     private final Database database;
     private AtomicBoolean bool = new AtomicBoolean(true);
 
-    public OutputQueueConsumer(int maxSize, Database database)
-    {
+    public OutputQueueConsumer(int maxSize, Database database) {
         this.maxSize = maxSize;
         this.database = database;
     }
 
-    public OutputQueueConsumer(Database database)
-    {
+    public OutputQueueConsumer(Database database) {
         this(-1, database);
     }
 
-    public void addTableObject(TableObject tableObject)
-    {
+    public void addTableObject(TableObject tableObject) {
         synchronized (this) {
             if (queue.size() >= maxSize) {
                 return;
@@ -64,8 +61,7 @@ public class OutputQueueConsumer extends Thread {
     }
 
     @Override
-    public void run()
-    {
+    public void run() {
         while (bool.get()) {
             synchronized (this) {
                 TableObject obj;
@@ -81,18 +77,15 @@ public class OutputQueueConsumer extends Thread {
         }
     }
 
-    public void stopThread()
-    {
+    public void stopThread() {
         bool.set(false);
     }
 
-    protected Database getDatabase()
-    {
+    protected Database getDatabase() {
         return database;
     }
 
-    public int size()
-    {
+    public int size() {
         return queue.size();
     }
 }

@@ -66,8 +66,7 @@ public abstract class TableBuilder {
 
     private final Set<StringBuilder> builders = new HashSet<StringBuilder>();
 
-    public TableBuilder(Class<? extends TableObject> object, Database database)
-    {
+    public TableBuilder(Class<? extends TableObject> object, Database database) {
         this.object = object;
         this.database = database;
         tableName = Database.getTableName(object);
@@ -87,13 +86,11 @@ public abstract class TableBuilder {
         setupColumns();
     }
 
-    public TableBuilder(TableObject object, Database database)
-    {
+    public TableBuilder(TableObject object, Database database) {
         this(object.getClass(), database);
     }
 
-    public TableBuilder createTable()
-    {
+    public TableBuilder createTable() {
         if (existed) {
             return this;
         }
@@ -115,8 +112,7 @@ public abstract class TableBuilder {
         return this;
     }
 
-    public TableBuilder createModifyQuery()
-    {
+    public TableBuilder createModifyQuery() {
         if (!existed) {
             return this;
         }
@@ -129,8 +125,7 @@ public abstract class TableBuilder {
         return this;
     }
 
-    private Column getColumn(String dbColumn)
-    {
+    private Column getColumn(String dbColumn) {
         for (Column column : buildingColumns) {
             if (column.getName().equals(dbColumn)) {
                 return column;
@@ -139,13 +134,11 @@ public abstract class TableBuilder {
         return null;
     }
 
-    private boolean existsColumn(String dbColumn)
-    {
+    private boolean existsColumn(String dbColumn) {
         return getColumn(dbColumn) != null;
     }
 
-    private MethodColumn getMethodColumn(String dbColumn)
-    {
+    private MethodColumn getMethodColumn(String dbColumn) {
         for (Column column : buildingColumns) {
             if ((column instanceof MethodColumn) && column.getName().equals(dbColumn)) {
                 return (MethodColumn) column;
@@ -157,8 +150,7 @@ public abstract class TableBuilder {
     /**
      * Setups the columns of a table and produces a unmodifiable list
      */
-    private void setupColumns()
-    {
+    private void setupColumns() {
         buildingColumns.clear();
 
         Method[] methods = object.getDeclaredMethods();
@@ -232,8 +224,7 @@ public abstract class TableBuilder {
         //
         Collections.sort(buildingColumns, new Comparator<Column>() {
             @Override
-            public int compare(Column o1, Column o2)
-            {
+            public int compare(Column o1, Column o2) {
                 int p1 = o1.getPosition();
                 int p2 = o2.getPosition();
                 return p1 < p2 ? -1 : p1 > p2 ? 1 : 0;
@@ -243,8 +234,7 @@ public abstract class TableBuilder {
         buildingColumns = Collections.unmodifiableList(buildingColumns);
     }
 
-    private void setupModifyColumns()
-    {
+    private void setupModifyColumns() {
         if (buildingColumns.isEmpty()) {
             throw new TableBuildingException("The table must have at least one column!");
         }
@@ -272,8 +262,7 @@ public abstract class TableBuilder {
         }
     }
 
-    protected void buildModifyColumns()
-    {
+    protected void buildModifyColumns() {
         StringBuilder query = new StringBuilder();
         boolean complete = false;
 
@@ -330,39 +319,32 @@ public abstract class TableBuilder {
 
     protected abstract boolean isSupportModifyColumns();
 
-    final Constructor<? extends TableObject> getDefaultConstructor()
-    {
+    final Constructor<? extends TableObject> getDefaultConstructor() {
         return ctor;
     }
 
 
-    final List<Column> getColumns()
-    {
+    final List<Column> getColumns() {
         return buildingColumns;
     }
 
-    public final String getTableName()
-    {
+    public final String getTableName() {
         return tableName;
     }
 
-    protected Set<Column> getColumnsToAdd()
-    {
+    protected Set<Column> getColumnsToAdd() {
         return toAdd;
     }
 
-    protected Set<String> getColumnsToRemove()
-    {
+    protected Set<String> getColumnsToRemove() {
         return toDrop;
     }
 
-    public Set<StringBuilder> getBuilders()
-    {
+    public Set<StringBuilder> getBuilders() {
         return builders;
     }
 
-    protected void addQuery(StringBuilder builder)
-    {
+    protected void addQuery(StringBuilder builder) {
         builders.add(builder);
     }
 }

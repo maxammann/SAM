@@ -40,16 +40,14 @@ class DefaultWhereComparator<T extends TableObject> implements WhereComparator<T
     private CompareOperator operator;
     private boolean prepared = false;
 
-    DefaultWhereComparator(DefaultSelectQuery<T> query, CompareOperator operator, String column, Object expectedValue)
-    {
+    DefaultWhereComparator(DefaultSelectQuery<T> query, CompareOperator operator, String column, Object expectedValue) {
         this.query = query;
         this.column = column;
         this.operator = operator;
         this.expectedValue = expectedValue;
     }
 
-    DefaultWhereComparator(DefaultSelectQuery<T> query, CompareOperator operator, String column, boolean prepared)
-    {
+    DefaultWhereComparator(DefaultSelectQuery<T> query, CompareOperator operator, String column, boolean prepared) {
         this.query = query;
         this.column = column;
         this.operator = operator;
@@ -57,52 +55,43 @@ class DefaultWhereComparator<T extends TableObject> implements WhereComparator<T
     }
 
     @Override
-    public WhereQuery<T> or()
-    {
+    public WhereQuery<T> or() {
         or = true;
         return query.getWhereQuery();
     }
 
     @Override
-    public WhereQuery<T> and()
-    {
+    public WhereQuery<T> and() {
         and = true;
         return query.getWhereQuery();
     }
 
     @Override
-    public SelectQuery<T> select()
-    {
+    public SelectQuery<T> select() {
         return query;
     }
 
-    protected boolean isOr()
-    {
+    protected boolean isOr() {
         return or;
     }
 
-    protected boolean isAnd()
-    {
+    protected boolean isAnd() {
         return and;
     }
 
-    protected String getColumn()
-    {
+    protected String getColumn() {
         return column;
     }
 
-    protected Object getExpectedValue()
-    {
+    protected Object getExpectedValue() {
         return expectedValue;
     }
 
-    protected CompareOperator getOperator()
-    {
+    protected CompareOperator getOperator() {
         return operator;
     }
 
-    public boolean isPrepared()
-    {
+    public boolean isPrepared() {
         return prepared;
     }
 }

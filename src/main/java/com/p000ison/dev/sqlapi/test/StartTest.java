@@ -32,8 +32,7 @@ import java.io.FileNotFoundException;
 public class StartTest {
     private static final int PORT = 3306;
 
-    public static void main(String[] args) throws FileNotFoundException
-    {
+    public static void main(String[] args) throws FileNotFoundException {
 //        try {
 //            DriverManager.getConnection("jdbc:mysql://localhost/test?user=root&password=m1nt");
 //        } catch (SQLException e) {

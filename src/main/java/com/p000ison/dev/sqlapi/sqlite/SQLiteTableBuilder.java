@@ -31,19 +31,16 @@ import java.util.Set;
 //todo add modify statements
 public final class SQLiteTableBuilder extends TableBuilder {
 
-    public SQLiteTableBuilder(TableObject object, Database database)
-    {
+    public SQLiteTableBuilder(TableObject object, Database database) {
         super(object, database);
     }
 
-    public SQLiteTableBuilder(Class<? extends TableObject> object, Database database)
-    {
+    public SQLiteTableBuilder(Class<? extends TableObject> object, Database database) {
         super(object, database);
     }
 
     @Override
-    protected StringBuilder buildColumn(Column column)
-    {
+    protected StringBuilder buildColumn(Column column) {
         Class<?> type = column.getType();
         StringBuilder query = new StringBuilder();
         query.append(column.getName()).append(' ');
@@ -121,8 +118,7 @@ public final class SQLiteTableBuilder extends TableBuilder {
         return query;
     }
 
-    private static StringBuilder buildModifyColumn(Column column)
-    {
+    private static StringBuilder buildModifyColumn(Column column) {
         Class<?> type = column.getType();
         StringBuilder query = new StringBuilder();
         query.append(column.getName()).append(' ');
@@ -175,8 +171,7 @@ public final class SQLiteTableBuilder extends TableBuilder {
     }
 
     @Override
-    protected void buildModifyColumns()
-    {
+    protected void buildModifyColumns() {
         Set<Column> toAdd = super.getColumnsToAdd();
 
         for (Column column : toAdd) {
@@ -188,20 +183,17 @@ public final class SQLiteTableBuilder extends TableBuilder {
     }
 
     @Override
-    protected boolean isSupportAddColumns()
-    {
+    protected boolean isSupportAddColumns() {
         return true;
     }
 
     @Override
-    protected boolean isSupportRemoveColumns()
-    {
+    protected boolean isSupportRemoveColumns() {
         return false;
     }
 
     @Override
-    protected boolean isSupportModifyColumns()
-    {
+    protected boolean isSupportModifyColumns() {
         return false;
     }
 }

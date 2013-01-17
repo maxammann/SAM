@@ -29,25 +29,22 @@ import java.util.Date;
  */
 public final class MySQLTableBuilder extends TableBuilder {
 
-    public MySQLTableBuilder(TableObject object, Database database)
-    {
+    public MySQLTableBuilder(TableObject object, Database database) {
         super(object, database);
     }
 
-    public MySQLTableBuilder(Class<? extends TableObject> object, Database database)
-    {
+    public MySQLTableBuilder(Class<? extends TableObject> object, Database database) {
         super(object, database);
     }
 
     @Override
-    protected StringBuilder buildColumn(Column column)
-    {
+    protected StringBuilder buildColumn(Column column) {
         Class<?> type = column.getType();
         StringBuilder query = new StringBuilder();
         query.append(column.getName()).append(' ');
 
         if (column.isID()) {
-              query.append("INTEGER");
+            query.append("INTEGER");
         } else {
             boolean allowModifyLength = true;
 
@@ -123,20 +120,17 @@ public final class MySQLTableBuilder extends TableBuilder {
     }
 
     @Override
-    protected boolean isSupportAddColumns()
-    {
+    protected boolean isSupportAddColumns() {
         return true;
     }
 
     @Override
-    protected boolean isSupportRemoveColumns()
-    {
+    protected boolean isSupportRemoveColumns() {
         return true;
     }
 
     @Override
-    protected boolean isSupportModifyColumns()
-    {
+    protected boolean isSupportModifyColumns() {
         return true;
     }
 }

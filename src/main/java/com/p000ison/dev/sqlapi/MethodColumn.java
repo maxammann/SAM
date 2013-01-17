@@ -35,17 +35,14 @@ final class MethodColumn extends Column {
     private Method getter, setter;
     private DatabaseColumnSetter annotation;
 
-    MethodColumn()
-    {
+    MethodColumn() {
     }
 
-    public Method getGetter()
-    {
+    public Method getGetter() {
         return getter;
     }
 
-    void setGetter(Method getter)
-    {
+    void setGetter(Method getter) {
         if (this.getter != null) {
             throw new TableBuildingException("Duplicate column \"%s\"!", getName());
         }
@@ -63,13 +60,11 @@ final class MethodColumn extends Column {
         this.getter.setAccessible(true);
     }
 
-    public Method getSetter()
-    {
+    public Method getSetter() {
         return setter;
     }
 
-    void setSetter(Method setter)
-    {
+    void setSetter(Method setter) {
         if (this.setter != null) {
             throw new TableBuildingException("Duplicate column \"%s\"!", getName());
         }
@@ -88,19 +83,16 @@ final class MethodColumn extends Column {
         setter.setAccessible(true);
     }
 
-    void setAnnotation(DatabaseColumnSetter annotation)
-    {
+    void setAnnotation(DatabaseColumnSetter annotation) {
         this.annotation = annotation;
     }
 
-    public boolean isNull()
-    {
+    public boolean isNull() {
         return getter == null || setter == null;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
@@ -110,22 +102,19 @@ final class MethodColumn extends Column {
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int result = getter != null ? getter.hashCode() : 0;
         result = 31 * result + (setter != null ? setter.hashCode() : 0);
         return result;
     }
 
     @Override
-    public Class<?> getType()
-    {
+    public Class<?> getType() {
         return getter.getReturnType();
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         if (getter != null) {
             return getter.getAnnotation(DatabaseColumnGetter.class).databaseName();
         }
@@ -136,63 +125,53 @@ final class MethodColumn extends Column {
     }
 
     @Override
-    public int getPosition()
-    {
+    public int getPosition() {
         return annotation.position();
     }
 
-    public void validate()
-    {
+    public void validate() {
         if (!getType().equals(getSetter().getParameterTypes()[0])) {
             throw new TableBuildingException("The parameter of the setter method and the return type of the getter method do not equal: %s != %s", getSetter().getName(), getGetter().getName());
         }
     }
 
     @Override
-    public String getDefaultValue()
-    {
+    public String getDefaultValue() {
         return annotation.defaultValue();
     }
 
     @Override
-    public int[] getLength()
-    {
+    public int[] getLength() {
         return annotation.lenght();
     }
 
     @Override
-    public boolean isAutoIncrementing()
-    {
+    public boolean isAutoIncrementing() {
         return annotation.autoIncrement();
     }
 
     @Override
-    public boolean isNotNull()
-    {
+    public boolean isNotNull() {
         return annotation.notNull();
     }
 
     @Override
-    public boolean isUnique()
-    {
+    public boolean isUnique() {
         return annotation.unique();
     }
 
     @Override
-    public boolean isID()
-    {
+    public boolean isID() {
         return annotation.id();
     }
 
     @Override
-    public boolean isSaveInputAfterLoading()
-    {
+    public boolean isSaveInputAfterLoading() {
         return annotation.saveValueAfterLoading();
     }
 
     @Override
-    public void setValue(TableObject tableObject, Object object)
-    {
+    public void setValue(TableObject tableObject, Object object) {
         try {
             setter.invoke(tableObject, object);
         } catch (IllegalAccessException e) {
@@ -203,8 +182,7 @@ final class MethodColumn extends Column {
     }
 
     @Override
-    public Object getValue(TableObject tableObject)
-    {
+    public Object getValue(TableObject tableObject) {
         try {
             return getter.invoke(tableObject);
         } catch (IllegalAccessException e) {
@@ -215,8 +193,7 @@ final class MethodColumn extends Column {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "MethodColumn{" +
                 "column-name=" + getName() +
                 ", getter=" + (getter == null ? "null" : getter.getName()) +

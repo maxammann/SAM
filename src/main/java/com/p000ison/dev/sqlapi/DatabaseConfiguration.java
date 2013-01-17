@@ -29,45 +29,37 @@ public abstract class DatabaseConfiguration {
     private final Map<String, Object> properties;
     private final String driver;
 
-    protected DatabaseConfiguration(String driver)
-    {
+    protected DatabaseConfiguration(String driver) {
         this.driver = driver;
         properties = new HashMap<String, Object>();
     }
 
-    public final void setProperty(String key, Object property)
-    {
+    public final void setProperty(String key, Object property) {
         properties.put(key, property);
     }
 
-    public final String getStringProperty(String key)
-    {
+    public final String getStringProperty(String key) {
         return properties.get(key).toString();
     }
 
-    public final int getIntegerProperty(String key)
-    {
+    public final int getIntegerProperty(String key) {
         return (Integer) properties.get(key);
     }
 
-    public final Object getProperty(String key)
-    {
+    public final Object getProperty(String key) {
         return properties.get(key);
     }
 
-    public final String getDriverName()
-    {
+    public final String getDriverName() {
         return driver;
     }
 
-    public final Class getDriver() throws ClassNotFoundException
-    {
+    public final Class getDriver() throws ClassNotFoundException {
         return Class.forName(driver);
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
@@ -80,8 +72,7 @@ public abstract class DatabaseConfiguration {
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int result = properties != null ? properties.hashCode() : 0;
         result = 31 * result + (driver != null ? driver.hashCode() : 0);
         return result;

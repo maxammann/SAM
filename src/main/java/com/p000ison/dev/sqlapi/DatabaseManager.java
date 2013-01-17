@@ -40,8 +40,7 @@ public class DatabaseManager {
      * @param database The database to register
      * @return The reference to the database you should use!
      */
-    public static Database registerConnection(Database database)
-    {
+    public static Database registerConnection(Database database) {
         for (Database db : connections.keySet()) {
             if (db.getConfiguration().equals(database.getConfiguration())) {
                 return db;
@@ -53,13 +52,11 @@ public class DatabaseManager {
         return registerConnection(database);
     }
 
-    public static void unregisterConnection(Database database)
-    {
+    public static void unregisterConnection(Database database) {
         connections.remove(database);
     }
 
-    public static boolean isConnected(DatabaseConfiguration config)
-    {
+    public static boolean isConnected(DatabaseConfiguration config) {
         for (Database db : connections.keySet()) {
             if (db.getConfiguration().equals(config) && db.isConnected()) {
                 return true;
@@ -69,8 +66,7 @@ public class DatabaseManager {
         return false;
     }
 
-    public static Database getConnection(DatabaseConfiguration config)
-    {
+    public static Database getConnection(DatabaseConfiguration config) {
         for (Database db : connections.keySet()) {
             if (db.getConfiguration().equals(config) && db.isConnected()) {
                 return db;
@@ -80,13 +76,11 @@ public class DatabaseManager {
         return null;
     }
 
-    public static boolean isJBDCDatabase(Class<? extends Database> database)
-    {
+    public static boolean isJBDCDatabase(Class<? extends Database> database) {
         return database.isAssignableFrom(JBDCDatabase.class);
     }
 
-    public static boolean isJBDCDatabase(Database database)
-    {
+    public static boolean isJBDCDatabase(Database database) {
         return database instanceof JBDCDatabase;
     }
 }

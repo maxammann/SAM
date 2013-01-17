@@ -25,8 +25,7 @@ package com.p000ison.dev.sqlapi;
  */
 public abstract class Column {
 
-    protected Column()
-    {
+    protected Column() {
     }
 
     /**
@@ -106,8 +105,7 @@ public abstract class Column {
      *
      * @return Weather this type is serializable
      */
-    public boolean isSerializable()
-    {
+    public boolean isSerializable() {
         return RegisteredTable.isSerializable(getType());
     }
 
