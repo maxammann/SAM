@@ -78,7 +78,6 @@ public final class MySQLTableBuilder extends TableBuilder {
                     query.append("TEXT");
                 }
             } else if (RegisteredTable.isSerializable(type)) {
-                System.out.println(column);
                 query.append("BLOB");
                 allowModifyLength = false;
             }
