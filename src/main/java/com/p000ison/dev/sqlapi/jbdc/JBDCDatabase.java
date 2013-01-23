@@ -272,7 +272,7 @@ public abstract class JBDCDatabase extends Database {
                 return set.getBlob(index);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new QueryException(e);
         }
 
         return null;

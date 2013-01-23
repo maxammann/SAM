@@ -24,6 +24,9 @@ import com.p000ison.dev.sqlapi.*;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Represents a SQLiteTableBuilder
@@ -50,7 +53,7 @@ public final class SQLiteTableBuilder extends TableBuilder {
         } else {
             boolean allowModifyLength = true;
 
-            if (type == boolean.class || type == Boolean.class) {
+            if (type == boolean.class || type == Boolean.class || type == AtomicBoolean.class) {
                 query.append("TINYINT(1)");
                 allowModifyLength = false;
             } else if (type == byte.class || type == Byte.class) {
@@ -59,7 +62,8 @@ public final class SQLiteTableBuilder extends TableBuilder {
             } else if (type == short.class || type == Short.class) {
                 query.append("SMALLINT");
                 allowModifyLength = false;
-            } else if (type == int.class || type == Integer.class || type == long.class || type == Long.class) {
+            } else if (type == int.class || type == Integer.class || type == AtomicInteger.class
+                    || type == long.class || type == Long.class || type == AtomicLong.class) {
                 query.append("INTEGER");
             } else if (type == float.class || type == Float.class) {
                 query.append("FLOAT");
@@ -125,7 +129,7 @@ public final class SQLiteTableBuilder extends TableBuilder {
 
         boolean allowModifyLength = true;
 
-        if (type == boolean.class || type == Boolean.class) {
+        if (type == boolean.class || type == Boolean.class || type == AtomicBoolean.class) {
             query.append("TINYINT(1)");
             allowModifyLength = false;
         } else if (type == byte.class || type == Byte.class) {
@@ -134,13 +138,13 @@ public final class SQLiteTableBuilder extends TableBuilder {
         } else if (type == short.class || type == Short.class) {
             query.append("SMALLINT");
             allowModifyLength = false;
-        } else if (type == int.class || type == Integer.class) {
+        } else if (type == int.class || type == Integer.class || type == AtomicInteger.class) {
             query.append("INTEGER");
         } else if (type == float.class || type == Float.class) {
             query.append("FLOAT");
         } else if (type == double.class || type == Double.class) {
             query.append("DOUBLE");
-        } else if (type == long.class || type == Long.class) {
+        } else if (type == long.class || type == Long.class || type == AtomicLong.class) {
             query.append("LONG");
         } else if (type == char.class || type == Character.class) {
             query.append("CHAR");
