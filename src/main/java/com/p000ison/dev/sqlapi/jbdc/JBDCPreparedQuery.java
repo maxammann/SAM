@@ -33,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Represents a JBDCPreparedQuery
@@ -114,7 +115,9 @@ public class JBDCPreparedQuery implements PreparedQuery {
                 if (value == null) {
                     preparedStatement.setNull(index, type);
                 } else {
-
+                    if (value instanceof AtomicBoolean) {
+                        value = ((AtomicBoolean) value).get();
+                    }
                     preparedStatement.setObject(index, value, type);
                 }
             } else if (column.isSerializable()) {

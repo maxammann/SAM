@@ -27,6 +27,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Represents a JBDCDatabase
@@ -209,14 +210,14 @@ public abstract class JBDCDatabase extends Database {
 
     static boolean isSupportedByDatabase(Class<?> type) {
         return type.isPrimitive() || Number.class.isAssignableFrom(type)
-                || type == boolean.class || type == Boolean.class
+                || type == boolean.class || type == Boolean.class || type == AtomicBoolean.class
                 || type == char.class || type == Character.class
                 || type == Date.class || type == Timestamp.class
                 || type == String.class;
     }
 
     static int getDatabaseDataType(Class<?> type) {
-        if (type == boolean.class || type == Boolean.class) {
+        if (type == boolean.class || type == Boolean.class|| type == AtomicBoolean.class) {
             return Types.TINYINT;
         } else if (type == byte.class || type == Byte.class) {
             return Types.TINYINT;
@@ -245,7 +246,7 @@ public abstract class JBDCDatabase extends Database {
 
     static Object getDatabaseFromResultSet(int index, ResultSet set, Class<?> type) {
         try {
-            if (type == boolean.class || type == Boolean.class) {
+            if (type == boolean.class || type == Boolean.class || type == AtomicBoolean.class) {
                 return set.getBoolean(index);
             } else if (type == byte.class || type == Byte.class) {
                 return set.getByte(index);

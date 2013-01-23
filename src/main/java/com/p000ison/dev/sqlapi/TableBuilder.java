@@ -213,7 +213,7 @@ public abstract class TableBuilder {
                 }
                 Column fieldColumn = new FieldColumn(field, column);
                 if (!database.isSupported(fieldColumn.getType())) {
-                    throw new TableBuildingException("The type %s of the column %s is not supported by the database!");
+                    throw new TableBuildingException("The type %s of the column %s is not supported by the database!", fieldColumn.getType().getName(), fieldColumn.getName());
                 }
                 buildingColumns.add(fieldColumn);
             }
