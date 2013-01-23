@@ -48,6 +48,35 @@ public final class SQLiteTableBuilder extends TableBuilder {
         StringBuilder query = new StringBuilder();
         query.append(column.getName()).append(' ');
 
+        appendDataType(column, query, type);
+
+        if (column.isNotNull()) {
+            query.append(" NOT NULL");
+        } else {
+            query.append(" NULL");
+        }
+
+        if (column.isUnique()) {
+            query.append(" UNIQUE");
+        }
+
+        if (column.isAutoIncrementing()) {
+            throw new IllegalArgumentException("AutoIncrement is not supported by SQLite.");
+        }
+
+        if (column.isID()) {
+            query.append(" PRIMARY KEY AUTOINCREMENT");
+            //no autoincrement
+        }
+
+        if (!column.getDefaultValue().isEmpty()) {
+            query.append(" DEFAULT ").append(column.getDefaultValue());
+        }
+
+        return query;
+    }
+
+    private static void appendDataType(Column column, StringBuilder query, Class type) {
         if (column.isID()) {
             query.append("INTEGER");
         } else {
@@ -62,9 +91,10 @@ public final class SQLiteTableBuilder extends TableBuilder {
             } else if (type == short.class || type == Short.class) {
                 query.append("SMALLINT");
                 allowModifyLength = false;
-            } else if (type == int.class || type == Integer.class || type == AtomicInteger.class
-                    || type == long.class || type == Long.class || type == AtomicLong.class) {
+            } else if (type == int.class || type == Integer.class || type == AtomicInteger.class) {
                 query.append("INTEGER");
+            } else if (type == long.class || type == Long.class || type == AtomicLong.class) {
+                query.append("LONG");
             } else if (type == float.class || type == Float.class) {
                 query.append("FLOAT");
             } else if (type == double.class || type == Double.class) {
@@ -95,82 +125,13 @@ public final class SQLiteTableBuilder extends TableBuilder {
                 query.append(')');
             }
         }
-
-        if (column.isNotNull()) {
-            query.append(" NOT NULL");
-        } else {
-            query.append(" NULL");
-        }
-
-        if (column.isUnique()) {
-            query.append(" UNIQUE");
-        }
-
-        if (column.isAutoIncrementing()) {
-            throw new IllegalArgumentException("AutoIncrement is not supported by SQLite.");
-        }
-
-        if (column.isID()) {
-            query.append(" PRIMARY KEY AUTOINCREMENT");
-            //no autoincrement
-        }
-
-        if (!column.getDefaultValue().isEmpty()) {
-            query.append(" DEFAULT ").append(column.getDefaultValue());
-        }
-
-        return query;
     }
 
     private static StringBuilder buildModifyColumn(Column column) {
         Class<?> type = column.getType();
         StringBuilder query = new StringBuilder();
         query.append(column.getName()).append(' ');
-
-        boolean allowModifyLength = true;
-
-        if (type == boolean.class || type == Boolean.class || type == AtomicBoolean.class) {
-            query.append("TINYINT(1)");
-            allowModifyLength = false;
-        } else if (type == byte.class || type == Byte.class) {
-            query.append("TINYINT");
-            allowModifyLength = false;
-        } else if (type == short.class || type == Short.class) {
-            query.append("SMALLINT");
-            allowModifyLength = false;
-        } else if (type == int.class || type == Integer.class || type == AtomicInteger.class) {
-            query.append("INTEGER");
-        } else if (type == float.class || type == Float.class) {
-            query.append("FLOAT");
-        } else if (type == double.class || type == Double.class) {
-            query.append("DOUBLE");
-        } else if (type == long.class || type == Long.class || type == AtomicLong.class) {
-            query.append("LONG");
-        } else if (type == char.class || type == Character.class) {
-            query.append("CHAR");
-        } else if (type == Date.class || type == Timestamp.class) {
-            query.append("DATETIME");
-        } else if (type == String.class) {
-            if (column.getLength().length != 0) {
-                query.append("VARCHAR");
-            } else {
-                query.append("TEXT");
-            }
-        } else if (RegisteredTable.isSerializable(type)) {
-            query.append("BLOB");
-            allowModifyLength = false;
-        }
-
-        if (column.getLength().length != 0 && allowModifyLength) {
-            query.append('(');
-            for (int singleLength : column.getLength()) {
-                query.append(singleLength).append(',');
-            }
-
-            query.deleteCharAt(query.length() - 1);
-            query.append(')');
-        }
-
+        appendDataType(column, query, type);
         return query;
     }
 
