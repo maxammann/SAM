@@ -287,7 +287,6 @@ public abstract class TableBuilder {
                 query.append(',');
             }
 
-
             for (String column : toDrop) {
                 query.append(" DROP COLUMN ").append(column);
                 query.append(',');

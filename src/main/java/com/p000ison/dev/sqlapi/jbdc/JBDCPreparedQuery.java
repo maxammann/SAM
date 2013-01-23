@@ -34,6 +34,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Represents a JBDCPreparedQuery
@@ -117,6 +119,12 @@ public class JBDCPreparedQuery implements PreparedQuery {
                 } else {
                     if (value instanceof AtomicBoolean) {
                         value = ((AtomicBoolean) value).get();
+                    }
+                    if (value instanceof AtomicInteger) {
+                        value = ((AtomicInteger) value).get();
+                    }
+                    if (value instanceof AtomicLong) {
+                        value = ((AtomicLong) value).get();
                     }
                     preparedStatement.setObject(index, value, type);
                 }
