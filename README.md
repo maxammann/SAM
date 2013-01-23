@@ -4,13 +4,13 @@ SQLDatabaseAPI
 This SQL API allows you to save your java objects in a sql database.
 
 Supported:
-- int, Integer
+- int, Integer, AtomicInteger
 - short, Short
 - byte, Byte
-- long, Long
+- long, Long, AtomicLong
 - float, Float
 - double, Double
-- boolean, Boolean
+- boolean, Boolean, AtomicBoolean
 - char, Character
 - String
 - Serializable objects

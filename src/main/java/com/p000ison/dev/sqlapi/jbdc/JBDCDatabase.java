@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Represents a JBDCDatabase
@@ -217,19 +219,19 @@ public abstract class JBDCDatabase extends Database {
     }
 
     static int getDatabaseDataType(Class<?> type) {
-        if (type == boolean.class || type == Boolean.class|| type == AtomicBoolean.class) {
+        if (type == boolean.class || type == Boolean.class || type == AtomicBoolean.class) {
             return Types.TINYINT;
         } else if (type == byte.class || type == Byte.class) {
             return Types.TINYINT;
         } else if (type == short.class || type == Short.class) {
             return Types.SMALLINT;
-        } else if (type == int.class || type == Integer.class) {
+        } else if (type == int.class || type == Integer.class || type == AtomicInteger.class) {
             return Types.INTEGER;
         } else if (type == float.class || type == Float.class) {
             return Types.FLOAT;
         } else if (type == double.class || type == Double.class) {
             return Types.DOUBLE;
-        } else if (type == long.class || type == Long.class) {
+        } else if (type == long.class || type == Long.class || type == AtomicLong.class) {
             return Types.INTEGER;
         } else if (type == char.class || type == Character.class) {
             return Types.CHAR;
@@ -252,13 +254,13 @@ public abstract class JBDCDatabase extends Database {
                 return set.getByte(index);
             } else if (type == short.class || type == Short.class) {
                 return set.getShort(index);
-            } else if (type == int.class || type == Integer.class) {
+            } else if (type == int.class || type == Integer.class || type == AtomicInteger.class) {
                 return set.getInt(index);
             } else if (type == float.class || type == Float.class) {
                 return set.getFloat(index);
             } else if (type == double.class || type == Double.class) {
                 return set.getDouble(index);
-            } else if (type == long.class || type == Long.class) {
+            } else if (type == long.class || type == Long.class || type == AtomicLong.class) {
                 return set.getLong(index);
             } else if (type == char.class || type == Character.class) {
                 return (char) set.getInt(index);

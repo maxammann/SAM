@@ -23,6 +23,9 @@ import com.p000ison.dev.sqlapi.annotation.DatabaseColumn;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 
 import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Implementation for fields of {@link Column}
@@ -86,7 +89,32 @@ final class FieldColumn extends Column {
     @Override
     public void setValue(TableObject tableObject, Object object) {
         try {
-            field.set(tableObject, object);
+            Class type = getType();
+            if (type == AtomicBoolean.class) {
+                AtomicBoolean atomicBoolean = (AtomicBoolean) getValue(tableObject);
+                if (atomicBoolean == null) {
+                    field.set(tableObject, new AtomicBoolean((Boolean) object));
+                } else {
+                    atomicBoolean.set((Boolean) object);
+                }
+            } else if (type == AtomicInteger.class) {
+                AtomicInteger atomicInteger = (AtomicInteger) getValue(tableObject);
+                if (atomicInteger == null) {
+                    field.set(tableObject, new AtomicInteger((Integer) object));
+                } else {
+                    atomicInteger.set((Integer) object);
+                }
+            } else if (type == AtomicLong.class) {
+                AtomicLong atomicLong = ((AtomicLong) getValue(tableObject));
+                if (atomicLong == null) {
+                    field.set(tableObject, new AtomicLong((Long) object));
+                } else {
+                    atomicLong.set((Long) object);
+                }
+            } else {
+                field.set(tableObject, object);
+            }
+
         } catch (IllegalAccessException e) {
             throw new QueryException(e);
         }
