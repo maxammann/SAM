@@ -102,14 +102,14 @@ final class FieldColumn extends Column {
                 if (atomicInteger == null) {
                     field.set(tableObject, new AtomicInteger((Integer) object));
                 } else {
-                    atomicInteger.set((Integer) object);
+                    atomicInteger.set(((Number) object).intValue());
                 }
             } else if (type == AtomicLong.class) {
                 AtomicLong atomicLong = ((AtomicLong) getValue(tableObject));
                 if (atomicLong == null) {
                     field.set(tableObject, new AtomicLong((Long) object));
                 } else {
-                    atomicLong.set((Long) object);
+                    atomicLong.set(((Number) object).longValue());
                 }
             } else {
                 field.set(tableObject, object);
