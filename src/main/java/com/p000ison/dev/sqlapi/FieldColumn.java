@@ -91,6 +91,9 @@ final class FieldColumn extends Column {
         try {
             Class type = getType();
             if (type == AtomicBoolean.class) {
+                if (!(object instanceof Boolean)) {
+                    throw new QueryException("The selected boolean was not a Boolean and I was unable to create a AtomicBoolean!");
+                }
                 AtomicBoolean atomicBoolean = (AtomicBoolean) getValue(tableObject);
                 if (atomicBoolean == null) {
                     field.set(tableObject, new AtomicBoolean((Boolean) object));
@@ -98,18 +101,24 @@ final class FieldColumn extends Column {
                     atomicBoolean.set((Boolean) object);
                 }
             } else if (type == AtomicInteger.class) {
+                if (!(object instanceof Integer)) {
+                    throw new QueryException("The selected integer was not a Integer and I was unable to create a AtomicInteger!");
+                }
                 AtomicInteger atomicInteger = (AtomicInteger) getValue(tableObject);
                 if (atomicInteger == null) {
                     field.set(tableObject, new AtomicInteger((Integer) object));
                 } else {
-                    atomicInteger.set(((Number) object).intValue());
+                    atomicInteger.set((Integer) object);
                 }
             } else if (type == AtomicLong.class) {
+                if (!(object instanceof Long)) {
+                    throw new QueryException("The selected long was not a Long and I was unable to create a AtomicLong!");
+                }
                 AtomicLong atomicLong = ((AtomicLong) getValue(tableObject));
                 if (atomicLong == null) {
                     field.set(tableObject, new AtomicLong((Long) object));
                 } else {
-                    atomicLong.set(((Number) object).longValue());
+                    atomicLong.set((Long) object);
                 }
             } else {
                 field.set(tableObject, object);

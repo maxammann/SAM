@@ -333,7 +333,7 @@ public abstract class Database {
 
     public abstract boolean existsEntry(TableObject object);
 
-    protected abstract int getLastEntryId(RegisteredTable table);
+    protected abstract long getLastEntryId(RegisteredTable table);
 
     /**
      * Checks whether the class is supported by this database/database engine

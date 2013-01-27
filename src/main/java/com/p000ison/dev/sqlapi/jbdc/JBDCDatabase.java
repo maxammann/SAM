@@ -171,7 +171,7 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
-    protected int getLastEntryId(RegisteredTable table) {
+    protected long getLastEntryId(RegisteredTable table) {
         Column idColumn = table.getIDColumn();
         PreparedStatement check = null;
         ResultSet result = null;
@@ -181,7 +181,7 @@ public abstract class JBDCDatabase extends Database {
             if (!result.next()) {
                 return 1;
             }
-            int lastId = result.getInt(idColumn.getName());
+            long lastId = result.getLong(idColumn.getName());
             result.close();
             check.close();
             return lastId;
