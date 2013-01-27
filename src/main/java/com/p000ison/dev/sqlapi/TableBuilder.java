@@ -165,7 +165,7 @@ public abstract class TableBuilder {
             DatabaseColumnSetter setter = method.getAnnotation(DatabaseColumnSetter.class);
             if (setter != null) {
                 columnName = setter.databaseName();
-                if (setter.id() && (method.getReturnType() != long.class || method.getReturnType() != Long.class || method.getReturnType() != AtomicLong.class)) {
+                if (setter.id() && !(method.getReturnType() != long.class || method.getReturnType() != Long.class || method.getReturnType() != AtomicLong.class)) {
                     throw new TableBuildingException("Your id column must have the type long!");
                 }
             } else {
@@ -215,7 +215,7 @@ public abstract class TableBuilder {
                 if (existsColumn(column.databaseName())) {
                     throw new TableBuildingException("Duplicate column \"%s\" in class %s!", column.databaseName(), object.getName());
                 }
-                if (column.id() && (field.getType() != long.class || field.getType() != Long.class || field.getType() != AtomicLong.class)) {
+                if (column.id() && !(field.getType() != long.class || field.getType() != Long.class || field.getType() != AtomicLong.class)) {
                     throw new TableBuildingException("Your id column must have the type long!");
                 }
                 Column fieldColumn = new FieldColumn(field, column);
