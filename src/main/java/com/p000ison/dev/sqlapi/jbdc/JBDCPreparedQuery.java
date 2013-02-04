@@ -209,7 +209,6 @@ public class JBDCPreparedQuery implements PreparedQuery {
 
     @Override
     public void close() {
-
         try {
             try {
                 if (preparedStatement.isClosed()) {
@@ -223,6 +222,7 @@ public class JBDCPreparedQuery implements PreparedQuery {
         }
     }
 
+
     @Override
     public void reset() {
         preparedStatement = database.prepare(query);
@@ -231,6 +231,66 @@ public class JBDCPreparedQuery implements PreparedQuery {
     @Override
     public void setAutoReset(boolean reset) {
         autoReset = reset;
+    }
+
+    @Override
+    public void addBatch() {
+        synchronized (database) {
+            try {
+                try {
+                    if (preparedStatement.isClosed()) {
+                        reset();
+                    }
+                } catch (AbstractMethodError ignored) {
+                }
+                preparedStatement.addBatch();
+            } catch (SQLException e) {
+                if (autoReset) {
+                    reset();
+                }
+                throw new QueryException(e);
+            }
+        }
+    }
+
+    @Override
+    public void clearBatch() {
+        synchronized (database) {
+            try {
+                try {
+                    if (preparedStatement.isClosed()) {
+                        reset();
+                    }
+                } catch (AbstractMethodError ignored) {
+                }
+                preparedStatement.clearBatch();
+            } catch (SQLException e) {
+                if (autoReset) {
+                    reset();
+                }
+                throw new QueryException(e);
+            }
+        }
+    }
+
+    @Override
+    public void executeBatches() {
+        synchronized (database) {
+            try {
+                try {
+                    if (preparedStatement.isClosed()) {
+                        reset();
+                    }
+                } catch (AbstractMethodError ignored) {
+                }
+                preparedStatement.executeBatch();
+            } catch (SQLException e) {
+                if (autoReset) {
+                    reset();
+                }
+                throw new QueryException(e);
+            }
+        }
     }
 
     @Override

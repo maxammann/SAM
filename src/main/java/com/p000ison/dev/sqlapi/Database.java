@@ -30,6 +30,8 @@ import com.p000ison.dev.sqlapi.query.SelectQuery;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,6 +57,8 @@ public abstract class Database {
     public static final int UNSUPPORTED_TYPE = Integer.MAX_VALUE;
 
     private static Logger logger;
+
+    private static final Lock accessLock = new ReentrantLock();
 
     static void log(Level level, String msg, Object... args) {
         if (logger == null) {
@@ -218,26 +222,27 @@ public abstract class Database {
      * @throws RegistrationException If the table is not registered
      */
     public void save(TableObject tableObject) {
-        synchronized (this) {
-            RegisteredTable table = getRegisteredTable(tableObject);
-            Column idColumn = table.getIDColumn();
+        RegisteredTable table = getRegisteredTable(tableObject);
+        Column idColumn = table.getIDColumn();
 
-            if (((Number) idColumn.getValue(tableObject)).intValue() <= 0 || !existsEntry(table, tableObject)) {
-                insert(table, tableObject, idColumn);
-            } else {
-                update(table, tableObject, idColumn);
-            }
+        if (((Number) idColumn.getValue(tableObject)).intValue() <= 0 || !existsEntry(table, tableObject)) {
+            insert(table, tableObject, idColumn);
+        } else {
+            update(table, tableObject, idColumn);
         }
     }
 
     public void delete(TableObject tableObject) {
-        synchronized (this) {
+        accessLock.lock();
+        try {
             RegisteredTable table = getRegisteredTable(tableObject);
             Column idColumn = table.getIDColumn();
 
-            PreparedQuery statement = table.getDeleteStatement();
+            PreparedQuery statement = table.getPreparedDeleteStatement();
             statement.set(0, idColumn.getValue(tableObject));
             statement.update();
+        } finally {
+            accessLock.unlock();
         }
     }
 
@@ -252,12 +257,10 @@ public abstract class Database {
      * @throws RegistrationException If the table is not registered
      */
     public void update(TableObject tableObject) {
-        synchronized (this) {
-            RegisteredTable table = getRegisteredTable(tableObject);
-            Column idColumn = table.getIDColumn();
+        RegisteredTable table = getRegisteredTable(tableObject);
+        Column idColumn = table.getIDColumn();
 
-            update(table, tableObject, idColumn);
-        }
+        update(table, tableObject, idColumn);
     }
 
     /**
@@ -267,26 +270,94 @@ public abstract class Database {
      * @throws QueryException if the query fails
      */
     public void insert(TableObject tableObject) {
-        synchronized (this) {
-            RegisteredTable table = getRegisteredTable(tableObject);
-            Column idColumn = table.getIDColumn();
+        RegisteredTable table = getRegisteredTable(tableObject);
+        Column idColumn = table.getIDColumn();
 
-            insert(table, tableObject, idColumn);
-        }
+        insert(table, tableObject, idColumn);
     }
 
     private void insert(RegisteredTable registeredTable, TableObject object, Column idColumn) {
-        PreparedQuery insert = registeredTable.getPreparedInsertStatement();
-        setColumnValues(insert, registeredTable, object, idColumn);
-        insert.update();
-        idColumn.setValue(object, getLastEntryId(registeredTable));
+        accessLock.lock();
+        try {
+            PreparedQuery insert = registeredTable.getPreparedInsertStatement();
+            setColumnValues(insert, registeredTable, object, idColumn);
+            insert.update();
+            idColumn.setValue(object, getLastEntryId(registeredTable));
+        } finally {
+            accessLock.unlock();
+        }
     }
 
     private void update(RegisteredTable registeredTable, TableObject object, Column idColumn) {
-        PreparedQuery update = registeredTable.getPreparedUpdateStatement();
-        int i = setColumnValues(update, registeredTable, object, idColumn);
-        update.set(idColumn, i, idColumn.getValue(object));
+        accessLock.lock();
+        try {
+            PreparedQuery update = registeredTable.getPreparedUpdateStatement();
+            int i = setColumnValues(update, registeredTable, object, idColumn);
+            update.set(idColumn, i, idColumn.getValue(object));
+            update.update();
+        } finally {
+            accessLock.unlock();
+        }
+    }
+
+    public void addUpdateBatch(TableObject object) {
+        RegisteredTable table = getRegisteredTable(object);
+        PreparedQuery update = table.getPreparedUpdateStatement();
+        Column id = table.getIDColumn();
+        int i = setColumnValues(update, table, object, table.getIDColumn());
+        update.set(id, i, id.getValue(object));
         update.update();
+        update.addBatch();
+    }
+
+    public void addInsertBatch(TableObject object) {
+        RegisteredTable table = getRegisteredTable(object);
+        PreparedQuery update = table.getPreparedInsertStatement();
+        setColumnValues(update, table, object, table.getIDColumn());
+        update.addBatch();
+    }
+
+    public void addDeleteBatch(TableObject object) {
+        RegisteredTable table = getRegisteredTable(object);
+        PreparedQuery update = table.getPreparedDeleteStatement();
+        update.set(0, table.getIDColumn().getValue(object));
+        update.addBatch();
+    }
+
+    /**
+     * Runs the batch and executes the stored commands
+     *
+     * @param clazz   The class
+     * @param bitmask Defines whether to run the update, insert or delete statements. Example: 1 | 1 << 1 | 1 << 2 for all
+     */
+    public void executeBatch(Class<? extends TableObject> clazz, byte bitmask) {
+        executeBatch(getRegisteredTable(clazz), bitmask);
+    }
+
+    /**
+     * Runs the batch and executes the stored commands
+     *
+     * @param table   The class
+     * @param bitmask Defines whether to run the update, insert or delete statements. Example: 1 | 1 << 1 | 1 << 2(0111) for all. The first bit defines updating, the second inserting and the last deleting
+     */
+    public void executeBatch(RegisteredTable table, byte bitmask) {
+        accessLock.lock();
+        try {
+            if ((bitmask & 1) != 0) {
+                PreparedQuery update = table.getPreparedUpdateStatement();
+                update.executeBatches();
+            }
+            if ((bitmask & 1 << 1) != 0) {
+                PreparedQuery insert = table.getPreparedInsertStatement();
+                insert.executeBatches();
+            }
+            if ((bitmask & 1 << 2) != 0) {
+                PreparedQuery delete = table.getPreparedDeleteStatement();
+                delete.executeBatches();
+            }
+        } finally {
+            accessLock.unlock();
+        }
     }
 
     private int setColumnValues(PreparedQuery statement, RegisteredTable registeredTable, TableObject object, Column idColumn) {
@@ -411,5 +482,13 @@ public abstract class Database {
 
     public abstract boolean isAutoReset();
 
+    public boolean isAutoReconnect() {
+        return getConfiguration() != null && getConfiguration().isAutoReconnect();
+    }
+
     public abstract String getEngineName();
+
+    public static Lock getAccessLock() {
+        return accessLock;
+    }
 }

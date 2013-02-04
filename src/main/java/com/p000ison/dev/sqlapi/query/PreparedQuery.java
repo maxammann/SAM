@@ -63,6 +63,12 @@ public interface PreparedQuery {
      */
     void setAutoReset(boolean reset);
 
+    void addBatch();
+
+    void clearBatch();
+
+    void executeBatches();
+
     /**
      * @return Whether we want to reset it automatically
      */

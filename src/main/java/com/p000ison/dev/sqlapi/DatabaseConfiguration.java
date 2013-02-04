@@ -77,4 +77,22 @@ public abstract class DatabaseConfiguration {
         result = 31 * result + (driver != null ? driver.hashCode() : 0);
         return result;
     }
+
+    public boolean isAutoReconnect() {
+        Object reconnect = properties.get("autoReconnect");
+
+        if (reconnect instanceof Boolean) {
+            return (Boolean) reconnect;
+        }
+
+        return false;
+    }
+
+    public void setAutoReconnect(boolean reconnect) {
+        if (!reconnect) {
+            properties.remove("autoReconnect");
+        } else {
+            properties.put("autoReconnect", true);
+        }
+    }
 }

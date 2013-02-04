@@ -226,7 +226,7 @@ public class RegisteredTable {
         storedColumnValues.clear();
     }
 
-    public PreparedQuery getDeleteStatement() {
+    public PreparedQuery getPreparedDeleteStatement() {
         return deleteStatement;
     }
 
