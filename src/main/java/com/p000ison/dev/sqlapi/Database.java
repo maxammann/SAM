@@ -303,25 +303,39 @@ public abstract class Database {
     public void addUpdateBatch(TableObject object) {
         RegisteredTable table = getRegisteredTable(object);
         PreparedQuery update = table.getPreparedUpdateStatement();
-        Column id = table.getIDColumn();
-        int i = setColumnValues(update, table, object, table.getIDColumn());
-        update.set(id, i, id.getValue(object));
-        update.update();
-        update.addBatch();
+        accessLock.lock();
+        try {
+            Column id = table.getIDColumn();
+            int i = setColumnValues(update, table, object, table.getIDColumn());
+            update.set(id, i, id.getValue(object));
+            update.addBatch();
+        } finally {
+            accessLock.unlock();
+        }
     }
 
     public void addInsertBatch(TableObject object) {
         RegisteredTable table = getRegisteredTable(object);
         PreparedQuery update = table.getPreparedInsertStatement();
-        setColumnValues(update, table, object, table.getIDColumn());
-        update.addBatch();
+        accessLock.lock();
+        try {
+            setColumnValues(update, table, object, table.getIDColumn());
+            update.addBatch();
+        } finally {
+            accessLock.unlock();
+        }
     }
 
     public void addDeleteBatch(TableObject object) {
         RegisteredTable table = getRegisteredTable(object);
         PreparedQuery update = table.getPreparedDeleteStatement();
-        update.set(0, table.getIDColumn().getValue(object));
-        update.addBatch();
+        accessLock.lock();
+        try {
+            update.set(0, table.getIDColumn().getValue(object));
+            update.addBatch();
+        } finally {
+            accessLock.unlock();
+        }
     }
 
     /**
