@@ -97,6 +97,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <stylesheetfile>${basedir}/jd_style.css</stylesheetfile>
                     <encoding>UTF-8</encoding>
                     <quiet>true</quiet>
                 </configuration>

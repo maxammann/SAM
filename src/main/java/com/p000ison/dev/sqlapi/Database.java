@@ -344,7 +344,7 @@ public abstract class Database {
      * @param clazz   The class
      * @param bitmask Defines whether to run the update, insert or delete statements. Example: 1 | 1 << 1 | 1 << 2 for all
      */
-    public void executeBatch(Class<? extends TableObject> clazz, byte bitmask) {
+    public void executeBatch(Class<? extends TableObject> clazz, int bitmask) {
         executeBatch(getRegisteredTable(clazz), bitmask);
     }
 
@@ -354,24 +354,58 @@ public abstract class Database {
      * @param table   The class
      * @param bitmask Defines whether to run the update, insert or delete statements. Example: 1 | 1 << 1 | 1 << 2(0111) for all. The first bit defines updating, the second inserting and the last deleting
      */
-    public void executeBatch(RegisteredTable table, byte bitmask) {
+    public void executeBatch(RegisteredTable table, int bitmask) {
+        if ((bitmask & 1) != 0) {
+            executeUpdateBatch(table);
+        }
+        if ((bitmask & 1 << 1) != 0) {
+            executeInsertBatch(table);
+        }
+        if ((bitmask & 1 << 2) != 0) {
+            executeDeleteBatch(table);
+        }
+    }
+
+    public void executeUpdateBatch(RegisteredTable table) {
         accessLock.lock();
         try {
-            if ((bitmask & 1) != 0) {
-                PreparedQuery update = table.getPreparedUpdateStatement();
-                update.executeBatches();
-            }
-            if ((bitmask & 1 << 1) != 0) {
-                PreparedQuery insert = table.getPreparedInsertStatement();
-                insert.executeBatches();
-            }
-            if ((bitmask & 1 << 2) != 0) {
-                PreparedQuery delete = table.getPreparedDeleteStatement();
-                delete.executeBatches();
-            }
+            PreparedQuery update = table.getPreparedUpdateStatement();
+            update.executeBatches();
         } finally {
             accessLock.unlock();
         }
+    }
+
+    public void executeUpdateBatch(Class<? extends TableObject> table) {
+        executeUpdateBatch(getRegisteredTable(table));
+    }
+
+    public void executeInsertBatch(RegisteredTable table) {
+        accessLock.lock();
+        try {
+            PreparedQuery insert = table.getPreparedInsertStatement();
+            insert.executeBatches();
+        } finally {
+            accessLock.unlock();
+        }
+    }
+
+    public void executeInsertBatch(Class<? extends TableObject> table) {
+        executeInsertBatch(getRegisteredTable(table));
+    }
+
+    public void executeDeleteBatch(RegisteredTable table) {
+        accessLock.lock();
+        try {
+            PreparedQuery delete = table.getPreparedDeleteStatement();
+            delete.executeBatches();
+        } finally {
+            accessLock.unlock();
+        }
+    }
+
+    public void executeDeleteBatch(Class<? extends TableObject> table) {
+        executeDeleteBatch(getRegisteredTable(table));
     }
 
     private int setColumnValues(PreparedQuery statement, RegisteredTable registeredTable, TableObject object, Column idColumn) {
