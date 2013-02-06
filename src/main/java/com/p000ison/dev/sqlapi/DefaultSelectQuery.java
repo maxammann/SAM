@@ -26,6 +26,7 @@ import com.p000ison.dev.sqlapi.query.WhereQuery;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * A default select query which may work with your database engine
@@ -39,7 +40,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     private RegisteredTable table;
     private DefaultWhereQuery<T> whereQuery;
     private Database database;
-    private List<DefaultOrderEntry> orderBy = new ArrayList<DefaultOrderEntry>();
+    private List<DefaultOrderEntry> orderBy = new CopyOnWriteArrayList<DefaultOrderEntry>();
     private int[] limits;
 
     public DefaultSelectQuery(Database database) {
@@ -47,19 +48,19 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     }
 
     @Override
-    public SelectQuery<T> from(Class<T> object) {
+    public synchronized SelectQuery<T> from(Class<T> object) {
         this.table = database.getRegisteredTable(object);
         return this;
     }
 
     @Override
-    public SelectQuery<T> from(RegisteredTable table) {
+    public synchronized SelectQuery<T> from(RegisteredTable table) {
         this.table = table;
         return this;
     }
 
     @Override
-    public WhereQuery<T> where() {
+    public synchronized WhereQuery<T> where() {
         return whereQuery = new DefaultWhereQuery<T>(this);
     }
 
@@ -85,7 +86,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         return this;
     }
 
-    protected DefaultWhereQuery<T> getWhereQuery() {
+    protected synchronized DefaultWhereQuery<T> getWhereQuery() {
         return whereQuery;
     }
 
@@ -181,7 +182,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     }
 
     @Override
-    public SelectQuery<T> limit(int max) {
+    public synchronized SelectQuery<T> limit(int max) {
         if (max < 1) {
             throw new IllegalArgumentException("The limit must be greater than 0!");
         }
@@ -190,7 +191,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     }
 
     @Override
-    public SelectQuery<T> limit(int from, int to) {
+    public synchronized SelectQuery<T> limit(int from, int to) {
         if (from > 0 || to > 0) {
             throw new IllegalArgumentException("The limit must be greater than 0!");
         } else if (from > to) {
@@ -202,7 +203,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     }
 
     @Override
-    public SelectQuery<T> reset() {
+    public synchronized SelectQuery<T> reset() {
         this.table = null;
         this.whereQuery = null;
         this.orderBy = new ArrayList<DefaultOrderEntry>();
@@ -214,7 +215,7 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         return database;
     }
 
-    protected RegisteredTable getTable() {
+    protected synchronized RegisteredTable getTable() {
         return table;
     }
 }

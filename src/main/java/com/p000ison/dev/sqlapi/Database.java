@@ -101,10 +101,6 @@ public abstract class Database {
 
     public void saveStoredValues(Class<? extends TableObject> clazz) {
         RegisteredTable table = getRegisteredTable(clazz);
-        if (table == null) {
-            throw new RegistrationException(clazz, "The class %s is not registered!");
-        }
-
         table.saveStoredValues();
     }
 
@@ -472,10 +468,6 @@ public abstract class Database {
      */
     public <T extends TableObject> void copy(Class<T> table, Database to) {
         RegisteredTable registeredTable = to.getRegisteredTable(table);
-        if (registeredTable == null) {
-            registeredTable = to.registerTable(table);
-        }
-
         PreparedSelectQuery<T> prepare = this.<T>select().from(table).prepare();
         PreparedQuery statement = registeredTable.createFullInsertStatement(to);
 
