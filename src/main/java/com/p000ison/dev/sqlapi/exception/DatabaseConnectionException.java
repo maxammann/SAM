@@ -26,7 +26,7 @@ import java.sql.SQLException;
 /**
  * Represents a DatabaseConnectionException
  */
-public class DatabaseConnectionException extends Exception {
+public class DatabaseConnectionException extends RuntimeException {
 
     private final DatabaseConfiguration config;
 
