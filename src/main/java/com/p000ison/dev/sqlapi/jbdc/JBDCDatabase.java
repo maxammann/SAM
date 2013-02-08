@@ -54,7 +54,9 @@ public abstract class JBDCDatabase extends Database {
     @Override
     public void closeDatabaseConnection() throws QueryException {
         try {
-            getConnection().close();
+            if (connection != null && !connection.isClosed()) {
+                getConnection().close();
+            }
         } catch (SQLException e) {
             throw new QueryException(e);
         }
@@ -105,7 +107,12 @@ public abstract class JBDCDatabase extends Database {
         return false;
     }
 
-    protected final Connection getConnection() {
+    protected final Connection getConnection() throws SQLException {
+        if (getConfiguration().isAutoReconnect()) {
+            if (connection.isClosed()) {
+                connect(getConfiguration());
+            }
+        }
         return connection;
     }
 
