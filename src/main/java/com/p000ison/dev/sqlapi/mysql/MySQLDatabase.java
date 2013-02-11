@@ -50,7 +50,6 @@ public final class MySQLDatabase extends JBDCDatabase {
         dataSource.setPort(mysqlConfiguration.getPort());
 
         dataSource.setAutoClosePStmtStreams(false);
-        dataSource.setAutoReconnect(configuration.isAutoReconnect());
 
         try {
             return dataSource.getConnection();
