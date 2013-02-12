@@ -107,12 +107,7 @@ public abstract class JBDCDatabase extends Database {
         return false;
     }
 
-    protected final Connection getConnection() throws SQLException {
-        if (getConfiguration().isAutoReconnect()) {
-            if (connection.isClosed()) {
-                connect(getConfiguration());
-            }
-        }
+    protected final Connection getConnection() {
         return connection;
     }
 
@@ -301,9 +296,14 @@ public abstract class JBDCDatabase extends Database {
     }
 
     @Override
+    public void sendKeepAliveQuery() {
+        testConnection();
+    }
+
+    @Override
     public boolean testConnection() {
         try {
-            query("SELECT 1;");
+            executeDirectUpdate("SELECT 1;");
             return true;
         } catch (QueryException e) {
             return false;

@@ -531,4 +531,6 @@ public abstract class Database {
     public static Lock getAccessLock() {
         return accessLock;
     }
+
+    public abstract void sendKeepAliveQuery();
 }
