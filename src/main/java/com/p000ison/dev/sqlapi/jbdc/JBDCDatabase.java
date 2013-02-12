@@ -303,7 +303,7 @@ public abstract class JBDCDatabase extends Database {
     @Override
     public boolean testConnection() {
         try {
-            executeDirectUpdate("SELECT 1;");
+            query("SELECT 1;");
             return true;
         } catch (QueryException e) {
             return false;
