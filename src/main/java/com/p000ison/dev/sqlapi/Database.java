@@ -235,7 +235,7 @@ public abstract class Database {
             Column idColumn = table.getIDColumn();
 
             PreparedQuery statement = table.getPreparedDeleteStatement();
-            statement.set(0, idColumn.getValue(tableObject));
+            statement.set(idColumn, 0, idColumn.getValue(tableObject));
             statement.update();
         } finally {
             accessLock.unlock();
