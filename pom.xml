@@ -28,12 +28,17 @@
     <version>1.0</version>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>repo-snap</id>
-            <name>SimpleClans Snapshots</name>
-            <url>http://jenkins.greatmancode.com/plugin/repository/everything/</url>
-        </snapshotRepository>
-    </distributionManagement>
+		  <repository>
+			  <id>upstream</id>
+			  <name>greatmancode-releases</name>
+			  <url>http://repo.greatmancode.com/content/repositories/releases</url>
+		  </repository>
+		  <snapshotRepository>
+			  <id>upstream</id>
+			  <name>greatmancode-snapshots</name>
+			  <url>http://repo.greatmancode.com/content/repositories/snapshots</url>
+		  </snapshotRepository>
+	</distributionManagement>
 
     <!-- Continuous integration -->
     <ciManagement>
