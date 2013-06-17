@@ -19,7 +19,7 @@
 
 package com.p000ison.dev.sqlapi.query;
 
-import com.p000ison.dev.sqlapi.Column;
+import com.p000ison.dev.sqlapi.DatabaseColumn;
 
 /**
  * This is used to prepare queries/statements. If you close this and call a method of this class the prepared statement gets reset.({@link #reset()})
@@ -31,7 +31,7 @@ public interface PreparedQuery {
 
     void set(int index, Object value, int databaseType);
 
-    void set(Column column, int index, Object value);
+    void set(DatabaseColumn column, int index, Object value);
 
     /**
      * Clears the stored values

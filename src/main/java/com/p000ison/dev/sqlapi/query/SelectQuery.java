@@ -19,7 +19,7 @@
 
 package com.p000ison.dev.sqlapi.query;
 
-import com.p000ison.dev.sqlapi.Column;
+import com.p000ison.dev.sqlapi.DatabaseColumn;
 import com.p000ison.dev.sqlapi.RegisteredTable;
 import com.p000ison.dev.sqlapi.TableObject;
 
@@ -35,9 +35,9 @@ public interface SelectQuery<T extends TableObject> {
 
     WhereQuery<T> where();
 
-    SelectQuery<T> orderBy(Column order);
+    SelectQuery<T> orderBy(DatabaseColumn order);
 
-    SelectQuery<T> orderByDescending(Column order);
+    SelectQuery<T> orderByDescending(DatabaseColumn order);
 
     SelectQuery<T> orderBy(String order);
 

@@ -19,7 +19,7 @@
 
 package com.p000ison.dev.sqlapi;
 
-import com.p000ison.dev.sqlapi.annotation.DatabaseTable;
+import com.p000ison.dev.sqlapi.annotation.Table;
 import com.p000ison.dev.sqlapi.exception.DatabaseConnectionException;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.exception.RegistrationException;
@@ -95,13 +95,8 @@ public abstract class Database {
      * @return The name
      */
     static String getTableName(Class<? extends TableObject> clazz) {
-        DatabaseTable annotation = clazz.getAnnotation(DatabaseTable.class);
+        Table annotation = clazz.getAnnotation(Table.class);
         return annotation == null ? null : annotation.name();
-    }
-
-    public void saveStoredValues(Class<? extends TableObject> clazz) {
-        RegisteredTable table = getRegisteredTable(clazz);
-        table.saveStoredValues();
     }
 
     /**
@@ -219,7 +214,7 @@ public abstract class Database {
      */
     public void save(TableObject tableObject) {
         RegisteredTable table = getRegisteredTable(tableObject);
-        Column idColumn = table.getIDColumn();
+        DatabaseColumn idColumn = table.getIDColumn();
 
         if (((Number) idColumn.getValue(tableObject)).intValue() <= 0 || !existsEntry(table, tableObject)) {
             insert(table, tableObject, idColumn);
@@ -232,7 +227,7 @@ public abstract class Database {
         accessLock.lock();
         try {
             RegisteredTable table = getRegisteredTable(tableObject);
-            Column idColumn = table.getIDColumn();
+            DatabaseColumn idColumn = table.getIDColumn();
 
             PreparedQuery statement = table.getPreparedDeleteStatement();
             statement.set(idColumn, 0, idColumn.getValue(tableObject));
@@ -254,7 +249,7 @@ public abstract class Database {
      */
     public void update(TableObject tableObject) {
         RegisteredTable table = getRegisteredTable(tableObject);
-        Column idColumn = table.getIDColumn();
+        DatabaseColumn idColumn = table.getIDColumn();
 
         update(table, tableObject, idColumn);
     }
@@ -267,12 +262,12 @@ public abstract class Database {
      */
     public void insert(TableObject tableObject) {
         RegisteredTable table = getRegisteredTable(tableObject);
-        Column idColumn = table.getIDColumn();
+        DatabaseColumn idColumn = table.getIDColumn();
 
         insert(table, tableObject, idColumn);
     }
 
-    private void insert(RegisteredTable registeredTable, TableObject object, Column idColumn) {
+    private void insert(RegisteredTable registeredTable, TableObject object, DatabaseColumn idColumn) {
         accessLock.lock();
         try {
             PreparedQuery insert = registeredTable.getPreparedInsertStatement();
@@ -284,7 +279,7 @@ public abstract class Database {
         }
     }
 
-    private void update(RegisteredTable registeredTable, TableObject object, Column idColumn) {
+    private void update(RegisteredTable registeredTable, TableObject object, DatabaseColumn idColumn) {
         accessLock.lock();
         try {
             PreparedQuery update = registeredTable.getPreparedUpdateStatement();
@@ -301,7 +296,7 @@ public abstract class Database {
         PreparedQuery update = table.getPreparedUpdateStatement();
         accessLock.lock();
         try {
-            Column id = table.getIDColumn();
+            DatabaseColumn id = table.getIDColumn();
             int i = setColumnValues(update, table, object, table.getIDColumn());
             update.set(id, i, id.getValue(object));
             update.addBatch();
@@ -404,10 +399,10 @@ public abstract class Database {
         executeDeleteBatch(getRegisteredTable(table));
     }
 
-    private int setColumnValues(PreparedQuery statement, RegisteredTable registeredTable, TableObject object, Column idColumn) {
-        List<Column> registeredColumns = registeredTable.getRegisteredColumns();
+    private int setColumnValues(PreparedQuery statement, RegisteredTable registeredTable, TableObject object, DatabaseColumn idColumn) {
+        List<DatabaseColumn> registeredColumns = registeredTable.getRegisteredColumns();
         int i = 0;
-        for (Column column : registeredColumns) {
+        for (DatabaseColumn column : registeredColumns) {
             if (column.equals(idColumn)) {
                 continue;
             }
@@ -477,7 +472,7 @@ public abstract class Database {
                 to.update(entry);
             } else {
                 int i = 0;
-                for (Column column : registeredTable.getRegisteredColumns()) {
+                for (DatabaseColumn column : registeredTable.getRegisteredColumns()) {
                     statement.set(column, i, column.getValue(entry));
                     i++;
                 }

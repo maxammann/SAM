@@ -20,7 +20,7 @@
 package com.p000ison.dev.sqlapi.jbdc;
 
 
-import com.p000ison.dev.sqlapi.Column;
+import com.p000ison.dev.sqlapi.DatabaseColumn;
 import com.p000ison.dev.sqlapi.RegisteredTable;
 import com.p000ison.dev.sqlapi.TableObject;
 import com.p000ison.dev.sqlapi.exception.QueryException;
@@ -39,87 +39,82 @@ import java.util.List;
  * Represents a JBDCPreparedQuery
  */
 public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPreparedQuery implements PreparedSelectQuery<T> {
-    private final RegisteredTable table;
+	private final RegisteredTable table;
 
 
-    protected JBDCPreparedSelectQuery(JBDCDatabase database, String query, RegisteredTable table) {
-        super(database, query);
-        this.table = table;
-    }
+	protected JBDCPreparedSelectQuery(JBDCDatabase database, String query, RegisteredTable table) {
+		super(database, query);
+		this.table = table;
+	}
 
-    @Override
-    public <C extends Collection<T>> C getResults(C collection) {
-        synchronized (getDatabase()) {
-            ResultSet result = null;
-            try {
-                try {
-                    if (getPreparedStatement().isClosed()) {
-                        reset();
-                    }
-                } catch (AbstractMethodError ignored) {
-                }
+	@Override
+	public <C extends Collection<T>> C getResults(C collection) {
+		synchronized (getDatabase()) {
+			ResultSet result = null;
+			try {
+				try {
+					if (getPreparedStatement().isClosed()) {
+						reset();
+					}
+				} catch (AbstractMethodError ignored) {
+				}
 
-                result = getPreparedStatement().executeQuery();
-                List<Column> columns = table.getRegisteredColumns();
+				result = getPreparedStatement().executeQuery();
+				List<DatabaseColumn> columns = table.getRegisteredColumns();
 
-                while (result.next()) {
-                    T object = table.createNewInstance();
+				while (result.next()) {
+					T object = table.createNewInstance();
 
-                    for (int i = 0; i < columns.size(); i++) {
-                        Column column = columns.get(i);
+					for (int i = 0; i < columns.size(); i++) {
+						DatabaseColumn column = columns.get(i);
 
-                        Object obj = null;
+						Object obj = null;
 
 
-                        if (JBDCDatabase.isSupportedByDatabase(column.getType())) {
-                            obj = JBDCDatabase.getDatabaseFromResultSet(i + 1, result, column.getType());
-                        } else {
-                            ObjectInputStream inputStream = null;
-                            try {
-                                InputStream selectedInputStream = result.getBinaryStream(i + 1);
-                                if (selectedInputStream != null) {
-                                    inputStream = new ObjectInputStream(selectedInputStream);
-                                    obj = inputStream.readObject();
-                                }
-                            } catch (IOException e) {
-                                throw new QueryException(e);
-                            } catch (ClassNotFoundException e) {
-                                throw new QueryException(e);
-                            } finally {
-                                try {
-                                    if (inputStream != null) {
-                                        inputStream.close();
-                                    }
-                                } catch (IOException e) {
-                                    throw new QueryException(e);
-                                }
-                            }
-                        }
+						if (JBDCDatabase.isSupportedByDatabase(column.getType())) {
+							obj = JBDCDatabase.getDatabaseFromResultSet(i + 1, result, column.getType());
+						} else {
+							ObjectInputStream inputStream = null;
+							try {
+								InputStream selectedInputStream = result.getBinaryStream(i + 1);
+								if (selectedInputStream != null) {
+									inputStream = new ObjectInputStream(selectedInputStream);
+									obj = inputStream.readObject();
+								}
+							} catch (IOException e) {
+								throw new QueryException(e);
+							} catch (ClassNotFoundException e) {
+								throw new QueryException(e);
+							} finally {
+								try {
+									if (inputStream != null) {
+										inputStream.close();
+									}
+								} catch (IOException e) {
+									throw new QueryException(e);
+								}
+							}
+						}
 
-                        if (column.isSaveInputAfterLoading()) {
-                            //set this value after returning getResults
-                            table.storeColumnValue(column, obj, object);
-                        } else {
-                            column.setValue(object, obj);
-                        }
-                    }
+						column.setValue(object, obj);
+					}
 
-                    collection.add(object);
-                }
-            } catch (SQLException e) {
-                if (isAutoReset()) {
-                    reset();
-                }
-                throw new QueryException(e);
-            } finally {
-                JBDCDatabase.handleClose(null, result);
-            }
-            return collection;
-        }
-    }
+					collection.add(object);
+				}
+			} catch (SQLException e) {
+				if (isAutoReset()) {
+					reset();
+				}
+				throw new QueryException(e);
+			} finally {
+				JBDCDatabase.handleClose(null, result);
+			}
+			return collection;
+		}
+	}
 
-    @Override
-    public List<T> getResults() {
-        return getResults(new ArrayList<T>());
-    }
+	@Override
+	public List<T> getResults() {
+		return getResults(new ArrayList<T>());
+	}
 }

@@ -19,7 +19,7 @@
 
 package com.p000ison.dev.sqlapi.query;
 
-import com.p000ison.dev.sqlapi.Column;
+import com.p000ison.dev.sqlapi.DatabaseColumn;
 import com.p000ison.dev.sqlapi.TableObject;
 
 /**
@@ -28,25 +28,25 @@ import com.p000ison.dev.sqlapi.TableObject;
 @SuppressWarnings("unused")
 public interface WhereQuery<T extends TableObject> {
 
-    WhereComparator<T> equals(Column column, Object expected);
+    WhereComparator<T> equals(DatabaseColumn column, Object expected);
 
-    WhereComparator<T> preparedEquals(Column column);
+    WhereComparator<T> preparedEquals(DatabaseColumn column);
 
-    WhereComparator<T> like(Column column, Object expected);
+    WhereComparator<T> like(DatabaseColumn column, Object expected);
 
-    WhereComparator<T> preparedLike(Column column);
+    WhereComparator<T> preparedLike(DatabaseColumn column);
 
-    WhereComparator<T> notEquals(Column column, Object expected);
+    WhereComparator<T> notEquals(DatabaseColumn column, Object expected);
 
-    WhereComparator<T> preparedNotEquals(Column column);
+    WhereComparator<T> preparedNotEquals(DatabaseColumn column);
 
-    WhereComparator<T> lessThan(Column column, Object expected);
+    WhereComparator<T> lessThan(DatabaseColumn column, Object expected);
 
-    WhereComparator<T> preparedLessThan(Column column);
+    WhereComparator<T> preparedLessThan(DatabaseColumn column);
 
-    WhereComparator<T> greaterThan(Column column, Object expected);
+    WhereComparator<T> greaterThan(DatabaseColumn column, Object expected);
 
-    WhereComparator<T> preparedGreaterThan(Column column);
+    WhereComparator<T> preparedGreaterThan(DatabaseColumn column);
 
     WhereComparator<T> equals(String column, Object expected);
 

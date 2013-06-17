@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Last modified: 26.12.12 20:19
+ * Last modified: 26.12.12 20:18
  */
 
 package com.p000ison.dev.sqlapi.annotation;
@@ -25,12 +25,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Represents a column in a database (use this for methods)
+ * Represents a column in a database (use this for fields)
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface DatabaseColumnSetter {
-
+@Target(ElementType.FIELD)
+public @interface Column {
 
     /**
      * The name of the column in the database
@@ -54,11 +53,11 @@ public @interface DatabaseColumnSetter {
     String defaultValue() default "";
 
     /**
-     * Sets the lenght of the column
+     * Sets the length of the column
      *
-     * @return The lenght of the column or a empty array
+     * @return The length of the column or a empty array
      */
-    int[] lenght() default {};
+    int[] length() default {};
 
     /**
      * If this returns true the column should autoincrement.
@@ -83,6 +82,4 @@ public @interface DatabaseColumnSetter {
     boolean unique() default false;
 
     boolean id() default false;
-
-    boolean saveValueAfterLoading() default false;
 }

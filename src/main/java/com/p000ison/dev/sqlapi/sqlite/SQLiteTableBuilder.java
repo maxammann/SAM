@@ -43,7 +43,7 @@ public final class SQLiteTableBuilder extends TableBuilder {
     }
 
     @Override
-    protected StringBuilder buildColumn(Column column) {
+    protected StringBuilder buildColumn(DatabaseColumn column) {
         Class<?> type = column.getType();
         StringBuilder query = new StringBuilder();
         query.append(column.getName()).append(' ');
@@ -76,7 +76,7 @@ public final class SQLiteTableBuilder extends TableBuilder {
         return query;
     }
 
-    private static void appendDataType(Column column, StringBuilder query, Class type) {
+    private static void appendDataType(DatabaseColumn column, StringBuilder query, Class type) {
         if (column.isID()) {
             query.append("INTEGER");
         } else {
@@ -127,7 +127,7 @@ public final class SQLiteTableBuilder extends TableBuilder {
         }
     }
 
-    private static StringBuilder buildModifyColumn(Column column) {
+    private static StringBuilder buildModifyColumn(DatabaseColumn column) {
         Class<?> type = column.getType();
         StringBuilder query = new StringBuilder();
         query.append(column.getName()).append(' ');
@@ -137,9 +137,9 @@ public final class SQLiteTableBuilder extends TableBuilder {
 
     @Override
     protected void buildModifyColumns() {
-        Set<Column> toAdd = super.getColumnsToAdd();
+        Set<DatabaseColumn> toAdd = super.getColumnsToAdd();
 
-        for (Column column : toAdd) {
+        for (DatabaseColumn column : toAdd) {
             StringBuilder query = new StringBuilder("ALTER TABLE ").append(getTableName()).append(" ADD COLUMN ");
             query.append(buildModifyColumn(column)).append(';');
 

@@ -20,7 +20,7 @@
 package com.p000ison.dev.sqlapi.jbdc;
 
 
-import com.p000ison.dev.sqlapi.Column;
+import com.p000ison.dev.sqlapi.DatabaseColumn;
 import com.p000ison.dev.sqlapi.Database;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 import com.p000ison.dev.sqlapi.query.PreparedQuery;
@@ -98,7 +98,7 @@ public class JBDCPreparedQuery implements PreparedQuery {
     }
 
     @Override
-    public void set(Column column, int index, Object value) {
+    public void set(DatabaseColumn column, int index, Object value) {
         if (index < 0) {
             throw new IllegalArgumentException("The index must be more or equal 0!");
         }

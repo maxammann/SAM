@@ -151,7 +151,7 @@ public abstract class JBDCDatabase extends Database {
 
     @Override
     public boolean existsEntry(RegisteredTable table, TableObject object) {
-        Column column = table.getIDColumn();
+        DatabaseColumn column = table.getIDColumn();
 
         PreparedStatement check = null;
         ResultSet result = null;
@@ -174,7 +174,7 @@ public abstract class JBDCDatabase extends Database {
 
     @Override
     protected long getLastEntryId(RegisteredTable table) {
-        Column idColumn = table.getIDColumn();
+        DatabaseColumn idColumn = table.getIDColumn();
         PreparedStatement check = null;
         ResultSet result = null;
         try {

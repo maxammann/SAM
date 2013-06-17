@@ -65,12 +65,12 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
     }
 
     @Override
-    public SelectQuery<T> orderBy(Column order) {
+    public SelectQuery<T> orderBy(DatabaseColumn order) {
         return orderBy(order.getName());
     }
 
     @Override
-    public SelectQuery<T> orderByDescending(Column order) {
+    public SelectQuery<T> orderByDescending(DatabaseColumn order) {
         return orderByDescending(order.getName());
     }
 
@@ -117,11 +117,11 @@ public class DefaultSelectQuery<T extends TableObject> implements SelectQuery<T>
         }
 
         StringBuilder query = new StringBuilder("SELECT ");
-        List<Column> columns = table.getRegisteredColumns();
+        List<DatabaseColumn> columns = table.getRegisteredColumns();
 
         int end = columns.size() - 1;
         for (int i = 0; i < columns.size(); i++) {
-            Column column = columns.get(i);
+            DatabaseColumn column = columns.get(i);
             query.append(column.getName());
             if (i != end) {
                 query.append(',');

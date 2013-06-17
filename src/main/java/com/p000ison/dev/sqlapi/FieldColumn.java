@@ -19,7 +19,7 @@
 
 package com.p000ison.dev.sqlapi;
 
-import com.p000ison.dev.sqlapi.annotation.DatabaseColumn;
+import com.p000ison.dev.sqlapi.annotation.Column;
 import com.p000ison.dev.sqlapi.exception.QueryException;
 
 import java.lang.reflect.Field;
@@ -28,14 +28,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Implementation for fields of {@link Column}
+ * Implementation for fields of {@link DatabaseColumn}
  */
-final class FieldColumn extends Column {
+final class FieldColumn extends DatabaseColumn {
 
     private Field field;
-    private DatabaseColumn annotation;
+    private Column annotation;
 
-    FieldColumn(Field field, DatabaseColumn annotation) {
+    FieldColumn(Field field, Column annotation) {
         this.field = field;
         field.setAccessible(true);
         this.annotation = annotation;
@@ -63,7 +63,7 @@ final class FieldColumn extends Column {
 
     @Override
     public int[] getLength() {
-        return annotation.lenght();
+        return annotation.length();
     }
 
     @Override
@@ -79,11 +79,6 @@ final class FieldColumn extends Column {
     @Override
     public boolean isUnique() {
         return annotation.unique();
-    }
-
-    @Override
-    public boolean isSaveInputAfterLoading() {
-        return annotation.saveValueAfterLoading();
     }
 
     @Override

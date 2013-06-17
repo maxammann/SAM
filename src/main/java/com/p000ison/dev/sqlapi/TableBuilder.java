@@ -19,14 +19,11 @@
 
 package com.p000ison.dev.sqlapi;
 
-import com.p000ison.dev.sqlapi.annotation.DatabaseColumn;
-import com.p000ison.dev.sqlapi.annotation.DatabaseColumnGetter;
-import com.p000ison.dev.sqlapi.annotation.DatabaseColumnSetter;
+import com.p000ison.dev.sqlapi.annotation.Column;
 import com.p000ison.dev.sqlapi.exception.TableBuildingException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -50,7 +47,7 @@ public abstract class TableBuilder {
     /**
      * The expected columns
      */
-    private List<Column> buildingColumns = new ArrayList<Column>();
+    private List<DatabaseColumn> buildingColumns = new ArrayList<DatabaseColumn>();
 
     private Database database;
 
@@ -62,7 +59,7 @@ public abstract class TableBuilder {
      */
     private Constructor<? extends TableObject> ctor;
 
-    private Set<Column> toAdd;
+    private Set<DatabaseColumn> toAdd;
     private Set<String> toDrop;
 
     private final Set<StringBuilder> builders = new HashSet<StringBuilder>();
@@ -73,7 +70,7 @@ public abstract class TableBuilder {
         tableName = Database.getTableName(object);
 
         if (tableName == null) {
-            throw new TableBuildingException("The name of the table is not given! Add the @DatabaseTable annotation!");
+            throw new TableBuildingException("The name of the table is not given! Add the @Table annotation!");
         }
 
         try {
@@ -99,7 +96,7 @@ public abstract class TableBuilder {
         StringBuilder query = new StringBuilder();
         query.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append('(');
 
-        for (Column column : buildingColumns) {
+        for (DatabaseColumn column : buildingColumns) {
             query.append(buildColumn(column));
             query.append(',');
         }
@@ -126,8 +123,8 @@ public abstract class TableBuilder {
         return this;
     }
 
-    private Column getColumn(String dbColumn) {
-        for (Column column : buildingColumns) {
+    private DatabaseColumn getColumn(String dbColumn) {
+        for (DatabaseColumn column : buildingColumns) {
             if (column.getName().equals(dbColumn)) {
                 return column;
             }
@@ -139,86 +136,23 @@ public abstract class TableBuilder {
         return getColumn(dbColumn) != null;
     }
 
-    private MethodColumn getMethodColumn(String dbColumn) {
-        for (Column column : buildingColumns) {
-            if ((column instanceof MethodColumn) && column.getName().equals(dbColumn)) {
-                return (MethodColumn) column;
-            }
-        }
-        return null;
-    }
-
     /**
      * Setups the columns of a table and produces a unmodifiable list
      */
     private void setupColumns() {
         buildingColumns.clear();
 
-        Method[] methods = object.getDeclaredMethods();
-
-        //
-        // Math getters and setters together and validate the methods
-        //
-        for (Method method : methods) {
-            String columnName;
-
-            DatabaseColumnSetter setter = method.getAnnotation(DatabaseColumnSetter.class);
-            if (setter != null) {
-                columnName = setter.databaseName();
-                if (setter.id() && !(method.getReturnType() != long.class || method.getReturnType() != Long.class || method.getReturnType() != AtomicLong.class)) {
-                    throw new TableBuildingException("Your id column must have the type long!");
-                }
-            } else {
-                DatabaseColumnGetter getter = method.getAnnotation(DatabaseColumnGetter.class);
-                if (getter == null) {
-                    continue;
-                }
-
-                columnName = getter.databaseName();
-            }
-
-            MethodColumn column = getMethodColumn(columnName);
-            if (column == null) {
-                column = new MethodColumn();
-                buildingColumns.add(column);
-            }
-
-            if (setter == null) {
-                column.setGetter(method);
-                if (!database.isSupported(column.getType())) {
-                    throw new TableBuildingException("The type %s of the column %s is not supported by the database!", column.getType().getName(), column.getName());
-                }
-            } else {
-                column.setSetter(method);
-                column.setAnnotation(setter);
-            }
-        }
-
-        //Check if all MethodColumns are correct
-        for (Iterator<Column> it = buildingColumns.iterator(); it.hasNext(); ) {
-            Column column = it.next();
-            if (column instanceof MethodColumn) {
-                MethodColumn methodColumn = (MethodColumn) column;
-
-                if (methodColumn.isNull()) {
-                    it.remove();
-                } else {
-                    methodColumn.validate();
-                }
-            }
-        }
-
         //Find all FieldColumns and add them
         for (Field field : object.getDeclaredFields()) {
-            DatabaseColumn column;
-            if ((column = field.getAnnotation(DatabaseColumn.class)) != null) {
+            Column column;
+            if ((column = field.getAnnotation(Column.class)) != null) {
                 if (existsColumn(column.databaseName())) {
                     throw new TableBuildingException("Duplicate column \"%s\" in class %s!", column.databaseName(), object.getName());
                 }
                 if (column.id() && !(field.getType() != long.class || field.getType() != Long.class || field.getType() != AtomicLong.class)) {
                     throw new TableBuildingException("Your id column must have the type long!");
                 }
-                Column fieldColumn = new FieldColumn(field, column);
+                DatabaseColumn fieldColumn = new FieldColumn(field, column);
                 if (!database.isSupported(fieldColumn.getType())) {
                     throw new TableBuildingException("The type %s of the column %s is not supported by the database!", fieldColumn.getType().getName(), fieldColumn.getName());
                 }
@@ -229,9 +163,9 @@ public abstract class TableBuilder {
         //
         // Sort the columns by the given position, since getDeclaredFields and getDeclaredMethods do not have a specific order
         //
-        Collections.sort(buildingColumns, new Comparator<Column>() {
+        Collections.sort(buildingColumns, new Comparator<DatabaseColumn>() {
             @Override
-            public int compare(Column o1, Column o2) {
+            public int compare(DatabaseColumn o1, DatabaseColumn o2) {
                 int p1 = o1.getPosition();
                 int p2 = o2.getPosition();
                 return p1 < p2 ? -1 : p1 > p2 ? 1 : 0;
@@ -249,8 +183,8 @@ public abstract class TableBuilder {
         List<String> databaseColumns = database.getDatabaseColumns(tableName);
 
         if (isSupportAddColumns()) {
-            toAdd = new HashSet<Column>();
-            for (Column column : buildingColumns) {
+            toAdd = new HashSet<DatabaseColumn>();
+            for (DatabaseColumn column : buildingColumns) {
                 if (!databaseColumns.contains(column.getName())) {
                     //missing in database
                     toAdd.add(column);
@@ -276,7 +210,7 @@ public abstract class TableBuilder {
         if (toAdd != null && !toAdd.isEmpty()) {
 
             query.append("ALTER TABLE ").append(tableName).append(" ADD COLUMN (");
-            for (Column column : toAdd) {
+            for (DatabaseColumn column : toAdd) {
                 query.append(buildColumn(column));
                 query.append(',');
             }
@@ -315,9 +249,9 @@ public abstract class TableBuilder {
     /**
      * Builds a column. it returns for example: "column INTEGER(5) NOT NULL UNIQUE KEY"
      *
-     * @param column The Column object which holds all information about the column.
+     * @param column The DatabaseColumn object which holds all information about the column.
      */
-    protected abstract StringBuilder buildColumn(Column column);
+    protected abstract StringBuilder buildColumn(DatabaseColumn column);
 
     protected abstract boolean isSupportAddColumns();
 
@@ -330,7 +264,7 @@ public abstract class TableBuilder {
     }
 
 
-    final List<Column> getColumns() {
+    final List<DatabaseColumn> getColumns() {
         return buildingColumns;
     }
 
@@ -338,7 +272,7 @@ public abstract class TableBuilder {
         return tableName;
     }
 
-    protected Set<Column> getColumnsToAdd() {
+    protected Set<DatabaseColumn> getColumnsToAdd() {
         return toAdd;
     }
 

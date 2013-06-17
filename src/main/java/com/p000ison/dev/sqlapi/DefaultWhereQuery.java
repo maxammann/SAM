@@ -44,52 +44,52 @@ class DefaultWhereQuery<T extends TableObject> implements WhereQuery<T> {
     }
 
     @Override
-    public WhereComparator<T> equals(Column column, Object expected) {
+    public WhereComparator<T> equals(DatabaseColumn column, Object expected) {
         return equals(column.getName(), expected);
     }
 
     @Override
-    public WhereComparator<T> preparedEquals(Column column) {
+    public WhereComparator<T> preparedEquals(DatabaseColumn column) {
         return preparedEquals(column.getName());
     }
 
     @Override
-    public WhereComparator<T> like(Column column, Object expected) {
+    public WhereComparator<T> like(DatabaseColumn column, Object expected) {
         return like(column.getName(), expected);
     }
 
     @Override
-    public WhereComparator<T> preparedLike(Column column) {
+    public WhereComparator<T> preparedLike(DatabaseColumn column) {
         return preparedLike(column.getName());
     }
 
     @Override
-    public WhereComparator<T> notEquals(Column column, Object expected) {
+    public WhereComparator<T> notEquals(DatabaseColumn column, Object expected) {
         return notEquals(column.getName(), expected);
     }
 
     @Override
-    public WhereComparator<T> preparedNotEquals(Column column) {
+    public WhereComparator<T> preparedNotEquals(DatabaseColumn column) {
         return preparedNotEquals(column.getName());
     }
 
     @Override
-    public WhereComparator<T> lessThan(Column column, Object expected) {
+    public WhereComparator<T> lessThan(DatabaseColumn column, Object expected) {
         return lessThan(column.getName(), expected);
     }
 
     @Override
-    public WhereComparator<T> preparedLessThan(Column column) {
+    public WhereComparator<T> preparedLessThan(DatabaseColumn column) {
         return preparedLessThan(column.getName());
     }
 
     @Override
-    public WhereComparator<T> greaterThan(Column column, Object expected) {
+    public WhereComparator<T> greaterThan(DatabaseColumn column, Object expected) {
         return greaterThan(column.getName(), expected);
     }
 
     @Override
-    public WhereComparator<T> preparedGreaterThan(Column column) {
+    public WhereComparator<T> preparedGreaterThan(DatabaseColumn column) {
         return preparedGreaterThan(column.getName());
     }
 

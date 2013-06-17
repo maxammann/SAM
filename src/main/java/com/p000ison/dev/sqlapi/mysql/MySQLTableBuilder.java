@@ -41,7 +41,7 @@ public final class MySQLTableBuilder extends TableBuilder {
     }
 
     @Override
-    protected StringBuilder buildColumn(Column column) {
+    protected StringBuilder buildColumn(DatabaseColumn column) {
         Class<?> type = column.getType();
         StringBuilder query = new StringBuilder();
         query.append(column.getName()).append(' ');

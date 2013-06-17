@@ -26,9 +26,7 @@ import com.p000ison.dev.sqlapi.query.PreparedQuery;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 /**
  * Used to register TableObjects. Holds the columns, the registered constructor, some prepared statements and of the class
@@ -37,12 +35,11 @@ import java.util.Queue;
 public class RegisteredTable {
     private String name;
     private Class<? extends TableObject> registeredClass;
-    private List<Column> registeredColumns;
+    private List<DatabaseColumn> registeredColumns;
     private RegisteredConstructor constructor;
     private PreparedQuery updateStatement, insertStatement, deleteStatement;
-    private Queue<StoredTableObjectValue> storedColumnValues = new LinkedList<StoredTableObjectValue>();
 
-    RegisteredTable(String name, Class<? extends TableObject> registeredClass, List<Column> registeredColumns, Constructor<? extends TableObject> constructor) {
+    RegisteredTable(String name, Class<? extends TableObject> registeredClass, List<DatabaseColumn> registeredColumns, Constructor<? extends TableObject> constructor) {
         this.name = name;
         this.registeredClass = registeredClass;
         this.registeredColumns = registeredColumns;
@@ -55,8 +52,8 @@ public class RegisteredTable {
         return isRegisteredClass(obj.getClass());
     }
 
-    public Column getColumn(String columnName) {
-        for (Column column : registeredColumns) {
+    public DatabaseColumn getColumn(String columnName) {
+        for (DatabaseColumn column : registeredColumns) {
             String name = column.getName();
             if (name.hashCode() == columnName.hashCode() && name.equals(columnName)) {
                 return column;
@@ -65,8 +62,8 @@ public class RegisteredTable {
         return null;
     }
 
-    public Column getIDColumn() {
-        for (Column column : registeredColumns) {
+    public DatabaseColumn getIDColumn() {
+        for (DatabaseColumn column : registeredColumns) {
             if (column.isID()) {
                 return column;
             }
@@ -74,7 +71,7 @@ public class RegisteredTable {
         return null;
     }
 
-    public List<Column> getRegisteredColumns() {
+    public List<DatabaseColumn> getRegisteredColumns() {
         return registeredColumns;
     }
 
@@ -111,8 +108,8 @@ public class RegisteredTable {
 
     void prepareUpdateStatement(Database database) {
         StringBuilder query = new StringBuilder("UPDATE ").append(getName()).append(" SET ");
-        Column id = null;
-        for (Column column : getRegisteredColumns()) {
+        DatabaseColumn id = null;
+        for (DatabaseColumn column : getRegisteredColumns()) {
             if (column.isID()) {
                 id = column;
                 continue;
@@ -132,7 +129,7 @@ public class RegisteredTable {
 
     void prepareDeleteStatement(Database database) {
         StringBuilder query = new StringBuilder();
-        Column id = getIDColumn();
+        DatabaseColumn id = getIDColumn();
         query.append("DELETE FROM ").append(getName()).append(" WHERE ").append(id.getName()).append("=?;");
 
         deleteStatement = database.createPreparedStatement(query.toString());
@@ -140,10 +137,10 @@ public class RegisteredTable {
 
     void prepareInsertStatement(Database database) {
         StringBuilder query = new StringBuilder();
-        Column id = getIDColumn();
+        DatabaseColumn id = getIDColumn();
         query.append("INSERT INTO ").append(getName()).append(" (");
 
-        for (Column column : getRegisteredColumns()) {
+        for (DatabaseColumn column : getRegisteredColumns()) {
             if (column.equals(id)) {
                 continue;
             }
@@ -210,22 +207,6 @@ public class RegisteredTable {
         return insertStatement;
     }
 
-    public void storeColumnValue(Column column, Object value, TableObject tableObject) {
-        storedColumnValues.add(new StoredTableObjectValue(tableObject, value, column));
-    }
-
-    public void saveStoredValues() {
-        StoredTableObjectValue value;
-
-        while ((value = storedColumnValues.poll()) != null) {
-            value.getColumn().setValue(value.getTableObject(), value.getValue());
-        }
-    }
-
-    public void clearStoredValues() {
-        storedColumnValues.clear();
-    }
-
     public PreparedQuery getPreparedDeleteStatement() {
         return deleteStatement;
     }
@@ -255,7 +236,7 @@ public class RegisteredTable {
         StringBuilder query = new StringBuilder();
         query.append("INSERT INTO ").append(getName()).append(" (");
 
-        for (Column column : getRegisteredColumns()) {
+        for (DatabaseColumn column : getRegisteredColumns()) {
             query.append(column.getName()).append(',');
         }
 

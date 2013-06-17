@@ -36,7 +36,6 @@ public class DefaultOrderEntry {
         this.desc = desc;
     }
 
-
     protected String getOrder() {
         return order;
     }
