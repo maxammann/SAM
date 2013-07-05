@@ -19,11 +19,8 @@
 
 package org.p000ison.dev.sam.query;
 
-import org.p000ison.dev.sam.Database;
-import org.p000ison.dev.sam.DatabaseColumn;
-import org.p000ison.dev.sam.RegisteredTable;
-import org.p000ison.dev.sam.TableObject;
-import org.p000ison.dev.sam.exception.QueryException;
+import org.p000ison.dev.sam.*;
+import org.p000ison.dev.sam.Model;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -31,7 +28,7 @@ import java.util.List;
 /**
  * Represents a UpdateStatement
  */
-public class UpdateStatement extends SelectiveQuery<UpdateStatement, TableObject> {
+public class UpdateStatement extends SelectiveQuery<UpdateStatement, Model> {
 	private List<DatabaseColumn> columns = new LinkedList<DatabaseColumn>();
 	private List<Object> values = new LinkedList<Object>();
 
@@ -40,7 +37,7 @@ public class UpdateStatement extends SelectiveQuery<UpdateStatement, TableObject
 	}
 
 	@Override
-	protected String getQuery() {
+	public String getQuery() {
 		if (getTable() == null || columns == null || values == null) {
 			return null;
 		}
@@ -49,6 +46,7 @@ public class UpdateStatement extends SelectiveQuery<UpdateStatement, TableObject
 		for (DatabaseColumn column : columns) {
 			query.append(column.getName()).append("=?,");
 		}
+
 		query.deleteCharAt(query.length() - 1);
 
 		createWhereQuery(query);
@@ -119,7 +117,7 @@ public class UpdateStatement extends SelectiveQuery<UpdateStatement, TableObject
 		return this;
 	}
 
-	public synchronized UpdateStatement in(Class<? extends TableObject> object) {
+	public synchronized UpdateStatement in(Class<? extends Model> object) {
 		super.from(object);
 		return this;
 	}
@@ -134,7 +132,7 @@ public class UpdateStatement extends SelectiveQuery<UpdateStatement, TableObject
 	 */
 	@Override
 	@Deprecated
-	public synchronized AbstractStatement<TableObject> from(Class<? extends TableObject> object) {
+	public synchronized AbstractStatement<Model> from(Class<? extends Model> object) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -143,7 +141,7 @@ public class UpdateStatement extends SelectiveQuery<UpdateStatement, TableObject
 	 */
 	@Override
 	@Deprecated
-	public synchronized AbstractStatement<TableObject> from(RegisteredTable table) {
+	public synchronized AbstractStatement<Model> from(RegisteredTable table) {
 		throw new UnsupportedOperationException();
 	}
 }

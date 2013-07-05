@@ -19,11 +19,8 @@
 
 package org.p000ison.dev.sam.query;
 
-import org.p000ison.dev.sam.Database;
-import org.p000ison.dev.sam.DatabaseColumn;
-import org.p000ison.dev.sam.RegisteredTable;
-import org.p000ison.dev.sam.TableObject;
-import org.p000ison.dev.sam.exception.QueryException;
+import org.p000ison.dev.sam.*;
+import org.p000ison.dev.sam.Model;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -31,7 +28,7 @@ import java.util.List;
 /**
  * Represents a InsertStatement
  */
-public class InsertStatement extends AbstractStatement<TableObject> {
+public class InsertStatement extends AbstractStatement<Model> {
 
 	private List<DatabaseColumn> columns = new LinkedList<DatabaseColumn>();
 	private List<Object> values = new LinkedList<Object>();
@@ -41,7 +38,7 @@ public class InsertStatement extends AbstractStatement<TableObject> {
 	}
 
 	@Override
-	protected String getQuery() {
+	public String getQuery() {
 		if (getTable() == null || columns == null) {
 			return null;
 		}
@@ -118,7 +115,7 @@ public class InsertStatement extends AbstractStatement<TableObject> {
 		return this;
 	}
 
-	public synchronized InsertStatement into(Class<? extends TableObject> object) {
+	public synchronized InsertStatement into(Class<? extends Model> object) {
 		super.from(object);
 		return this;
 	}
@@ -133,7 +130,7 @@ public class InsertStatement extends AbstractStatement<TableObject> {
 	 */
 	@Override
 	@Deprecated
-	public synchronized AbstractStatement<TableObject> from(RegisteredTable table) {
+	public synchronized AbstractStatement<Model> from(RegisteredTable table) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -142,7 +139,7 @@ public class InsertStatement extends AbstractStatement<TableObject> {
 	 */
 	@Override
 	@Deprecated
-	public synchronized AbstractStatement<TableObject> from(Class<? extends TableObject> object) {
+	public synchronized AbstractStatement<Model> from(Class<? extends Model> object) {
 		throw new UnsupportedOperationException();
 	}
 }

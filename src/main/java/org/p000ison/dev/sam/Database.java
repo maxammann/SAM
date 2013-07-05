@@ -19,7 +19,6 @@
 
 package org.p000ison.dev.sam;
 
-import org.p000ison.dev.sam.exception.QueryException;
 import org.p000ison.dev.sam.key.ForeignKey;
 import org.p000ison.dev.sam.key.Key;
 import org.p000ison.dev.sam.key.PrimaryKey;
@@ -106,7 +105,7 @@ public abstract class Database<C extends DatabaseConfiguration> {
 	/**
 	 * Closes the connection to the database
 	 *
-	 * @throws org.p000ison.dev.sam.exception.QueryException
+	 * @throws QueryException
 	 */
 	public final void close() throws QueryException {
 		for (RegisteredTable table : registeredTables) {
@@ -142,9 +141,9 @@ public abstract class Database<C extends DatabaseConfiguration> {
 
 	public abstract boolean executeDirectUpdate(String query);
 
-	public abstract boolean existsEntry(RegisteredTable table, TableObject object);
+	public abstract boolean existsEntry(RegisteredTable table, Model object);
 
-	public abstract boolean existsEntry(TableObject object);
+	public abstract boolean existsEntry(Model object);
 
 	protected abstract long getLastID(RegisteredTable table);
 
@@ -183,10 +182,10 @@ public abstract class Database<C extends DatabaseConfiguration> {
 	/**
 	 * Constructs a new SelectQuery for further use. This should be synchronized with the Database instance
 	 *
-	 * @param <T> a TableObject type
+	 * @param <T> a Model type
 	 * @return The SelectQuery
 	 */
-	public <T extends TableObject> SelectQuery<T> select() {
+	public <T extends Model> SelectQuery<T> select() {
 		return new SelectQuery<T>(this);
 	}
 
@@ -199,33 +198,33 @@ public abstract class Database<C extends DatabaseConfiguration> {
 	 * If the there is already an entry in the database with the id of the object or the id is equal or less than 0 the
 	 * table gets updated else a new entry gets inserted.
 	 *
-	 * @param tableObject The object to insert/update
+	 * @param model The object to insert/update
 	 * @throws RegistrationException If the table is not registered
 	 */
-	public void save(TableObject tableObject) {
-		RegisteredTable table = getRegisteredTable(tableObject);
+	public void save(Model model) {
+		RegisteredTable table = getRegisteredTable(model);
 		DatabaseColumn idColumn = table.getIDColumn();
 
-		if (((Number) idColumn.getValue(tableObject)).intValue() <= 0 || !existsEntry(table, tableObject)) {
-			insert(table, tableObject, idColumn);
+		if (((Number) idColumn.getValue(model)).intValue() <= 0 || !existsEntry(table, model)) {
+			insert(table, model, idColumn);
 		} else {
-			update(table, tableObject, idColumn);
+			update(table, model, idColumn);
 		}
 	}
 
 	/**
 	 * Deletes a object from a database
 	 *
-	 * @param tableObject The object
+	 * @param model The object
 	 */
-	public void delete(TableObject tableObject) {
+	public void delete(Model model) {
 		accessLock.lock();
 		try {
-			RegisteredTable table = getRegisteredTable(tableObject);
+			RegisteredTable table = getRegisteredTable(model);
 			DatabaseColumn idColumn = table.getIDColumn();
 
 			PreparedQuery statement = table.getPreparedDeleteStatement();
-			statement.set(idColumn, 0, idColumn.getValue(tableObject));
+			statement.set(idColumn, 0, idColumn.getValue(model));
 			statement.update();
 		} finally {
 			accessLock.unlock();
@@ -239,37 +238,37 @@ public abstract class Database<C extends DatabaseConfiguration> {
 	 * @return The RegisteredTable
 	 * @throws RegistrationException If the table is not registered
 	 */
-	private RegisteredTable getRegisteredTable(TableObject obj) {
+	private RegisteredTable getRegisteredTable(Model obj) {
 		return getRegisteredTable(obj.getClass());
 	}
 
 	/**
 	 * Attempts to update the object in the database
 	 *
-	 * @param tableObject The object to update
+	 * @param model The object to update
 	 * @throws RegistrationException If the table is not registered
 	 */
-	public void update(TableObject tableObject) {
-		RegisteredTable table = getRegisteredTable(tableObject);
+	public void update(Model model) {
+		RegisteredTable table = getRegisteredTable(model);
 		DatabaseColumn idColumn = table.getIDColumn();
 
-		update(table, tableObject, idColumn);
+		update(table, model, idColumn);
 	}
 
 	/**
 	 * Attempts to insert a entry in the database. Can throw an exception if for example there is a unique column!
 	 *
-	 * @param tableObject The object to insert
+	 * @param model The object to insert
 	 * @throws QueryException if the query fails
 	 */
-	public void insert(TableObject tableObject) {
-		RegisteredTable table = getRegisteredTable(tableObject);
+	public void insert(Model model) {
+		RegisteredTable table = getRegisteredTable(model);
 		DatabaseColumn idColumn = table.getIDColumn();
 
-		insert(table, tableObject, idColumn);
+		insert(table, model, idColumn);
 	}
 
-	private void insert(RegisteredTable registeredTable, TableObject object, DatabaseColumn idColumn) {
+	private void insert(RegisteredTable registeredTable, Model object, DatabaseColumn idColumn) {
 		accessLock.lock();
 		try {
 			PreparedQuery insert = registeredTable.getPreparedInsertStatement();
@@ -281,7 +280,7 @@ public abstract class Database<C extends DatabaseConfiguration> {
 		}
 	}
 
-	private void update(RegisteredTable registeredTable, TableObject object, DatabaseColumn idColumn) {
+	private void update(RegisteredTable registeredTable, Model object, DatabaseColumn idColumn) {
 		accessLock.lock();
 		try {
 			PreparedQuery update = registeredTable.getPreparedUpdateStatement();
@@ -293,7 +292,7 @@ public abstract class Database<C extends DatabaseConfiguration> {
 		}
 	}
 
-	public void addUpdateBatch(TableObject object) {
+	public void addUpdateBatch(Model object) {
 		RegisteredTable table = getRegisteredTable(object);
 		PreparedQuery update = table.getPreparedUpdateStatement();
 		accessLock.lock();
@@ -307,7 +306,7 @@ public abstract class Database<C extends DatabaseConfiguration> {
 		}
 	}
 
-	public void addInsertBatch(TableObject object) {
+	public void addInsertBatch(Model object) {
 		RegisteredTable table = getRegisteredTable(object);
 		PreparedQuery update = table.getPreparedInsertStatement();
 		accessLock.lock();
@@ -319,7 +318,7 @@ public abstract class Database<C extends DatabaseConfiguration> {
 		}
 	}
 
-	public void addDeleteBatch(TableObject object) {
+	public void addDeleteBatch(Model object) {
 		RegisteredTable table = getRegisteredTable(object);
 		PreparedQuery update = table.getPreparedDeleteStatement();
 		accessLock.lock();
@@ -337,7 +336,7 @@ public abstract class Database<C extends DatabaseConfiguration> {
 	 * @param clazz   The class
 	 * @param bitmask Defines whether to run the update, insert or delete statements. Example: 1 | 1 << 1 | 1 << 2 for all
 	 */
-	public void executeBatch(Class<? extends TableObject> clazz, int bitmask) {
+	public void executeBatch(Class<? extends Model> clazz, int bitmask) {
 		executeBatch(getRegisteredTable(clazz), bitmask);
 	}
 
@@ -369,7 +368,7 @@ public abstract class Database<C extends DatabaseConfiguration> {
 		}
 	}
 
-	public void executeUpdateBatch(Class<? extends TableObject> table) {
+	public void executeUpdateBatch(Class<? extends Model> table) {
 		executeUpdateBatch(getRegisteredTable(table));
 	}
 
@@ -383,7 +382,7 @@ public abstract class Database<C extends DatabaseConfiguration> {
 		}
 	}
 
-	public void executeInsertBatch(Class<? extends TableObject> table) {
+	public void executeInsertBatch(Class<? extends Model> table) {
 		executeInsertBatch(getRegisteredTable(table));
 	}
 
@@ -397,11 +396,11 @@ public abstract class Database<C extends DatabaseConfiguration> {
 		}
 	}
 
-	public void executeDeleteBatch(Class<? extends TableObject> table) {
+	public void executeDeleteBatch(Class<? extends Model> table) {
 		executeDeleteBatch(getRegisteredTable(table));
 	}
 
-	private int setColumnValues(PreparedQuery statement, RegisteredTable registeredTable, TableObject object, DatabaseColumn idColumn) {
+	private int setColumnValues(PreparedQuery statement, RegisteredTable registeredTable, Model object, DatabaseColumn idColumn) {
 		List<DatabaseColumn> registeredColumns = registeredTable.getRegisteredColumns();
 		int i = 0;
 		for (DatabaseColumn column : registeredColumns) {
@@ -425,7 +424,7 @@ public abstract class Database<C extends DatabaseConfiguration> {
 	 * @param to    The destination
 	 * @param <T>   The type of the table
 	 */
-	public <T extends TableObject> void copy(Class<T> table, Database to) {
+	public <T extends Model> void copy(Class<T> table, Database to) {
 		RegisteredTable registeredTable = to.getRegisteredTable(table);
 		PreparedSelectQuery<T> prepare = this.<T>select().from(table).prepare();
 		PreparedQuery statement = this.getQueryFactory().createInsertStatement().into(registeredTable)
@@ -450,11 +449,11 @@ public abstract class Database<C extends DatabaseConfiguration> {
 	}
 
 	/**
-	 * Registers a new TableObject for further use
+	 * Registers a new Model for further use
 	 *
 	 * @param table The object to register
 	 */
-	public final RegisteredTable registerTable(TableObject table) {
+	public final RegisteredTable registerTable(Model table) {
 		return registerTable(table.getClass());
 	}
 
@@ -467,7 +466,7 @@ public abstract class Database<C extends DatabaseConfiguration> {
 	 *
 	 * @param table The class to register
 	 */
-	public final synchronized RegisteredTable registerTable(Class<? extends TableObject> table) {
+	public final synchronized RegisteredTable registerTable(Class<? extends Model> table) {
 		RegisteredTable registeredTable = new RegisteredTable(table);
 		registeredTable.initTable(this, true, false);
 		registeredTables.add(registeredTable);
@@ -489,7 +488,7 @@ public abstract class Database<C extends DatabaseConfiguration> {
 	 * @return The RegisteredTable
 	 * @throws RegistrationException If the table is not registered
 	 */
-	public synchronized RegisteredTable getRegisteredTable(Class<? extends TableObject> table) {
+	public synchronized RegisteredTable getRegisteredTable(Class<? extends Model> table) {
 		for (RegisteredTable registeredTable : registeredTables) {
 			if (registeredTable.isRegisteredClass(table)) {
 				return registeredTable;
@@ -498,7 +497,7 @@ public abstract class Database<C extends DatabaseConfiguration> {
 		throw new RegistrationException(table, "The class %s is not registered!", table.getName());
 	}
 
-	public boolean isRegistered(Class<? extends TableObject> table) {
+	public boolean isRegistered(Class<? extends Model> table) {
 		try {
 			getRegisteredTable(table);
 			return true;

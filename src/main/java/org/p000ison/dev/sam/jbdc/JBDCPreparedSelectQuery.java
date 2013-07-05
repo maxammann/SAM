@@ -22,8 +22,8 @@ package org.p000ison.dev.sam.jbdc;
 
 import org.p000ison.dev.sam.DatabaseColumn;
 import org.p000ison.dev.sam.RegisteredTable;
-import org.p000ison.dev.sam.TableObject;
-import org.p000ison.dev.sam.exception.QueryException;
+import org.p000ison.dev.sam.Model;
+import org.p000ison.dev.sam.QueryException;
 import org.p000ison.dev.sam.query.PreparedSelectQuery;
 
 import java.io.IOException;
@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Represents a JBDCPreparedQuery
  */
-public class JBDCPreparedSelectQuery<T extends TableObject> extends JBDCPreparedQuery implements PreparedSelectQuery<T> {
+public class JBDCPreparedSelectQuery<T extends Model> extends JBDCPreparedQuery implements PreparedSelectQuery<T> {
 	private final RegisteredTable table;
 
 	protected JBDCPreparedSelectQuery(JBDCDatabase database, String query, RegisteredTable table) {

@@ -79,20 +79,20 @@ public abstract class DatabaseColumn {
 	public abstract boolean isNotNull();
 
 	/**
-	 * Sets a value for the column in the {@link TableObject}.
+	 * Sets a value for the column in the {@link Model}.
 	 *
-	 * @param tableObject The table object to modify
+	 * @param model The table object to modify
 	 * @param object      The object to set the column to
 	 */
-	public abstract void setValue(TableObject tableObject, Object object);
+	public abstract void setValue(Model model, Object object);
 
 	/**
-	 * Gets the value for the column in the {@link TableObject}.
+	 * Gets the value for the column in the {@link Model}.
 	 *
-	 * @param tableObject The table object
+	 * @param model The table object
 	 * @return The value
 	 */
-	public abstract Object getValue(TableObject tableObject);
+	public abstract Object getValue(Model model);
 
 	/**
 	 * Checks if the type is serializable so we can store it in a blob

@@ -21,7 +21,6 @@ package org.p000ison.dev.sam;
 
 import org.p000ison.dev.sam.annotation.Column;
 import org.p000ison.dev.sam.annotation.Table;
-import org.p000ison.dev.sam.exception.QueryException;
 import org.p000ison.dev.sam.query.DeleteStatement;
 import org.p000ison.dev.sam.query.InsertStatement;
 import org.p000ison.dev.sam.query.PreparedQuery;
@@ -35,16 +34,16 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Used to register TableObjects. Holds the columns, the registered constructor, some prepared statements and of the class
- * or the TableObject.
+ * or the Model.
  */
 public class RegisteredTable {
 	private String name;
-	private Class<? extends TableObject> registeredClass;
+	private Class<? extends Model> registeredClass;
 	private List<DatabaseColumn> registeredColumns = new ArrayList<DatabaseColumn>();
 	private RegisteredConstructor constructor;
 	private PreparedQuery updateStatement, insertStatement, deleteStatement;
 
-	RegisteredTable(Class<? extends TableObject> registeredClass) {
+	RegisteredTable(Class<? extends Model> registeredClass) {
 		this.registeredClass = registeredClass;
 	}
 
@@ -61,15 +60,15 @@ public class RegisteredTable {
 	/**
 	 * Gets the name of a table
 	 *
-	 * @param clazz The class of the {@link TableObject}.
+	 * @param clazz The class of the {@link Model}.
 	 * @return The name
 	 */
-	static String getTableName(Class<? extends TableObject> clazz) {
+	static String getTableName(Class<? extends Model> clazz) {
 		Table annotation = clazz.getAnnotation(Table.class);
 		return annotation == null ? null : annotation.name();
 	}
 
-	public boolean isRegistered(TableObject obj) {
+	public boolean isRegistered(Model obj) {
 		return isRegisteredClass(obj.getClass());
 	}
 
@@ -106,11 +105,11 @@ public class RegisteredTable {
 		return registeredColumns;
 	}
 
-	public boolean isRegisteredClass(Class<? extends TableObject> registeredClass) {
+	public boolean isRegisteredClass(Class<? extends Model> registeredClass) {
 		return this.registeredClass.equals(registeredClass);
 	}
 
-	public <T extends TableObject> T createNewInstance() {
+	public <T extends Model> T createNewInstance() {
 		if (constructor == null) {
 			throw new QueryException("No default constructor and no constructor registered for class %s!", registeredClass
 					.getName());
@@ -195,7 +194,7 @@ public class RegisteredTable {
 		}
 
 		try {
-			Constructor<? extends TableObject> ctor = registeredClass.getDeclaredConstructor();
+			Constructor<? extends Model> ctor = registeredClass.getDeclaredConstructor();
 			ctor.setAccessible(true);
 			this.constructor = new RegisteredConstructor(ctor);
 		} catch (NoSuchMethodException ignored) {

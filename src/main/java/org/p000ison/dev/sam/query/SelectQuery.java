@@ -19,11 +19,8 @@
 
 package org.p000ison.dev.sam.query;
 
-import org.p000ison.dev.sam.Database;
-import org.p000ison.dev.sam.DatabaseColumn;
-import org.p000ison.dev.sam.RegisteredTable;
-import org.p000ison.dev.sam.TableObject;
-import org.p000ison.dev.sam.exception.QueryException;
+import org.p000ison.dev.sam.*;
+import org.p000ison.dev.sam.Model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +33,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <p/>
  * All Default... classes are pre-made classes which may already work with your database engine.
  */
-public class SelectQuery<T extends TableObject> extends SelectiveQuery<SelectQuery<T>, T> {
+public class SelectQuery<T extends Model> extends SelectiveQuery<SelectQuery<T>, T> {
 	private List<OrderEntry> orderBy = new CopyOnWriteArrayList<OrderEntry>();
 	private int[] limits;
 
@@ -89,7 +86,7 @@ public class SelectQuery<T extends TableObject> extends SelectiveQuery<SelectQue
 	}
 
 	@Override
-	protected synchronized String getQuery() {
+	public synchronized String getQuery() {
 		if (getTable() == null) {
 			return null;
 		}

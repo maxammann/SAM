@@ -21,7 +21,7 @@ package org.p000ison.dev.sam.jbdc;
 
 import org.p000ison.dev.sam.QueryFactory;
 import org.p000ison.dev.sam.RegisteredTable;
-import org.p000ison.dev.sam.TableObject;
+import org.p000ison.dev.sam.Model;
 import org.p000ison.dev.sam.query.PreparedQuery;
 import org.p000ison.dev.sam.query.PreparedSelectQuery;
 
@@ -40,7 +40,7 @@ public abstract class JBDCQueryFactory extends QueryFactory.Default {
 	}
 
 	@Override
-	public <T extends TableObject> PreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table) {
+	public <T extends Model> PreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table) {
 		return new JBDCPreparedSelectQuery<T>((JBDCDatabase) getDatabase(), query, table);
 	}
 }

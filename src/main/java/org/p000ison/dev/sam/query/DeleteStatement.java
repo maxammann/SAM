@@ -21,20 +21,20 @@ package org.p000ison.dev.sam.query;
 
 import org.p000ison.dev.sam.Database;
 import org.p000ison.dev.sam.RegisteredTable;
-import org.p000ison.dev.sam.TableObject;
-import org.p000ison.dev.sam.exception.QueryException;
+import org.p000ison.dev.sam.Model;
+import org.p000ison.dev.sam.QueryException;
 
 /**
  * Represents a DeleteStatement
  */
-public class DeleteStatement extends SelectiveQuery<DeleteStatement, TableObject> {
+public class DeleteStatement extends SelectiveQuery<DeleteStatement, Model> {
 
 	public DeleteStatement(Database database) {
 		super(database);
 	}
 
 	@Override
-	protected String getQuery() {
+	public String getQuery() {
 		if (getTable() == null) {
 			return null;
 		}
@@ -59,7 +59,7 @@ public class DeleteStatement extends SelectiveQuery<DeleteStatement, TableObject
 	}
 
 	@Override
-	public synchronized DeleteStatement from(Class<? extends TableObject> object) {
+	public synchronized DeleteStatement from(Class<? extends Model> object) {
 		super.from(object);
 		return this;
 	}

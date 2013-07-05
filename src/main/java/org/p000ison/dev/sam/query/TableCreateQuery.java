@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Represents a TableCreateQuery
  */
-public class TableCreateQuery {
+public class TableCreateQuery implements Statement {
 
 	private final Database database;
 	private String table;
@@ -55,7 +55,8 @@ public class TableCreateQuery {
 		return this;
 	}
 
-	protected String getQuery() {
+	@Override
+	public String getQuery() {
 		StringBuilder query = new StringBuilder("CREATE TABLE ").append(table).append(" (");
 
 		for (DatabaseColumn column : buildingColumns) {
@@ -109,6 +110,7 @@ public class TableCreateQuery {
 		return database.executeDirectUpdate(getQuery());
 	}
 
+	@Override
 	public PreparedQuery prepare() {
 		return database.getQueryFactory().createPreparedStatement(getQuery());
 	}

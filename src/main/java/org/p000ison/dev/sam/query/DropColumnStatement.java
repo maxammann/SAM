@@ -20,8 +20,8 @@
 package org.p000ison.dev.sam.query;
 
 import org.p000ison.dev.sam.Database;
+import org.p000ison.dev.sam.Model;
 import org.p000ison.dev.sam.RegisteredTable;
-import org.p000ison.dev.sam.TableObject;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * Represents a AddColumnStatement
  */
-public class DropColumnStatement extends AbstractStatement<TableObject> {
+public class DropColumnStatement extends AbstractStatement<Model> {
 
 	private List<String> columns = new LinkedList<String>();
 
@@ -48,7 +48,7 @@ public class DropColumnStatement extends AbstractStatement<TableObject> {
 	}
 
 	@Override
-	protected String getQuery() {
+	public String getQuery() {
 		StringBuilder alter = new StringBuilder("ALTER TABLE ").append(getTable().getName()).append(" DROP COLUMN ");
 
 		for (String column : columns) {
@@ -70,7 +70,7 @@ public class DropColumnStatement extends AbstractStatement<TableObject> {
 		return getDatabase().getQueryFactory().createPreparedStatement(getQuery());
 	}
 
-	public synchronized DropColumnStatement in(Class<? extends TableObject> object) {
+	public synchronized DropColumnStatement in(Class<? extends Model> object) {
 		super.from(object);
 		return this;
 	}
@@ -85,7 +85,7 @@ public class DropColumnStatement extends AbstractStatement<TableObject> {
 	 */
 	@Override
 	@Deprecated
-	public synchronized AbstractStatement<TableObject> from(Class<? extends TableObject> object) {
+	public synchronized AbstractStatement<Model> from(Class<? extends Model> object) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -94,7 +94,7 @@ public class DropColumnStatement extends AbstractStatement<TableObject> {
 	 */
 	@Override
 	@Deprecated
-	public synchronized AbstractStatement<TableObject> from(RegisteredTable table) {
+	public synchronized AbstractStatement<Model> from(RegisteredTable table) {
 		throw new UnsupportedOperationException();
 	}
 }

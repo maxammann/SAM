@@ -21,12 +21,12 @@ package org.p000ison.dev.sam.query;
 
 import org.p000ison.dev.sam.Database;
 import org.p000ison.dev.sam.RegisteredTable;
-import org.p000ison.dev.sam.TableObject;
+import org.p000ison.dev.sam.Model;
 
 /**
  * Represents a AbstractStatement
  */
-public abstract class AbstractStatement<T extends TableObject> {
+public abstract class AbstractStatement<T extends Model> implements Statement{
 
 	private final Database database;
 	private RegisteredTable table;
@@ -52,10 +52,6 @@ public abstract class AbstractStatement<T extends TableObject> {
 	protected Database getDatabase() {
 		return database;
 	}
-
-	protected abstract String getQuery();
-
-	public abstract PreparedQuery prepare();
 
 	public AbstractStatement<T> reset() {return this;}
 }

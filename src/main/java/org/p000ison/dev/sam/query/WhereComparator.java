@@ -19,7 +19,7 @@
 
 package org.p000ison.dev.sam.query;
 
-import org.p000ison.dev.sam.TableObject;
+import org.p000ison.dev.sam.Model;
 
 /**
  * A where entry, used in {@link SelectQuery}
@@ -28,7 +28,7 @@ import org.p000ison.dev.sam.TableObject;
  * <p/>
  * All Default... classes are pre-made classes which may already work with your database engine.
  */
-public class WhereComparator<Q extends SelectiveQuery<Q, T>, T extends TableObject> {
+public class WhereComparator<Q extends SelectiveQuery<Q, T>, T extends Model> {
 
 	private Q query;
 	private boolean and, or;

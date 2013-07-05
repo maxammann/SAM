@@ -21,7 +21,6 @@ package org.p000ison.dev.sam;
 
 import org.p000ison.dev.sam.annotation.Column;
 import org.p000ison.dev.sam.annotation.Index;
-import org.p000ison.dev.sam.exception.QueryException;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -78,16 +77,16 @@ final class FieldColumn extends DatabaseColumn {
 	}
 
 	@Override
-	public void setValue(TableObject tableObject, Object object) {
+	public void setValue(Model model, Object object) {
 		try {
 			Class type = getType();
 			if (type == AtomicBoolean.class) {
 				if (!(object instanceof Boolean)) {
 					throw new QueryException("The selected boolean was not a Boolean and I was unable to create a AtomicBoolean!");
 				}
-				AtomicBoolean atomicBoolean = (AtomicBoolean) getValue(tableObject);
+				AtomicBoolean atomicBoolean = (AtomicBoolean) getValue(model);
 				if (atomicBoolean == null) {
-					field.set(tableObject, new AtomicBoolean((Boolean) object));
+					field.set(model, new AtomicBoolean((Boolean) object));
 				} else {
 					atomicBoolean.set((Boolean) object);
 				}
@@ -95,9 +94,9 @@ final class FieldColumn extends DatabaseColumn {
 				if (!(object instanceof Integer)) {
 					throw new QueryException("The selected integer was not a Integer and I was unable to create a AtomicInteger!");
 				}
-				AtomicInteger atomicInteger = (AtomicInteger) getValue(tableObject);
+				AtomicInteger atomicInteger = (AtomicInteger) getValue(model);
 				if (atomicInteger == null) {
-					field.set(tableObject, new AtomicInteger((Integer) object));
+					field.set(model, new AtomicInteger((Integer) object));
 				} else {
 					atomicInteger.set((Integer) object);
 				}
@@ -105,14 +104,14 @@ final class FieldColumn extends DatabaseColumn {
 				if (!(object instanceof Long)) {
 					throw new QueryException("The selected long was not a Long and I was unable to create a AtomicLong!");
 				}
-				AtomicLong atomicLong = ((AtomicLong) getValue(tableObject));
+				AtomicLong atomicLong = ((AtomicLong) getValue(model));
 				if (atomicLong == null) {
-					field.set(tableObject, new AtomicLong((Long) object));
+					field.set(model, new AtomicLong((Long) object));
 				} else {
 					atomicLong.set((Long) object);
 				}
 			} else {
-				field.set(tableObject, object);
+				field.set(model, object);
 			}
 
 		} catch (IllegalAccessException e) {
@@ -121,9 +120,9 @@ final class FieldColumn extends DatabaseColumn {
 	}
 
 	@Override
-	public Object getValue(TableObject tableObject) {
+	public Object getValue(Model model) {
 		try {
-			return field.get(tableObject);
+			return field.get(model);
 		} catch (IllegalAccessException e) {
 			throw new QueryException(e);
 		}

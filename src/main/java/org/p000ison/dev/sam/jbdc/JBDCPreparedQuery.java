@@ -23,7 +23,7 @@ package org.p000ison.dev.sam.jbdc;
 import org.p000ison.dev.sam.Database;
 import org.p000ison.dev.sam.DatabaseColumn;
 import org.p000ison.dev.sam.RegisteredTable;
-import org.p000ison.dev.sam.exception.QueryException;
+import org.p000ison.dev.sam.QueryException;
 import org.p000ison.dev.sam.query.PreparedQuery;
 
 import java.io.ByteArrayOutputStream;

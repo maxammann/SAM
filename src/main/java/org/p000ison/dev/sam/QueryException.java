@@ -17,7 +17,7 @@
  * Last modified: 05.07.13 12:21
  */
 
-package org.p000ison.dev.sam.exception;
+package org.p000ison.dev.sam;
 
 import java.sql.SQLException;
 

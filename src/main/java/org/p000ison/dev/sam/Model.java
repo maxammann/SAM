@@ -32,5 +32,5 @@ package org.p000ison.dev.sam;
  * <p/>
  * </code>
  */
-public interface TableObject {
+public interface Model {
 }

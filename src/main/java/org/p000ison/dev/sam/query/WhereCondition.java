@@ -20,7 +20,7 @@
 package org.p000ison.dev.sam.query;
 
 import org.p000ison.dev.sam.DatabaseColumn;
-import org.p000ison.dev.sam.TableObject;
+import org.p000ison.dev.sam.Model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ import java.util.List;
  * <p/>
  * All Default... classes are pre-made classes which may already work with your database engine.
  */
-public class WhereCondition<Q extends SelectiveQuery<Q, T>, T extends TableObject> {
+public class WhereCondition<Q extends SelectiveQuery<Q, T>, T extends Model> {
 
 	private List<WhereComparator<Q, T>> comparators;
 	private Q query;

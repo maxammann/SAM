@@ -70,7 +70,7 @@ public class DatabaseTest {
 	}
 
 	@Table(name = "test")
-	private static class Entry implements TableObject {
+	private static class Entry implements Model {
 		@Column(databaseName = "id", id = true)
 		private long id;
 		@Column(databaseName = "name", length = 5)

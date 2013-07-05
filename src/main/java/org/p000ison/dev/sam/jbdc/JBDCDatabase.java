@@ -20,7 +20,7 @@
 package org.p000ison.dev.sam.jbdc;
 
 import org.p000ison.dev.sam.*;
-import org.p000ison.dev.sam.exception.QueryException;
+import org.p000ison.dev.sam.QueryException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -142,7 +142,7 @@ public abstract class JBDCDatabase<C extends DatabaseConfiguration> extends Data
 	}
 
 	@Override
-	public boolean existsEntry(RegisteredTable table, TableObject object) {
+	public boolean existsEntry(RegisteredTable table, Model object) {
 		DatabaseColumn column = table.getIDColumn();
 
 		PreparedStatement check = null;
@@ -162,7 +162,7 @@ public abstract class JBDCDatabase<C extends DatabaseConfiguration> extends Data
 	}
 
 	@Override
-	public boolean existsEntry(TableObject object) {
+	public boolean existsEntry(Model object) {
 		return this.existsEntry(getRegisteredTable(object.getClass()), object);
 	}
 

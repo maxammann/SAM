@@ -20,14 +20,14 @@
 package org.p000ison.dev.sam.query;
 
 import org.p000ison.dev.sam.Database;
-import org.p000ison.dev.sam.TableObject;
+import org.p000ison.dev.sam.Model;
 
 import java.util.List;
 
 /**
  * Represents a SelectiveQuery
  */
-public abstract class SelectiveQuery<Q extends SelectiveQuery<Q, T>, T extends TableObject> extends AbstractStatement<T> {
+public abstract class SelectiveQuery<Q extends SelectiveQuery<Q, T>, T extends Model> extends AbstractStatement<T> {
 
 	private WhereCondition<Q, T> whereQuery;
 

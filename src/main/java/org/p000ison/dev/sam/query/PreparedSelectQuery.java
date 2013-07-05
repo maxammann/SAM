@@ -19,7 +19,7 @@
 
 package org.p000ison.dev.sam.query;
 
-import org.p000ison.dev.sam.TableObject;
+import org.p000ison.dev.sam.Model;
 
 import java.util.Collection;
 import java.util.List;
@@ -28,17 +28,17 @@ import java.util.List;
  * This is used to prepare queries/statements.
  */
 @SuppressWarnings("unused")
-public interface PreparedSelectQuery<T extends TableObject> extends PreparedQuery {
+public interface PreparedSelectQuery<T extends Model> extends PreparedQuery {
 
 	/**
-	 * Queries the database and returns a collection of TableObject. This method should be synchronized with the {@link org.p000ison.dev.sam.Database}.
+	 * Queries the database and returns a collection of Model. This method should be synchronized with the {@link org.p000ison.dev.sam.Database}.
 	 *
 	 * @return Whether the update was successfully
 	 */
 	<C extends Collection<T>> C getResults(C collection);
 
 	/**
-	 * Queries the database and returns a list of TableObject. This method should be synchronized with the {@link org.p000ison.dev.sam.Database}.
+	 * Queries the database and returns a list of Model. This method should be synchronized with the {@link org.p000ison.dev.sam.Database}.
 	 *
 	 * @return Whether the update was successfully
 	 */

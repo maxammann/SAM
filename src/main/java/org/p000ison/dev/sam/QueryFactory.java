@@ -26,7 +26,7 @@ import org.p000ison.dev.sam.query.*;
  */
 public interface QueryFactory {
 
-	<T extends TableObject> SelectQuery<T> createSelectQuery();
+	<T extends Model> SelectQuery<T> createSelectQuery();
 
 	UpdateStatement createUpdateStatement();
 
@@ -55,7 +55,7 @@ public interface QueryFactory {
 	 */
 	PreparedQuery createPreparedStatement(String query);
 
-	<T extends TableObject> PreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table);
+	<T extends Model> PreparedSelectQuery<T> createPreparedSelectQuery(String query, RegisteredTable table);
 
 	public static abstract class Default implements QueryFactory {
 
@@ -66,7 +66,7 @@ public interface QueryFactory {
 		}
 
 		@Override
-		public <T extends TableObject> SelectQuery<T> createSelectQuery() {
+		public <T extends Model> SelectQuery<T> createSelectQuery() {
 			return new SelectQuery<T>(database);
 		}
 

@@ -26,7 +26,7 @@ Example:
 
 ```java
 @DatabaseTable(name = "table")
-public class Person implements TableObject {
+public class Person implements Model {
  
     @DatabaseColumn(position = 1, databaseName = "id", id = true)
     private int id;

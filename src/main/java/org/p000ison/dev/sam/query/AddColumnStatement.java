@@ -21,8 +21,8 @@ package org.p000ison.dev.sam.query;
 
 import org.p000ison.dev.sam.Database;
 import org.p000ison.dev.sam.DatabaseColumn;
+import org.p000ison.dev.sam.Model;
 import org.p000ison.dev.sam.RegisteredTable;
-import org.p000ison.dev.sam.TableObject;
 import org.p000ison.dev.sam.annotation.Index;
 import org.p000ison.dev.sam.key.Key;
 
@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Represents a AddColumnStatement
  */
-public class AddColumnStatement extends AbstractStatement<TableObject> {
+public class AddColumnStatement extends AbstractStatement<Model> {
 
 	private List<DatabaseColumn> columns = new LinkedList<DatabaseColumn>();
 
@@ -51,7 +51,7 @@ public class AddColumnStatement extends AbstractStatement<TableObject> {
 	}
 
 	@Override
-	protected String getQuery() {
+	public String getQuery() {
 		StringBuilder alter = new StringBuilder("ALTER TABLE ").append(getTable().getName()).append(" ADD ");
 
 		for (DatabaseColumn column : columns) {
@@ -83,7 +83,7 @@ public class AddColumnStatement extends AbstractStatement<TableObject> {
 		return getDatabase().getQueryFactory().createPreparedStatement(getQuery());
 	}
 
-	public synchronized AddColumnStatement in(Class<? extends TableObject> object) {
+	public synchronized AddColumnStatement in(Class<? extends Model> object) {
 		super.from(object);
 		return this;
 	}
@@ -98,7 +98,7 @@ public class AddColumnStatement extends AbstractStatement<TableObject> {
 	 */
 	@Override
 	@Deprecated
-	public synchronized AbstractStatement<TableObject> from(Class<? extends TableObject> object) {
+	public synchronized AbstractStatement<Model> from(Class<? extends Model> object) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -107,7 +107,7 @@ public class AddColumnStatement extends AbstractStatement<TableObject> {
 	 */
 	@Override
 	@Deprecated
-	public synchronized AbstractStatement<TableObject> from(RegisteredTable table) {
+	public synchronized AbstractStatement<Model> from(RegisteredTable table) {
 		throw new UnsupportedOperationException();
 	}
 }

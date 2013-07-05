@@ -20,7 +20,7 @@
 package org.p000ison.dev.sam.util;
 
 import org.p000ison.dev.sam.Database;
-import org.p000ison.dev.sam.TableObject;
+import org.p000ison.dev.sam.Model;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -29,11 +29,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Represents a OutputQueueConsumer
  * <p/>
- * This Runnable can be used to store TableObject. In most usages you want another thread handle queries. This thread
+ * This Runnable can be used to store Model. In most usages you want another thread handle queries. This thread
  * will wait if there is nothing to save.
  */
 public class OutputQueueConsumer extends Thread {
-	private BlockingQueue<TableObject> queue = new LinkedBlockingQueue<TableObject>();
+	private BlockingQueue<Model> queue = new LinkedBlockingQueue<Model>();
 	private int maxSize = -1;
 	private final Database database;
 	private AtomicBoolean bool = new AtomicBoolean(true);
@@ -47,13 +47,13 @@ public class OutputQueueConsumer extends Thread {
 		this(-1, database);
 	}
 
-	public void addTableObject(TableObject tableObject) {
+	public void addTableObject(Model model) {
 		synchronized (this) {
 			if (queue.size() >= maxSize) {
 				return;
 			}
 			try {
-				queue.put(tableObject);
+				queue.put(model);
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
@@ -64,7 +64,7 @@ public class OutputQueueConsumer extends Thread {
 	public void run() {
 		while (bool.get()) {
 			synchronized (this) {
-				TableObject obj;
+				Model obj;
 
 				try {
 					while ((obj = queue.take()) != null) {

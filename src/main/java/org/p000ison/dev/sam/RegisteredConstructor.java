@@ -27,14 +27,14 @@ import java.lang.reflect.InvocationTargetException;
  * The default constructor has no parameters.
  */
 public class RegisteredConstructor {
-	private Constructor<? extends TableObject> constructor;
+	private Constructor<? extends Model> constructor;
 	private Object[] currentArgumentValues;
 
-	public RegisteredConstructor(Constructor<? extends TableObject> constructor) {
+	public RegisteredConstructor(Constructor<? extends Model> constructor) {
 		this.constructor = constructor;
 	}
 
-	public RegisteredConstructor(Class<? extends TableObject> clazz, Object... args) throws NoSuchMethodException {
+	public RegisteredConstructor(Class<? extends Model> clazz, Object... args) throws NoSuchMethodException {
 		Class[] types = new Class[args.length];
 
 		for (int i = 0; i < args.length; i++) {
@@ -44,7 +44,7 @@ public class RegisteredConstructor {
 		setArguments(args);
 	}
 
-	public RegisteredConstructor(Class<? extends TableObject> clazz, Class... args) throws NoSuchMethodException {
+	public RegisteredConstructor(Class<? extends Model> clazz, Class... args) throws NoSuchMethodException {
 		constructor = clazz.getConstructor(args);
 	}
 
@@ -59,7 +59,7 @@ public class RegisteredConstructor {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends TableObject> T newInstance() {
+	public <T extends Model> T newInstance() {
 		try {
 			if (currentArgumentValues == null) {
 				return (T) constructor.newInstance();
