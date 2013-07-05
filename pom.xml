@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ This file is part of SQLDatabaseAPI (2012).
+  ~ This file is part of SAM (2012).
   ~
-  ~ SQLDatabaseAPI is free software: you can redistribute it and/or modify
+  ~ SAM is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
   ~ the Free Software Foundation, either version 3 of the License, or
   ~ (at your option) any later version.
   ~
-  ~ SQLDatabaseAPI is distributed in the hope that it will be useful,
+  ~ SAM is distributed in the hope that it will be useful,
   ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
   ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   ~ GNU General Public License for more details.
   ~
   ~ You should have received a copy of the GNU General Public License
-  ~ along with SQLDatabaseAPI.  If not, see <http://www.gnu.org/licenses/>.
+  ~ along with SAM.  If not, see <http://www.gnu.org/licenses/>.
   ~
-  ~ Last modified: 29.12.12 17:46
+  ~ Last modified: 05.07.13 12:37
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -23,22 +23,28 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.p000ison.dev.sqlapi</groupId>
-    <artifactId>SQLDatabaseAPI</artifactId>
-    <version>1.0</version>
+    <groupId>org.p000ison.dev.sam</groupId>
+    <artifactId>SAM</artifactId>
+    <version>2.0</version>
+    <description>SQL Annoys Me - Keep it simple.</description>
 
     <distributionManagement>
+        <repository>
+            <id>upstream</id>
+            <name>greatmancode-releases</name>
+            <url>http://repo.greatmancode.com/content/repositories/releases</url>
+        </repository>
         <snapshotRepository>
-            <id>repo-snap</id>
-            <name>SimpleClans Snapshots</name>
-            <url>http://jenkins.greatmancode.com/plugin/repository/everything/</url>
+            <id>upstream</id>
+            <name>greatmancode-snapshots</name>
+            <url>http://repo.greatmancode.com/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 
     <!-- Continuous integration -->
     <ciManagement>
-        <system>jenkins</system>
-        <url>http://jenkins.greatmancode.com/job/${project.name}</url>
+        <system>teamcity</system>
+        <url>http://build.greatmancode.com/viewType.html?buildTypeId=bt16</url>
     </ciManagement>
 
     <build>
@@ -108,12 +114,18 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.21</version>
+            <version>5.1.25</version>
         </dependency>
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.7.2</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

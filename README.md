@@ -1,7 +1,6 @@
-SQLDatabaseAPI
-==============
+![alt text](https://dl.dropboxusercontent.com/u/97517326/SAM_final_500.png)
 
-This SQL API allows you to save your java objects in a sql database.
+This SQL library allows you to save your java objects in a sql database.
 
 Supported:
 - int, Integer, AtomicInteger
@@ -31,7 +30,8 @@ public class Person implements TableObject {
  
     @DatabaseColumn(position = 1, databaseName = "id", id = true)
     private int id;
- 
+
+    @DatabaseColumn(position = 2, databaseName = "name")
     private String name;
  
     @DatabaseColumn(position = 3, databaseName = "age")
@@ -40,16 +40,7 @@ public class Person implements TableObject {
     public Person()
     {
     }
- 
-    @DatabaseColumnSetter(position = 2, databaseName = "name")
-    public void setFormattedName(String name)
-    {
-        if (name != null) {
-            this.name = name.toUpperCase();
-        }
-    }
- 
-    @DatabaseColumnGetter(databaseName = "name")
+
     public String getFormattedName()
     {
         return name;
